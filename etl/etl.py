@@ -5,7 +5,7 @@ from typing import List, Optional, Set, Tuple
 import psycopg2
 from psycopg2.extras import RealDictCursor, RealDictRow
 from psycopg2 import OperationalError as PostgresOperationalError
-from elasticsearch import Elasticsearch, BadRequestError
+from elasticsearch import Elasticsearch, RequestError
 from elasticsearch.helpers import bulk
 from elastic_transport import ConnectionError as ElasticConnectionError
 
@@ -23,18 +23,28 @@ class ElasticUpdater:
         self.host = host
         self.auth = auth
 
+    def get_connection(self):
+        return Elasticsearch(
+            hosts=[self.host],
+            http_auth=(self.auth),
+        )
+
     @backoff(errors=ERRORS)
     def create_schema(self):
-        with Elasticsearch(self.host, basic_auth=self.auth) as es:
-            try:
-                logger.info('Try to create schema')
-                es.indices.create(
-                    index="movies",
-                    settings=Schema.settings,
-                    mappings=Schema.mappings
-                )
-            except BadRequestError:
+        connection = self.get_connection()
+        try:
+            logger.info('Try to create schema')
+            connection.indices.create(
+                index="movies",
+                body={"settings": Schema.settings, "mappings": Schema.mappings},
+            )
+        except RequestError as e:
+            if e.status_code == 400:
                 logger.info('schema already exists')
+            else:
+                raise e
+        finally:
+            connection.close()
 
     @backoff(errors=ERRORS)
     def load(self, data: List[ESModel]) -> None:
@@ -46,8 +56,11 @@ class ElasticUpdater:
                     '_source': item.dict()
                 }
 
-        with Elasticsearch(self.host, basic_auth=self.auth) as es:
-            bulk(es, generate_docs(data))
+        connection = self.get_connection()
+        try:
+            bulk(connection, generate_docs(data))
+        finally:
+            connection.close()
 
 
 class PostgresLoader:
