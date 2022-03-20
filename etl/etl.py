@@ -1,190 +1,14 @@
 import os
 import time
-from typing import List, Optional, Set, Tuple
+from typing import List
 
-import psycopg2
 from psycopg2.extras import RealDictCursor, RealDictRow
-from psycopg2 import OperationalError as PostgresOperationalError
-from elasticsearch import Elasticsearch, RequestError
-from elasticsearch.helpers import bulk
-from elastic_transport import ConnectionError as ElasticConnectionError
 
-from schema import Schema
 from storage import State, JsonFileStorage
-from models import ESModel, Writer, Actor
-from backoff import backoff
-from logger import logger
-
-
-class ElasticUpdater:
-    ERRORS: Tuple[Exception] = (ElasticConnectionError,)
-
-    def __init__(self, host: str, auth: tuple):
-        self.host = host
-        self.auth = auth
-
-    def get_connection(self):
-        return Elasticsearch(
-            hosts=[self.host],
-            http_auth=(self.auth),
-        )
-
-    @backoff(errors=ERRORS)
-    def create_schema(self):
-        connection = self.get_connection()
-        try:
-            logger.info('Try to create schema')
-            connection.indices.create(
-                index="movies",
-                body={"settings": Schema.settings, "mappings": Schema.mappings},
-            )
-        except RequestError as e:
-            if e.status_code == 400:
-                logger.info('schema already exists')
-            else:
-                raise e
-        finally:
-            connection.close()
-
-    @backoff(errors=ERRORS)
-    def load(self, data: List[ESModel]) -> None:
-        def generate_docs(data):
-            for item in data:
-                yield {
-                    '_index': 'movies',
-                    '_id': item.id,
-                    '_source': item.dict()
-                }
-
-        connection = self.get_connection()
-        try:
-            bulk(connection, generate_docs(data))
-        finally:
-            connection.close()
-
-
-class PostgresLoader:
-    ERRORS: Tuple[Exception] = (PostgresOperationalError,)
-    CHUNK_SIZE: int = 100
-
-    def __init__(self, dsl: dict, state: State):
-        self.dsl = dsl
-        self.connection = None
-        self.state = state
-
-    @backoff(errors=ERRORS)
-    def connect(self) -> None:
-        self.connection = psycopg2.connect(**dsl)
-
-    @backoff(errors=ERRORS)
-    def load_data(self, cursor: RealDictCursor, table_name: str, since_ts: str) -> List[RealDictRow]:
-        modified_ids = self.get_modified_ids(cursor, table_name, since_ts)
-
-        if table_name != 'film_work':
-            modified_filmwork_ids = self.get_modified_filmworks_ids(cursor, table_name, modified_ids)
-            filmwork_ids = modified_filmwork_ids if modified_filmwork_ids else []
-        else:
-            filmwork_ids = modified_ids
-
-        return self.get_modified_filmworks(cursor, set(filmwork_ids))
-
-    @backoff(errors=ERRORS)
-    def get_modified_ids(self, cursor: RealDictCursor, table_name: str, since_ts: str) -> Optional[List[str]]:
-        sql = f"""
-            SELECT 
-                id,
-                modified
-            FROM content.{table_name} """
-        if since_ts:
-            sql += f"WHERE modified > '{since_ts}'"
-
-        sql += f"""
-            ORDER BY modified, id
-            LIMIT {self.CHUNK_SIZE}
-            """
-
-        try:
-            cursor.execute(sql)
-            rows = cursor.fetchall()
-        except Exception as e:
-            logger.exception('Error while reading from Postgres')
-            raise Exception
-
-        if rows:
-            self.state.set_state('temp_last_update', str(rows[-1]['modified']))
-
-        updated_rows_count = len(rows) + self.state.get_state(table_name)
-        self.state.set_state(table_name, updated_rows_count)
-        return [row['id'] for row in rows]
-
-    @backoff(errors=ERRORS)
-    def get_modified_filmworks_ids(self, cursor: RealDictCursor, table_name: str, updated_ids: List[str]) -> Optional[List[str]]:
-        if not updated_ids:
-            return
-
-        sql = f"""
-            SELECT fw.id
-            FROM content.film_work fw
-            LEFT JOIN content.{table_name}_film_work pfw ON pfw.film_work_id = fw.id
-            WHERE pfw.{table_name}_id IN ({str(updated_ids)[1:-1]})
-            ORDER BY fw.modified, fw.id
-            """
-
-        cursor.execute(sql)
-        rows = cursor.fetchall()
-
-        return [row['id'] for row in rows]
-
-    @backoff(errors=ERRORS)
-    def get_modified_filmworks(self, cursor: RealDictCursor, updated_ids: Set[str]) -> Optional[List[RealDictRow]]:
-        """
-        Возвращает список строк
-        """
-        if not updated_ids:
-            return
-
-        sql = f"""
-        SELECT
-            fw.id as fw_id, 
-            fw.title, 
-            fw.description, 
-            fw.rating, 
-            fw.type, 
-            fw.created, 
-            fw.modified, 
-            fwp.persons,
-            fwg.genres
-        FROM content.film_work fw
-        LEFT JOIN LATERAL (
-            SELECT 
-                pfw.film_work_id,
-                ARRAY_AGG (JSONB_BUILD_OBJECT (
-                    'id', p.id,
-                    'full_name', p.full_name,
-                    'role', pfw.role
-                    )
-                ) AS persons    
-            FROM content.person_film_work pfw
-            JOIN content.person p ON p.id = pfw.person_id
-            WHERE pfw.film_work_id = fw.id
-            GROUP BY pfw.film_work_id
-            ) fwp ON 1=1
-        LEFT JOIN LATERAL (
-            SELECT
-                gfw.film_work_id,
-                ARRAY_AGG (g.name) AS genres   
-            FROM content.genre_film_work gfw
-            JOIN content.genre g ON g.id = gfw.genre_id
-            WHERE gfw.film_work_id = fw.id
-            GROUP BY gfw.film_work_id
-            ) fwg ON 1=1
-        WHERE fw.id IN ({str(updated_ids)[1:-1]})
-        """
-
-        cursor.execute(sql)
-        rows = cursor.fetchall()
-
-        return rows
+from models import ESFilm, Writer, Actor
+from utils.logger import logger
+from elastic_updater import ElasticUpdater
+from postgres_loader import PostgresLoader
 
 
 class ETL:
@@ -230,7 +54,7 @@ class ETL:
             self.state.set_state(f'last_update_{table_name}', last_update)
 
     @staticmethod
-    def serialize_data(data: List[RealDictRow]) -> List[ESModel]:
+    def serialize_data(data: List[RealDictRow]) -> List[ESFilm]:
         """
         Преобразуем строки из postgres в модель для elastic search.
         """
@@ -261,7 +85,7 @@ class ETL:
                         serialized_film["actors"].append(Actor(id=person["id"], name=person["full_name"]))
                         serialized_film["actors_names"].append(person["full_name"])
 
-            serialized_films.append(ESModel(**serialized_film))
+            serialized_films.append(ESFilm(**serialized_film))
 
         return serialized_films
 
@@ -276,7 +100,8 @@ if __name__ == "__main__":
             os.environ.get('ELASTIC_PASSWORD')
         )
     )
-    elastic_updater.create_schema()
+
+    elastic_updater.create_schemas()
 
     dsl = {
         'dbname': os.environ.get('DB_NAME'),
