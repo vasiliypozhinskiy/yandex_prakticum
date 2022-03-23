@@ -1,6 +1,6 @@
 from typing import Optional, List
 
-from src.models.mixin import CommonMixin
+from fastapi_solution.src.models.mixin import CommonMixin
 
 
 class Genre(CommonMixin):

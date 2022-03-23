@@ -1,6 +1,6 @@
 from typing import List, Optional
 
-from src.models.mixin import CommonMixin
+from fastapi_solution.src.models.mixin import CommonMixin
 
 
 class Person(CommonMixin):

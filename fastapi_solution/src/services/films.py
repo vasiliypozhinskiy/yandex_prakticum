@@ -24,7 +24,6 @@ class FilmService:
             if not film:
                 return None
             await self._put_film_to_cache(film)
-
         return film
 
     async def _get_film_from_elastic(self, film_id: str) -> Optional[Film]:
