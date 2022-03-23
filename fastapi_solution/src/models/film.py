@@ -1,18 +1,23 @@
+from typing import Optional, List, Dict
+
 import orjson
+from pydantic import BaseModel, validator
 
-# Используем pydantic для упрощения работы при перегонке данных из json в объекты
-from pydantic import BaseModel
+from src.models.mixin import CommonMixin
 
-def orjson_dumps(v, *, default):
-    # orjson.dumps возвращает bytes, а pydantic требует unicode, поэтому декодируем
-    return orjson.dumps(v, default=default).decode()
 
-class Film(BaseModel):
-    id: str
+class Film(CommonMixin):
+    """Для вывода полной инф-и по фильму и вывода на главной странице"""
     title: str
-    description: str
+    description: Optional[str] = None
+    imdb_rating: Optional[float] = None
+    genre: Optional[List[str]] = None
+    directors: Optional[List[Dict[str, str]]] = None
+    actors: Optional[List[Dict[str, str]]] = None
+    writers: Optional[List[Dict[str, str]]] = None
 
-    class Config:
-        # Заменяем стандартную работу с json на более быструю
-        json_loads = orjson.loads
-        json_dumps = orjson_dumps
+    @validator('imdb_rating')
+    def interval_rating(self, rating: float) -> float:
+        if rating > 10 or rating < 0:
+            raise ValueError('Проверьте rating')
+        return rating
