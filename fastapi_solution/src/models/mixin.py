@@ -2,20 +2,14 @@ from typing import Optional
 from uuid import UUID
 
 import orjson
-from pydantic import BaseModel, validator
+from pydantic import BaseModel
 
 def orjson_dumps(v, *, default):
     return orjson.dumps(v, default=default).decode()
 
 
 class CommonMixin(BaseModel):
-    id: str
-
-    @validator('id')
-    def dash_in_id(self, my_id: str) -> str:
-        if '-' not in id:
-            raise ValueError('Проверьте id')
-        return my_id
+    id: UUID
 
     class Config:
         json_loads = orjson.loads

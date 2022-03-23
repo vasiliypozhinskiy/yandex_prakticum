@@ -21,8 +21,3 @@ class Film(CommonMixin):
         if rating > 10 or rating < 0:
             raise ValueError('Проверьте rating')
         return rating
-
-class FilmPerson(CommonMixin):
-    """Schema for Film work detail"""
-
-    full_name: str
