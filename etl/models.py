@@ -14,7 +14,7 @@ class Writer(BaseModel):
     name: str
 
 
-class ESModel(BaseModel):
+class ESFilm(BaseModel):
     id: UUID
     imdb_rating: Optional[float]
     genre: Optional[str]
@@ -25,4 +25,11 @@ class ESModel(BaseModel):
     writers_names: Optional[List[str]]
     actors: Optional[List[Actor]]
     writers: Optional[List[Writer]]
+
+
+class ESGenre(BaseModel):
+    id: UUID
+    name: str
+    description: Optional[str]
+    films_ids: Optional[List[UUID]]
 
