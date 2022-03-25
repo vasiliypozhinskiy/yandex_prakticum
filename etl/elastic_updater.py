@@ -5,6 +5,7 @@ from elasticsearch.helpers import bulk
 
 from es_schema.movies import Movies
 from es_schema.genres import Genres
+from es_schema.persons import Persons
 from es_schema.settings import settings as schema_settings
 from utils.backoff import backoff
 from utils.logger import logger
@@ -14,7 +15,8 @@ class ElasticUpdater:
     ERRORS: Tuple[Exception] = (ConnectionError, ConnectionRefusedError)
     SCHEMAS = {
         'movies': Movies.mappings,
-        'genres': Genres.mappings
+        'genres': Genres.mappings,
+        'persons': Persons.mappings
     }
 
     def __init__(self, host: str, auth: tuple):
