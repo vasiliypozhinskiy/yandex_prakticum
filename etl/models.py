@@ -26,3 +26,10 @@ class ESFilm(BaseModel):
     actors: Optional[List[Actor]]
     writers: Optional[List[Writer]]
 
+
+class ESGenre(BaseModel):
+    id: UUID
+    name: str
+    description: Optional[str]
+    films_ids: Optional[List[UUID]]
+

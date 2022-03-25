@@ -1,20 +1,20 @@
 from typing import Tuple, List
 
-from elasticsearch import Elasticsearch, RequestError
+from elasticsearch import Elasticsearch, RequestError, ConnectionError
 from elasticsearch.helpers import bulk
-from elastic_transport import ConnectionError as ElasticConnectionError
 
 from es_schema.movies import Movies
+from es_schema.genres import Genres
 from es_schema.settings import settings as schema_settings
-from models import ESFilm
 from utils.backoff import backoff
 from utils.logger import logger
 
 
 class ElasticUpdater:
-    ERRORS: Tuple[Exception] = (ElasticConnectionError,)
+    ERRORS: Tuple[Exception] = (ConnectionError, ConnectionRefusedError)
     SCHEMAS = {
         'movies': Movies.mappings,
+        'genres': Genres.mappings
     }
 
     def __init__(self, host: str, auth: tuple):
@@ -48,18 +48,23 @@ class ElasticUpdater:
         finally:
             connection.close()
 
-    @backoff(errors=ERRORS)
-    def load(self, data: List[ESFilm]) -> None:
-        def generate_docs(data):
-            for item in data:
-                yield {
-                    '_index': 'movies',
-                    '_id': item.id,
-                    '_source': item.dict()
-                }
+    def load(self, data: dict):
+        for index, values in data.items():
+            self._do_load(index, values)
 
+    @backoff(errors=ERRORS)
+    def _do_load(self, index: str, data: list) -> None:
         connection = self.get_connection()
         try:
-            bulk(connection, generate_docs(data))
+            bulk(connection, self.generate_docs(index, data))
         finally:
             connection.close()
+
+    @staticmethod
+    def generate_docs(index: str, data: list):
+        for item in data:
+            yield {
+                '_index': index,
+                '_id': item.id,
+                '_source': item.dict()
+            }
