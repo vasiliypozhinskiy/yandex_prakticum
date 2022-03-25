@@ -97,7 +97,10 @@ class ETL:
                         serialized_film["actors"].append(Actor(id=person["id"], name=person["full_name"]))
                         serialized_film["actors_names"].append(person["full_name"])
 
-            serialized_films.append(ESFilm(**serialized_film))
+            try:
+                serialized_films.append(ESFilm(**serialized_film))
+            except ValidationError:
+                logger.error(f'Неправильные данные в postgres. {serialized_film}')
 
         return serialized_films
 
