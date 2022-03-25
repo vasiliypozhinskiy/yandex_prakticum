@@ -33,3 +33,9 @@ class ESGenre(BaseModel):
     description: Optional[str]
     films_ids: Optional[List[UUID]]
 
+
+class ESPerson(BaseModel):
+    id: UUID
+    full_name: str
+    films_ids: List[UUID]
+

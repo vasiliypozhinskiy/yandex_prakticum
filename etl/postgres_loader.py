@@ -28,9 +28,11 @@ class PostgresLoader:
 
         filmwork_ids = []
         genre_ids = []
+        persons_ids = []
         if table_name == 'film_work':
             filmwork_ids = modified_ids
             genre_ids = self.get_modified_id_by_filmwork_ids(cursor, 'genre', modified_ids)
+            persons_ids = self.get_modified_id_by_filmwork_ids(cursor, 'person', modified_ids)
 
         if table_name == 'genre':
             filmwork_ids = self.get_modified_filmworks_ids(cursor, table_name, modified_ids)
@@ -38,10 +40,12 @@ class PostgresLoader:
 
         if table_name == 'person':
             filmwork_ids = self.get_modified_filmworks_ids(cursor, table_name, modified_ids)
+            persons_ids = modified_ids
 
         data = {
             'movies': self.get_modified_filmworks(cursor, set(filmwork_ids)),
-            'genres': self.get_modified_genres(cursor, set(genre_ids))
+            'genres': self.get_modified_genres(cursor, set(genre_ids)),
+            'persons': self.get_modified_persons(cursor, set(persons_ids))
         }
 
         return data
@@ -204,6 +208,35 @@ class PostgresLoader:
             ) fwg ON 1=1   
         WHERE g.id IN ({str(updated_ids)[1:-1]})           
         """
+
+        cursor.execute(sql)
+        return cursor.fetchall()
+
+    @backoff(errors=ERRORS)
+    def get_modified_persons(self, cursor: RealDictCursor, updated_ids: Set[str]) -> Optional[List[RealDictRow]]:
+        """
+        Возвращает список строк с изменёнными персонами.
+        """
+        if not updated_ids:
+            return []
+
+        sql = f"""
+            SELECT
+                p.id as p_id,
+                p.full_name,
+                fwp.films_ids
+            FROM content.person p
+            LEFT JOIN LATERAL (
+                SELECT
+                    p.id,
+                    ARRAY_AGG (fw.id::text) AS films_ids 
+                FROM content.person_film_work pfw
+                JOIN content.film_work fw ON fw.id = pfw.film_work_id
+                WHERE pfw.person_id = p.id
+                GROUP BY p.id
+                ) fwp ON 1=1   
+            WHERE p.id IN ({str(updated_ids)[1:-1]})           
+            """
 
         cursor.execute(sql)
         return cursor.fetchall()

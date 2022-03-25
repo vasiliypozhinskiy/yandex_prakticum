@@ -6,7 +6,7 @@ from psycopg2.extras import RealDictCursor, RealDictRow
 from pydantic import ValidationError
 
 from storage import State, JsonFileStorage
-from models import ESFilm, Writer, Actor, ESGenre
+from models import ESFilm, Writer, Actor, ESGenre, ESPerson
 from utils.logger import logger
 from elastic_updater import ElasticUpdater
 from postgres_loader import PostgresLoader
@@ -56,7 +56,8 @@ class ETL:
 
             serialized_data = {
                 'movies': self.serialize_films(data_chunk.get('movies')),
-                'genres': self.serialize_genres(data_chunk.get('genres'))
+                'genres': self.serialize_genres(data_chunk.get('genres')),
+                'persons': self.serialize_persons(data_chunk.get('persons'))
             }
 
             self.elastic_updater.load(serialized_data)
@@ -96,7 +97,10 @@ class ETL:
                         serialized_film["actors"].append(Actor(id=person["id"], name=person["full_name"]))
                         serialized_film["actors_names"].append(person["full_name"])
 
-            serialized_films.append(ESFilm(**serialized_film))
+            try:
+                serialized_films.append(ESFilm(**serialized_film))
+            except ValidationError:
+                logger.error(f'Неправильные данные в postgres. {serialized_film}')
 
         return serialized_films
 
@@ -120,6 +124,26 @@ class ETL:
                 logger.error(f'Неправильные данные в postgres. {serialized_genre}')
 
         return serialized_genres
+
+    @staticmethod
+    def serialize_persons(data: List[RealDictRow]) -> List[ESPerson]:
+        """
+        Преобразуем строки c персонами из postgres в модель для elastic search.
+        """
+        serialized_persons = []
+        for person in data:
+            serialized_person = {
+                'id': person['p_id'],
+                'full_name': person['full_name'],
+                'films_ids': person.get('films_ids')
+            }
+
+            try:
+                serialized_persons.append(ESPerson(**serialized_person))
+            except ValidationError:
+                logger.error(f'Неправильные данные в postgres. {serialized_person}')
+
+        return serialized_persons
 
 
 if __name__ == "__main__":
