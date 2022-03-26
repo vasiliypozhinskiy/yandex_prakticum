@@ -11,7 +11,6 @@ def backoff(start_sleep_time=0.1, factor=2, border_sleep_time=10, errors=(Except
     :param start_sleep_time: начальное время повтора
     :param factor: во сколько раз нужно увеличить время ожидания
     :param border_sleep_time: граничное время ожидания
-    :param max_attempts: максимальное количество попыток выполнения функции
     :param errors: обрабатываемые ошибки
     :return: результат выполнения функции
     """

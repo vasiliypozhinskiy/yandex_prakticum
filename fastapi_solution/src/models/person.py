@@ -1,9 +1,10 @@
 from typing import List, Optional
+from uuid import UUID
 
-from src.models.mixin import CommonMixin
+from fastapi_solution.src.models.mixin import CommonMixin
 
 
 class Person(CommonMixin):
     full_name: str
     roles: Optional[List[str]] = []
-    film_ids: List[str] = []
+    film_ids: List[UUID] = []
