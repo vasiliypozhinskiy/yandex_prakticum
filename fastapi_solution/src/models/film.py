@@ -31,3 +31,8 @@ class ListResponseFilm(CommonMixin):
 class FilmPage(BaseModel):
     page_size: int
     films: List[ListResponseFilm] = []
+
+
+class FilmsByPerson(BaseModel):
+    page_size: int
+    films: List[ListResponseFilm] = []
