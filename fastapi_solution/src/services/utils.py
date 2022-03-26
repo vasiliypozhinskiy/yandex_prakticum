@@ -11,7 +11,8 @@ def get_params_films_to_elastic(
     films_search = None
     if genre:
         films_search = {"fuzzy": {"genre": {"value": genre}}}
-    if query:
+    if query and genre:
+
         body: dict = {
             "size": page_size,
             "query": {
@@ -19,6 +20,16 @@ def get_params_films_to_elastic(
                     "must": {"match": {"title": {"query": query,
                                                  "fuzziness": "auto"}}},
                     "filter": films_search,
+                }
+            },
+        }
+    elif query:
+        body: dict = {
+            "size": page_size,
+            "query": {
+                "bool": {
+                    "must": {"match": {"title": {"query": query,
+                                                 "fuzziness": "auto"}}},
                 }
             },
         }
