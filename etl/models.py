@@ -17,7 +17,7 @@ class Writer(BaseModel):
 class ESFilm(BaseModel):
     id: UUID
     imdb_rating: Optional[float]
-    genre: Optional[str]
+    genre: Optional[List[str]]
     title: str
     description: Optional[str]
     director: Optional[List[str]]
