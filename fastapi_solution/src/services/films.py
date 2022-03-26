@@ -5,11 +5,11 @@ from aioredis import Redis
 from elasticsearch import AsyncElasticsearch, NotFoundError
 from fastapi import Depends
 
-from .mixin import ServiceMixin
-from .utils import get_params_films_to_elastic, get_hits
-from ..db.elastic import get_elastic
-from ..db.redis import get_redis
-from ..models.film import Film
+from services.mixin import ServiceMixin
+from services.utils import get_params_films_to_elastic, get_hits
+from db.elastic import get_elastic
+from db.redis import get_redis
+from models.film import Film
 
 FILM_CACHE_EXPIRE_IN_SECONDS = 60 * 5  # 5 минут
 

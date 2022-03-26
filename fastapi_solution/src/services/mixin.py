@@ -2,9 +2,9 @@ from typing import Optional
 
 from aioredis import Redis
 from elasticsearch import AsyncElasticsearch
-from fastapi_solution.src.models.film import Film
-from fastapi_solution.src.models.genre import Genre
-from fastapi_solution.src.models.person import Person
+from models.film import Film
+from models.genre import Genre
+from models.person import Person
 
 Schemas: tuple = (Film, Genre, Person)
 
@@ -15,7 +15,6 @@ class ServiceMixin:
         self.total_count: int = 0
         # self.redis = redis
         self.elastic = elastic
-
 
     async def search_in_elastic(
         self, body: dict, _source=None, sort=None, _index=None
