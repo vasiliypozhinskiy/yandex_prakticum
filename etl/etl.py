@@ -75,7 +75,7 @@ class ETL:
             serialized_film = {
                         "id": film["fw_id"],
                         "imdb_rating": film.get("rating"),
-                        "genre": ','.join(film.get("genres")),
+                        "genre": film.get("genres"),
                         "title": film.get("title"),
                         "description": film.get("description"),
                         "director": [],

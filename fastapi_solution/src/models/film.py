@@ -2,7 +2,7 @@ from typing import Optional, List, Dict
 
 from pydantic import validator, BaseModel
 
-from fastapi_solution.src.models.mixin import CommonMixin
+from models.mixin import CommonMixin
 
 
 class Film(CommonMixin):
@@ -21,10 +21,12 @@ class Film(CommonMixin):
             raise ValueError('Проверьте rating')
         return rating
 
+
 class ListResponseFilm(CommonMixin):
     """Схема для всех фильмов"""
     title: str
     imdb_rating: Optional[float] = None
+
 
 class FilmPage(BaseModel):
     page_size: int

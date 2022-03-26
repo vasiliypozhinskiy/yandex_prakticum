@@ -1,7 +1,7 @@
 from typing import Optional, List
 from uuid import UUID
 
-from fastapi_solution.src.models.mixin import CommonMixin
+from models.mixin import CommonMixin
 
 
 class Genre(CommonMixin):

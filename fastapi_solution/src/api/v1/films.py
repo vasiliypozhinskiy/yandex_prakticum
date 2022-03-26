@@ -5,9 +5,9 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
-from fastapi_solution.src.api.v1.utils import FilmQueryParams
-from fastapi_solution.src.services.films import FilmService, get_film_service
-from fastapi_solution.src.models.film import  FilmPage
+from api.v1.utils import FilmQueryParams
+from services.films import FilmService, get_film_service
+from models.film import FilmPage
 
 router = APIRouter()
 
@@ -24,15 +24,12 @@ class Film(BaseModel):
     writers: Optional[List[Dict[str, str]]] = None
 
 
-
-# Внедряем FilmService с помощью Depends(get_film_service)
 @router.get('/{film_id}', response_model=Film, summary="Детали фильма")
 async def film_details(film_id: str, film_service: FilmService = Depends(get_film_service)) -> Film:
     film = await film_service.get_by_id(film_id)
     if not film:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail='film not found')
     return film
-
 
 
 @router.get('/', response_model=FilmPage, summary="Поиск по жанру и названию")

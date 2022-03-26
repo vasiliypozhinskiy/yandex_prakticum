@@ -2,7 +2,7 @@ from typing import Optional, List
 
 from pydantic import parse_obj_as
 
-from fastapi_solution.src.services.mixin import Schemas
+from services.mixin import Schemas
 
 
 def get_params_films_to_elastic(
