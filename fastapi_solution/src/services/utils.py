@@ -12,6 +12,7 @@ def get_params_films_to_elastic(
     if genre:
         films_search = {"fuzzy": {"genre": {"value": genre}}}
     if query and genre:
+
         body: dict = {
             "size": page_size,
             "query": {
