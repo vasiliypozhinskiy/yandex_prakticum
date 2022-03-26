@@ -7,7 +7,7 @@ services:
       ELASTIC_PORT: 9200
       ELASTIC_USER: elastic
       ELASTIC_PASSWORD: $ELASTIC_PASSWORD
-
+      WAIT_HOSTS: elastic:9200
     depends_on:
       - elastic
 
