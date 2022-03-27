@@ -1,17 +1,17 @@
 from functools import lru_cache
-from typing import Optional, List
+from typing import Optional, List, Union
 
+import orjson
 from aioredis import Redis
 from elasticsearch import AsyncElasticsearch, NotFoundError
 from fastapi import Depends
 
+from core.config import FILM_CACHE_EXPIRE_IN_SECONDS
 from services.mixin import ServiceMixin
-from services.utils import get_params_films_to_elastic, get_hits
+from services.utils import get_params_films_to_elastic, get_hits, create_hash_key
 from db.elastic import get_elastic
 from db.redis import get_redis
-from models.film import Film
-
-FILM_CACHE_EXPIRE_IN_SECONDS = 60 * 5  # 5 минут
+from models.film import Film, ListResponseFilm
 
 
 class FilmService(ServiceMixin):
@@ -26,25 +26,43 @@ class FilmService(ServiceMixin):
         body: dict = get_params_films_to_elastic(
             page_size=page_size, genre=genre, query=query
         )
-        docs: Optional[dict] = await self.search_in_elastic(
-            body=body, _source=_source, sort=sorting
+        params = f"{page_size}{query}{genre}"
+        """Получаем данные из кэша"""
+        instance = await self._get_result_from_cache(
+            key=create_hash_key(index=self.index, params=params.lower())
         )
-        if not docs:
-            return None
-        hits = get_hits(docs=docs, schema=Film)
-        films: List[Film] = [
-            Film(
-                id = row.id, title=row.title, imdb_rating=row.imdb_rating
+        if not instance:
+            docs: Optional[dict] = await self.search_in_elastic(
+                body=body, _source=_source, sort=sorting
             )
-            for row in hits
+            if not docs:
+                return None
+            hits = get_hits(docs=docs, schema=Film)
+            films: List[Film] = [
+                Film(
+                    id=row.id, title=row.title, imdb_rating=row.imdb_rating
+                )
+                for row in hits
+            ]
+            """Записываем данные в кеш """
+            data = orjson.dumps([i.dict() for i in films])
+            await self._put_data_to_cache(
+                key=create_hash_key(index=self.index, params=params.lower()), value=data
+            )
+            return {
+                "films": films,
+                "page_size": page_size,
+            }
+        films_from_instance: List[ListResponseFilm] = [
+            ListResponseFilm(**row) for row in orjson.loads(instance)
         ]
         return {
-            "films": films,
+            "films": films_from_instance,
             "page_size": page_size,
         }
 
     async def get_by_id(self, film_id: str) -> Optional[Film]:
-        film = await self._film_from_cache(film_id)
+        film = await self.get_film_from_cache(film_id)
         if not film:
             film = await self._get_film_from_elastic(film_id)
             if not film:
@@ -59,21 +77,21 @@ class FilmService(ServiceMixin):
             return None
         return Film(**doc['_source'])
 
-    async def _film_from_cache(self, film_id: str) -> Optional[Film]:
-        # TODO: добавить кэширование с помощью redis
-        # data = await self.redis.get(film_id)
-        # if not data:
-        #     return None
-        #
-        # film = Film.parse_raw(data)
-        # return film
-        pass
+    async def get_film_from_cache(self, key: str) -> Optional[Film]:
+        data = await self.redis.get(key)
+        if not data:
+            return None
+        film = Film.parse_raw(data)
+        return film
 
     async def _put_film_to_cache(self, film: Film):
-        # TODO: добавить кэширование с помощью redis
-        # await self.redis.set(film.id, film.json(), expire=FILM_CACHE_EXPIRE_IN_SECONDS)
-        pass
+        await self.redis.set(str(film.id), film.json(), expire=FILM_CACHE_EXPIRE_IN_SECONDS)
 
+    async def _get_result_from_cache(self, key: str) -> Optional[bytes]:
+        return await self.redis.get(key=key) or None
+
+    async def _put_data_to_cache(self, key: str, value: Union[bytes, str]) -> None:
+        await self.redis.set(key=key, value=value, expire=FILM_CACHE_EXPIRE_IN_SECONDS)
 
 @lru_cache()
 def get_film_service(

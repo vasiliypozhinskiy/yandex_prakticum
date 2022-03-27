@@ -1,7 +1,9 @@
-from typing import Optional
+from typing import Optional, Union
 
 from aioredis import Redis
 from elasticsearch import AsyncElasticsearch
+
+from core.config import FILM_CACHE_EXPIRE_IN_SECONDS
 from models.film import Film
 from models.genre import Genre
 from models.person import Person
@@ -13,7 +15,7 @@ class ServiceMixin:
     def __init__(self, redis: Redis, elastic: AsyncElasticsearch, index):
         self.index = index
         self.total_count: int = 0
-        # self.redis = redis
+        self.redis = redis
         self.elastic = elastic
 
     async def search_in_elastic(

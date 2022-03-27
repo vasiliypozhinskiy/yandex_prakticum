@@ -21,8 +21,7 @@ app = FastAPI(
 
 @app.on_event('startup')
 async def startup():
-    # TODO: Добавить кэширование с помощью redis
-    # redis.redis = await aioredis.create_redis_pool((config.REDIS_HOST, config.REDIS_PORT), minsize=10, maxsize=20)
+    redis.redis = await aioredis.create_redis_pool((config.REDIS_HOST, config.REDIS_PORT), minsize=10, maxsize=20)
     elastic.es = AsyncElasticsearch(hosts=[f'{config.ELASTIC_HOST}:{config.ELASTIC_PORT}'])
 
 
