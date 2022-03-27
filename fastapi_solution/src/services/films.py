@@ -6,7 +6,7 @@ from aioredis import Redis
 from elasticsearch import AsyncElasticsearch, NotFoundError
 from fastapi import Depends
 
-from core.config import FILM_CACHE_EXPIRE_IN_SECONDS
+from core.config import CACHE_EXPIRE_IN_SECONDS
 from services.mixin import ServiceMixin
 from services.utils import get_params_films_to_elastic, get_hits, create_hash_key
 from db.elastic import get_elastic
@@ -85,13 +85,13 @@ class FilmService(ServiceMixin):
         return film
 
     async def _put_film_to_cache(self, film: Film):
-        await self.redis.set(str(film.id), film.json(), expire=FILM_CACHE_EXPIRE_IN_SECONDS)
+        await self.redis.set(str(film.id), film.json(), expire=CACHE_EXPIRE_IN_SECONDS)
 
     async def _get_result_from_cache(self, key: str) -> Optional[bytes]:
         return await self.redis.get(key=key) or None
 
     async def _put_data_to_cache(self, key: str, value: Union[bytes, str]) -> None:
-        await self.redis.set(key=key, value=value, expire=FILM_CACHE_EXPIRE_IN_SECONDS)
+        await self.redis.set(key=key, value=value, expire=CACHE_EXPIRE_IN_SECONDS)
 
 @lru_cache()
 def get_film_service(
