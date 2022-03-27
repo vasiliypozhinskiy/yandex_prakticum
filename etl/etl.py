@@ -6,7 +6,7 @@ from psycopg2.extras import RealDictCursor, RealDictRow
 from pydantic import ValidationError
 
 from storage import State, JsonFileStorage
-from models import ESFilm, Writer, Actor, ESGenre, ESPerson
+from models import ESFilm, Writer, Actor, Director, ESGenre, ESPerson
 from utils.logger import logger
 from elastic_updater import ElasticUpdater
 from postgres_loader import PostgresLoader
@@ -78,7 +78,7 @@ class ETL:
                         "genre": film.get("genres"),
                         "title": film.get("title"),
                         "description": film.get("description"),
-                        "director": [],
+                        "director": None,
                         "actors_names": [],
                         "actors": [],
                         "writers_names": [],
@@ -89,7 +89,7 @@ class ETL:
             if persons:
                 for person in persons:
                     if person["role"] == "director":
-                        serialized_film["director"] = [person["full_name"]]
+                        serialized_film["director"] = Director(id=person["id"], name=person["full_name"])
                     if person["role"] == "writer":
                         serialized_film["writers"].append(Writer(id=person["id"], name=person["full_name"]))
                         serialized_film["writers_names"].append(person["full_name"])
