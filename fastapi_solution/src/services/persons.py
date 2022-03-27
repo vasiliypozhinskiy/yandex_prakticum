@@ -98,15 +98,14 @@ class PersonService(FilmService):
         return Person(**doc['_source'])
 
     async def _person_from_cache(self, person_id: UUID) -> Optional[Person]:
-        data = await self.redis.get(person_id)
+        data = await self.redis.get(str(person_id))
         if not data:
             return None
         person = Person.parse_raw(data)
         return person
 
     async def _put_person_to_cache(self, person: Person):
-        await self.redis.set(person.id, person.json(), expire=CACHE_EXPIRE_IN_SECONDS)
-        pass
+        await self.redis.set(str(person.id), person.json(), expire=CACHE_EXPIRE_IN_SECONDS)
 
 
 @lru_cache()

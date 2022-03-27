@@ -76,7 +76,7 @@ class GenreService(FilmService):
         return Genre(**doc['_source'])
 
     async def _genre_from_cache(self, genre_id: UUID) -> Optional[Genre]:
-        data = await self.redis.get(genre_id)
+        data = await self.redis.get(str(genre_id))
         if not data:
             return None
 
@@ -84,7 +84,7 @@ class GenreService(FilmService):
         return genre
 
     async def _put_genre_to_cache(self, genre: Genre):
-        await self.redis.set(genre.id, genre.json(), expire=CACHE_EXPIRE_IN_SECONDS)
+        await self.redis.set(str(genre.id), genre.json(), expire=CACHE_EXPIRE_IN_SECONDS)
 
 
 @lru_cache()

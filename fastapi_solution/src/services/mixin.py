@@ -3,7 +3,7 @@ from typing import Optional, Union
 from aioredis import Redis
 from elasticsearch import AsyncElasticsearch
 
-from core.config import FILM_CACHE_EXPIRE_IN_SECONDS
+from core.config import CACHE_EXPIRE_IN_SECONDS
 from models.film import Film
 from models.genre import Genre
 from models.person import Person
