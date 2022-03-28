@@ -1,5 +1,4 @@
 from typing import Optional, Union
-
 from aioredis import Redis
 from elasticsearch import AsyncElasticsearch
 

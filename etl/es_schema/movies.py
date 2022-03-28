@@ -25,8 +25,15 @@ class Movies:
                 "analyzer": "ru_en"
             },
             "director": {
-                "type": "text",
-                "analyzer": "ru_en"
+                "properties": {
+                    "id": {
+                        "type": "keyword"
+                    },
+                    "name": {
+                        "type": "text",
+                        "analyzer": "ru_en"
+                    }
+                }
             },
             "actors_names": {
                 "type": "text",

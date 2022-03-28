@@ -44,6 +44,7 @@ def get_params_films_by_person_id_to_elastic(page_size: int, person_id: UUID = N
     }
     actors_query = {"term": {"actors.id": person_id}}
     writers_query = {"term": {"writers.id": person_id}}
+    director_query = {"term": {"director.id": person_id}}
     nested_actors_query = {"nested": {"path": "actors", "query": actors_query}}
     nested_writers_query = {"nested": {"path": "writers", "query": writers_query}}
 
@@ -54,7 +55,8 @@ def get_params_films_by_person_id_to_elastic(page_size: int, person_id: UUID = N
                     "should":
                         [
                             nested_actors_query,
-                            nested_writers_query
+                            nested_writers_query,
+                            director_query
                         ],
                 }
             }
