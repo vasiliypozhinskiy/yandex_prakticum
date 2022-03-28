@@ -7,6 +7,7 @@ from aioredis import Redis
 from elasticsearch import AsyncElasticsearch, NotFoundError
 from fastapi import Depends
 
+from api.v1.response_model import ListResponseFilm
 from core.config import CACHE_EXPIRE_IN_SECONDS
 from services.films import FilmService
 from services.mixin import ServiceMixin
@@ -15,7 +16,6 @@ from services.utils import get_params_persons_to_elastic, get_params_films_by_pe
 from db.elastic import get_elastic
 from db.redis import get_redis
 from models.person import Person
-from models.film import ListResponseFilm
 
 
 class PersonService(FilmService):

@@ -15,3 +15,5 @@ class CommonMixin(BaseModel):
         json_loads = orjson.loads
         json_dumps = orjson_dumps
 
+class PageSizeMixin(BaseModel):
+    page_size: int
