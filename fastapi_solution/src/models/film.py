@@ -1,6 +1,6 @@
 from typing import Optional, List, Dict
 
-from pydantic import validator, BaseModel
+from pydantic import validator
 
 from models.mixin import CommonMixin
 
@@ -20,19 +20,3 @@ class Film(CommonMixin):
         if rating > 10 or rating < 0:
             raise ValueError('Проверьте rating')
         return rating
-
-
-class ListResponseFilm(CommonMixin):
-    """Схема для всех фильмов"""
-    title: str
-    imdb_rating: Optional[float] = None
-
-
-class FilmPage(BaseModel):
-    page_size: int
-    films: List[ListResponseFilm] = []
-
-
-class FilmsByPerson(BaseModel):
-    page_size: int
-    films: List[ListResponseFilm] = []

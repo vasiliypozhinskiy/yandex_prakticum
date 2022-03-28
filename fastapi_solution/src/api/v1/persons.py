@@ -1,23 +1,14 @@
 from http import HTTPStatus
-
-from typing import Optional, List
+from typing import Optional
 from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel
 
+from api.v1.films import MESSAGE_DATA_NOT_FOUND
+from api.v1.response_model import Person, PersonPage, FilmPage
 from api.v1.utils import PersonQueryParams, FilmByPersonQueryParams
 from services.persons import PersonService, get_person_service
-from models.person import PersonPage
-from models.film import FilmsByPerson
 
 router = APIRouter()
-
-
-class Person(BaseModel):
-    """полная информация по персоне"""
-    id: UUID
-    full_name: str
-    films_ids: List[UUID]
 
 
 @router.get('/{person_id}', response_model=Person, summary="Детали персоны")
@@ -40,22 +31,22 @@ async def search_persons_list(
         query=params.query
     )
     if not persons:
-        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail='person not found')
+        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail=MESSAGE_DATA_NOT_FOUND)
     return PersonPage(**persons)
 
 
-@router.get('/{person_id}/film/', response_model=FilmsByPerson, summary="Фильмы по персоне")
+@router.get('/{person_id}/film/', response_model=FilmPage, summary="Фильмы по персоне")
 async def get_films_by_person(
         person_id: UUID,
         params: FilmByPersonQueryParams = Depends(),
         person_service: PersonService = Depends(get_person_service),
         page_size: int = 10,
-        ) -> FilmsByPerson:
+        ) -> FilmPage:
     films: Optional[dict] = await person_service.get_films_by_person(
         person_id=person_id,
         sorting=params.sort,
         page_size=page_size
     )
     if not films:
-        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail='films not found')
-    return FilmsByPerson(**films)
+        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail=MESSAGE_DATA_NOT_FOUND)
+    return FilmPage(**films)

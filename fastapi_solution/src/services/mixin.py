@@ -1,9 +1,7 @@
-from typing import Optional, Union
-
+from typing import Optional
 from aioredis import Redis
 from elasticsearch import AsyncElasticsearch
 
-from core.config import CACHE_EXPIRE_IN_SECONDS
 from models.film import Film
 from models.genre import Genre
 from models.person import Person
@@ -32,3 +30,6 @@ class ServiceMixin:
         return await self.elastic.search(
             index=_index, _source=_source, body=body, sort=sort_field
         )
+
+class CacheMixin:
+    pass

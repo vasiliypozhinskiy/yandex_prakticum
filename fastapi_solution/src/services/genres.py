@@ -9,7 +9,6 @@ from fastapi import Depends
 
 from core.config import CACHE_EXPIRE_IN_SECONDS
 from services.films import FilmService
-from services.mixin import ServiceMixin
 from services.utils import get_params_genres_to_elastic, get_hits, create_hash_key
 from db.elastic import get_elastic
 from db.redis import get_redis

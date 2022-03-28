@@ -6,15 +6,15 @@ from aioredis import Redis
 from elasticsearch import AsyncElasticsearch, NotFoundError
 from fastapi import Depends
 
+from api.v1.response_model import ListResponseFilm, Film
 from core.config import CACHE_EXPIRE_IN_SECONDS
-from services.mixin import ServiceMixin
+from services.mixin import ServiceMixin, CacheMixin
 from services.utils import get_params_films_to_elastic, get_hits, create_hash_key
 from db.elastic import get_elastic
 from db.redis import get_redis
-from models.film import Film, ListResponseFilm
 
 
-class FilmService(ServiceMixin):
+class FilmService(ServiceMixin, CacheMixin):
     async def get_all_films(
             self,
             page_size: int,
