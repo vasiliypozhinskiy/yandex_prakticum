@@ -30,3 +30,6 @@ class ServiceMixin:
         return await self.elastic.search(
             index=_index, _source=_source, body=body, sort=sort_field
         )
+
+class CacheMixin:
+    pass
