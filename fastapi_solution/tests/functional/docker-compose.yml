@@ -1,0 +1,55 @@
+version: '3'
+services:
+  api:
+    build: '../../.'
+    environment:
+      ELASTIC_HOST: http://elastic
+      ELASTIC_PORT: 9200
+      ELASTIC_USER: elastic
+      ELASTIC_PASSWORD: $ELASTIC_PASSWORD
+      REDIS_HOST: redis://redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: $REDIS_PASSWORD
+      WAIT_HOSTS: elastic:9200, redis:6379
+    expose:
+      - 8000
+    depends_on:
+      - elastic
+      - redis
+
+  tests:
+    build: .
+    environment:
+      ELASTIC_HOST: http://elastic:9200
+      ELASTIC_USER: elastic
+      ELASTIC_PASSWORD: $ELASTIC_PASSWORD
+      REDIS_HOST: redis://redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: $REDIS_PASSWORD
+      SERVICE_URL: http://api:8000
+
+  elastic:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.9.1
+    environment:
+      discovery.type: single-node
+      ES_JAVA_OPTS: -Xms200m -Xmx200m
+      xpack.security.http.ssl.enabled: 'false'
+      ELASTIC_PASSWORD: $ELASTIC_PASSWORD
+    expose:
+      - 9200
+    volumes:
+    - 'elastic_test_data:/usr/share/elasticsearch/data'
+
+  redis:
+    image: redis:6.2.6
+    command: redis-server --requirepass $REDIS_PASSWORD
+    expose:
+      - 6379
+    volumes:
+      - 'redis_test_data:/var/lib/redis'
+
+
+volumes:
+  elastic_test_data:
+  redis_test_data:
+
