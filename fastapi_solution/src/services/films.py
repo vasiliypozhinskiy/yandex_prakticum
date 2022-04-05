@@ -72,7 +72,7 @@ class FilmService(ServiceMixin, CacheMixin):
 
     async def _get_film_from_elastic(self, film_id: str) -> Optional[Film]:
         try:
-            doc = await self.elastic.get('movies', film_id)
+            doc = await self.elastic.get(index='movies', id=film_id)
         except NotFoundError:
             return None
         return Film(**doc['_source'])

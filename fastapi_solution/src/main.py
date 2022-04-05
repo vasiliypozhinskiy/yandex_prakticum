@@ -21,10 +21,16 @@ async def startup():
         address=f'{config.REDIS_HOST}:{config.REDIS_PORT}',
         password=config.REDIS_PASSWORD,
         minsize=10, maxsize=20)
-    elastic.es = AsyncElasticsearch(
-        hosts=[f'{config.ELASTIC_HOST}:{config.ELASTIC_PORT}'],
-        http_auth=('elastic', config.ELASTIC_PASSWORD)
-    )
+
+    elastic_settings = {
+        'hosts': [f'{config.ELASTIC_HOST}:{config.ELASTIC_PORT}']
+    }
+    if config.ELASTIC_PASSWORD:
+        elastic_settings.update({
+            'http_auth': ('elastic', config.ELASTIC_PASSWORD)
+        })
+
+    elastic.es = AsyncElasticsearch(**elastic_settings)
 
 
 @app.on_event('shutdown')
