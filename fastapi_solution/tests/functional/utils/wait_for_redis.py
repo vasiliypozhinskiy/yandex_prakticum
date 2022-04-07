@@ -1,34 +1,35 @@
 import logging
 import time
-
-from redis import Redis
-from redis.exceptions import ConnectionError
+import aioredis
+import asyncio
 
 from settings import TestSettings
 
 
-def get_redis():
-    # TODO поменять на aioredis
+async def get_redis():
     redis_settings = {
-        'host': 'redis',
-        'port': TestSettings().dict()["redis_port"]
+        'address': f'{TestSettings().dict()["redis_host"]}:{TestSettings().dict()["redis_port"]}',
     }
 
     if TestSettings().dict()['redis_password']:
         redis_settings.update({'password': TestSettings().dict()['redis_password']})
 
-    return Redis(**redis_settings)
+    return await aioredis.create_redis_pool(**redis_settings)
 
 
-if __name__ == '__main__':
+async def check_redis():
     while True:
         try:
-            redis = get_redis()
-            ping = redis.ping()
-            if ping:
+            redis = await get_redis()
+            response = await redis.ping(encoding='utf-8')
+            if response == 'PONG':
+                redis.close()
                 break
         except ConnectionError:
             pass
 
         logging.warning('Wait for redis. Sleep 1 second.')
         time.sleep(1)
+
+if __name__ == '__main__':
+    asyncio.get_event_loop().run_until_complete(check_redis())

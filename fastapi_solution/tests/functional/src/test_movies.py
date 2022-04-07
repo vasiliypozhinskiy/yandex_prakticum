@@ -1,5 +1,4 @@
 import pytest
-import logging
 
 from testdata.movies_data.get_by_id import films_data, expected_film_data, expect_not_found_film_data
 from http import HTTPStatus
@@ -10,7 +9,6 @@ from utils.elastic_loader import ElasticLoader
 @pytest.mark.usefixtures("create_movies_schema")
 class TestMovies:
 
-    @pytest.mark.asyncio
     async def test_get_film_by_id(self, es_client, make_get_request, redis_client):
         loader = ElasticLoader(es_client, 'movies')
         await loader.load(films_data)

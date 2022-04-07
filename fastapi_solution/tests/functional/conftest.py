@@ -1,3 +1,5 @@
+import asyncio
+import inspect
 from typing import Optional
 
 import aiohttp
@@ -11,52 +13,73 @@ from testdata.es_schema.persons import Persons
 from testdata.es_schema.settings import settings as es_schema_settings
 
 
+def pytest_collection_modifyitems(config, items):
+    """
+    Магия, чтобы не надо было добавлять декоратор pytest.mark.asyncio перед каждым тестом
+    """
+    for item in items:
+        if inspect.iscoroutinefunction(item.function):
+            item.add_marker(pytest.mark.asyncio)
+
+
+@pytest.fixture(scope='session')
+def event_loop():
+    """
+    Закрываем event loop только в конце сессии
+    """
+    loop = asyncio.get_event_loop()
+    yield loop
+    loop.close()
+
+
 @pytest.fixture(scope='session')
 async def es_client():
     client = get_elastic()
-    yield client
-    await client.close()
+    await client.indices.delete('*')
+    async with client:
+        yield client
 
 
 @pytest.fixture(scope='session')
 async def redis_client():
     client = await get_redis()
-    await client.flushall()
+    await client.flushdb()
+
     yield client
-    await client.flushall()
+
+    await client.flushdb()
+    client.close()
     await client.wait_closed()
 
 
 @pytest.fixture(scope='session')
 async def session():
     session = aiohttp.ClientSession()
-    yield session
-    await session.close()
+    async with session:
+        yield session
 
 
 @pytest.fixture(scope='class')
 async def create_movies_schema(es_client):
-    await es_client.indices.delete('movies', ignore=404)
     await es_client.indices.create(
         index='movies',
-        body={"settings": es_schema_settings, "mappings": Movies.mappings},
-        ignore=400
+        body={"settings": es_schema_settings, "mappings": Movies.mappings}
     )
 
     yield
+
     await es_client.indices.delete('movies')
 
 
 @pytest.fixture(scope='class')
 async def create_persons_schema(es_client):
-    await es_client.indices.delete('persons', ignore=400)
     await es_client.indices.create(
         index='persons',
-        body={"settings": es_schema_settings, "mappings": Persons.mappings},
-        ignore=400
+        body={"settings": es_schema_settings, "mappings": Persons.mappings}
     )
 
     yield
+
     await es_client.indices.delete('persons')
 
 
