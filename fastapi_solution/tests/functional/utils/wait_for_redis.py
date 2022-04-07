@@ -8,11 +8,11 @@ from settings import TestSettings
 
 async def get_redis():
     redis_settings = {
-        'address': f'{TestSettings().dict()["redis_host"]}:{TestSettings().dict()["redis_port"]}',
+        'address': f'{TestSettings().redis_host}:{TestSettings().redis_port}',
     }
 
-    if TestSettings().dict()['redis_password']:
-        redis_settings.update({'password': TestSettings().dict()['redis_password']})
+    if TestSettings().redis_password:
+        redis_settings.update({'password': TestSettings().redis_password})
 
     return await aioredis.create_redis_pool(**redis_settings)
 
@@ -30,6 +30,7 @@ async def check_redis():
 
         logging.warning('Wait for redis. Sleep 1 second.')
         time.sleep(1)
+
 
 if __name__ == '__main__':
     asyncio.get_event_loop().run_until_complete(check_redis())

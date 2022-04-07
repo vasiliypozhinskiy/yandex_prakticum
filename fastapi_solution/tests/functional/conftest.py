@@ -85,13 +85,12 @@ async def create_persons_schema(es_client):
 
 @pytest.fixture
 def make_get_request(session):
-    async def inner(method: str, params: Optional[dict] = None) -> (dict, HTTPResponse):
+    async def inner(method: str, params: Optional[dict] = None) -> HTTPResponse:
         params = params or {}
-        url = f'{TestSettings().dict()["service_url"]}{TestSettings().dict()["api_url"]}{method}'
+        url = f'{TestSettings().service_url}{TestSettings().api_url}{method}'
         async with session.get(url, params=params) as response:
-            # TODO разобраться, что не так к body в HTTPResponse
-            body = await response.json()
-            return body, HTTPResponse(
+            body = await response.read()
+            return HTTPResponse(
                 body=body,
                 headers=response.headers,
                 status=response.status,
