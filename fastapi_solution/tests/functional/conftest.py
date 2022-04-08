@@ -6,6 +6,8 @@ import aiohttp
 import pytest
 from urllib3 import HTTPResponse
 
+from testdata.movies_data.get_by_id import films_data
+from utils.elastic_loader import ElasticLoader
 from utils.connections import get_elastic, get_redis
 from utils.settings import TestSettings
 from testdata.es_schema.movies import Movies
@@ -65,7 +67,8 @@ async def create_movies_schema(es_client):
         index='movies',
         body={"settings": es_schema_settings, "mappings": Movies.mappings}
     )
-
+    loader = ElasticLoader(es_client, 'movies')
+    await loader.load(films_data)
     yield
 
     await es_client.indices.delete('movies')
