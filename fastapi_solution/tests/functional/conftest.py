@@ -87,7 +87,7 @@ async def create_persons_schema(es_client):
 def make_get_request(session):
     async def inner(method: str, params: Optional[dict] = None) -> HTTPResponse:
         params = params or {}
-        url = f'{TestSettings().service_url}{TestSettings().api_url}{method}'
+        url = f'{TestSettings().service_url}{TestSettings().api_url}/{method}'
         async with session.get(url, params=params) as response:
             body = await response.read()
             return HTTPResponse(
