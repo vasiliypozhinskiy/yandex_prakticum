@@ -1,9 +1,9 @@
 from typing import List, Optional
 from uuid import UUID
-from models.mixin import CommonMixin
+from models.base import BaseServiceModel
 
 
-class Person(CommonMixin):
+class Person(BaseServiceModel):
     full_name: str
     roles: Optional[List[str]] = []
     films_ids: List[UUID] = []

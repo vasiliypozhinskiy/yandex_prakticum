@@ -1,9 +1,9 @@
 from typing import Optional, List
 from uuid import UUID
-from models.mixin import CommonMixin
+from models.base import BaseServiceModel
 
 
-class Genre(CommonMixin):
+class Genre(BaseServiceModel):
     name: str
-    description: Optional[str] = None
-    films_ids: Optional[List[UUID]] = None
+    description: Optional[str]
+    films_ids: Optional[List[UUID]]
