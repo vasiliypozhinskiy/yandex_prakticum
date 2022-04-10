@@ -10,6 +10,8 @@ from testdata.movies_data.film_search_params import film_list_params
 from testdata.movies_data.get_by_film_id import expected_film_data, expect_not_found_film_data
 from utils.hash_creater_for_redis import create_hash_key
 
+from fastapi_solution.tests.functional.utils.validation import FilmValidation
+
 check_list = ['id', 'title', 'imdb_rating', 'description', 'genre', 'actors', 'writers', 'director']
 
 @pytest.mark.usefixtures("create_movies_schema")
@@ -18,6 +20,7 @@ class TestMovies:
         response = await make_get_request(f"films/{expected_film_data['id']}")
         body = ast.literal_eval(response.data.decode('utf-8'))
         assert HTTPStatus.OK == response.status
+        assert FilmValidation(**body)
         for i in check_list:
             assert expected_film_data.get(i) == body.get(i)
         assert redis_client.get(key=expected_film_data['id']) is not None
