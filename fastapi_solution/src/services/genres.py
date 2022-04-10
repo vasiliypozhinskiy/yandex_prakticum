@@ -20,13 +20,12 @@ class GenreService(FilmService):
             self,
             page_size: int,
             sorting: str = None,
-            query: str = None,
     ) -> Optional[dict]:
         _source: tuple = ("id", "name", "films_ids")
         body: dict = get_params_genres_to_elastic(
             page_size=page_size
         )
-        params = f"{page_size}{query}"
+        params = f"{page_size}"
         """Получаем данные из кэша"""
         instance = await self._get_result_from_cache(
             key=create_hash_key(index=self.index, params=params.lower())

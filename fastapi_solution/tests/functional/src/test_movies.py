@@ -7,9 +7,8 @@ import ast
 from http import HTTPStatus
 
 from testdata.movies_data.film_search_params import film_list_params
-from testdata.movies_data.get_by_film_id import films_data, expected_film_data, expect_not_found_film_data
+from testdata.movies_data.get_by_film_id import expected_film_data, expect_not_found_film_data
 from utils.hash_creater_for_redis import create_hash_key
-from utils.elastic_loader import ElasticLoader
 
 check_list = ['id', 'title', 'imdb_rating', 'description', 'genre', 'actors', 'writers', 'director']
 
