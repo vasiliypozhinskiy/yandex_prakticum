@@ -9,8 +9,7 @@ class Genres:
                 "type": "keyword"
             },
             "description": {
-                "type": "text",
-                "analyzer": "ru_en"
+                "type": "keyword",
             },
             "films_ids": {
                 "type": "keyword"
