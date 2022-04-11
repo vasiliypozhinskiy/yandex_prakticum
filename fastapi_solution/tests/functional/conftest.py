@@ -6,6 +6,11 @@ import aiohttp
 import pytest
 from urllib3 import HTTPResponse
 
+from testdata.movies_data.get_data_genre import genre_data
+from testdata.es_schema.genres import Genres
+from testdata.movies_data.get_by_person_id import person_data
+from testdata.movies_data.get_by_film_id import films_data
+from utils.elastic_loader import ElasticLoader
 from utils.connections import get_elastic, get_redis
 from utils.settings import TestSettings
 from testdata.es_schema.movies import Movies
@@ -65,9 +70,9 @@ async def create_movies_schema(es_client):
         index='movies',
         body={"settings": es_schema_settings, "mappings": Movies.mappings}
     )
-
+    loader = ElasticLoader(es_client, 'movies')
+    await loader.load(films_data)
     yield
-
     await es_client.indices.delete('movies')
 
 
@@ -77,10 +82,22 @@ async def create_persons_schema(es_client):
         index='persons',
         body={"settings": es_schema_settings, "mappings": Persons.mappings}
     )
-
+    loader = ElasticLoader(es_client, 'persons')
+    await loader.load(person_data)
     yield
-
     await es_client.indices.delete('persons')
+
+@pytest.fixture(scope='class')
+async def create_genres_schema(es_client):
+    await es_client.indices.create(
+        index='genres',
+        body={"settings": es_schema_settings, "mappings": Genres.mappings}
+    )
+    loader = ElasticLoader(es_client, 'genres')
+    await loader.load(genre_data)
+    yield
+    await es_client.indices.delete('genres')
+
 
 
 @pytest.fixture
