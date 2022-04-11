@@ -29,7 +29,7 @@ class FilmQueryParams:
             description="Осуществляет поиск по названию фильма",
         ),
     ) -> None:
-        self.sort = (sort_imdb_rating,)
+        self.sort = sort_imdb_rating
         self.genre_filter = genre_filter
         self.query = query
 
@@ -50,7 +50,7 @@ class GenreQueryParams:
             alias="sort",
         )
     ) -> None:
-        self.sort = (sort_by_name,)
+        self.sort = sort_by_name
 
 
 class PersonQueryParams:
@@ -74,7 +74,7 @@ class PersonQueryParams:
             description="Осуществляет поиск по имени",
         )
     ) -> None:
-        self.sort = (sort_by_name,)
+        self.sort = sort_by_name
         self.query = query
 
 
@@ -94,4 +94,4 @@ class FilmByPersonQueryParams:
             alias="sort",
         )
     ) -> None:
-        self.sort = (sort_by_name,)
+        self.sort = sort_by_name

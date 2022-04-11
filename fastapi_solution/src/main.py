@@ -5,7 +5,9 @@ from fastapi import FastAPI
 from fastapi.responses import ORJSONResponse
 from api.v1 import films, genres, persons
 from core import config
-from db import elastic, redis
+from db import db
+from db import redis
+from db.elastic.elastic_service import ElasticService
 
 app = FastAPI(
     title=config.PROJECT_NAME,
@@ -30,13 +32,13 @@ async def startup():
             'http_auth': ('elastic', config.ELASTIC_PASSWORD)
         })
 
-    elastic.es = AsyncElasticsearch(**elastic_settings)
+    db.db = ElasticService(AsyncElasticsearch(**elastic_settings))
 
 
 @app.on_event('shutdown')
 async def shutdown():
     await redis.redis.close()
-    await elastic.es.close()
+    await db.db.close()
 
 
 app.include_router(films.router, prefix='/api/v1/films', tags=['film'])
