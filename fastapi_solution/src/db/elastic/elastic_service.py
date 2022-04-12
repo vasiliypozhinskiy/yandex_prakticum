@@ -27,8 +27,10 @@ class ElasticService(AbstractDB):
 
         sorting = params.get('sorting')
         if sorting:
-            order = 'desc' if sorting.startswith('-') else 'asc'
-            sorting = f'{sorting[1::]}:{order}'
+            if sorting.startswith('-'):
+                sorting = f'{sorting[1::]}:desc'
+            else:
+                sorting = f'{sorting}:asc'
 
         body = self.search_params_mapping[params['search_type']](params['page_size'], **params['search_params'])
 

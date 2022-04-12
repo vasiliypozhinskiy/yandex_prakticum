@@ -10,7 +10,7 @@ from testdata.movies_data.film_search_params import film_list_params
 from testdata.movies_data.get_by_film_id import expected_film_data, expect_not_found_film_data
 from utils.hash_creater_for_redis import create_hash_key
 
-from fastapi_solution.tests.functional.utils.validation import FilmValidation
+from utils.validation import FilmValidation
 
 check_list = ['id', 'title', 'imdb_rating', 'description', 'genre', 'actors', 'writers', 'director']
 
@@ -37,25 +37,25 @@ class TestMovies:
         ]
     )
     async def test_get_search_film(self, make_get_request, redis_client, method, query, expected_status):
-        await asyncio.sleep(0.3)
-        response = await make_get_request(method=f"{method}", params=query)
+        await asyncio.sleep(0.5)
+        response = await make_get_request(method=f"{method}/", params=query)
         body = ast.literal_eval(response.data.decode('utf-8'))
         if query.get("query") == "Sonic":
-            assert body["films"] == []
+            assert body == {'detail': "Not Found"}
         if query.get("query") == 'Star' and expected_status != HTTPStatus.NOT_FOUND:
             result_response = [res.get("title") for res in body["films"]]
             for row in result_response:
                 assert query.get("query") in row
 
         if query.get("query"):
-            page_size: int = body["page_size"]
-            title: str = query.get("query")
+            page_size: int = query.get("page_size")
+            film_query: str = query.get("query")
             sort: Optional[str] = query.get("sort")
             genre: Optional[str] = query.get("genre")
 
             key: str = create_hash_key(
                 index='movies',
-                params=f"{title}{sort}{page_size}{genre}"
+                params={'sorting': sort, 'page_size': page_size, 'query': film_query, 'genre': genre}
             )
             assert redis_client.get(key=key) is not None
             await redis_client.flushall()

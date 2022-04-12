@@ -6,11 +6,11 @@ from fastapi import Depends
 
 from db.db import get_db, AbstractDB
 from models.film import Film
-from services.base import BaseService, CacheMixin
+from services.base import BaseService
 from db.redis import get_redis
 
 
-class FilmService(BaseService, CacheMixin):
+class FilmService(BaseService):
     model = Film
     index = 'movies'
 

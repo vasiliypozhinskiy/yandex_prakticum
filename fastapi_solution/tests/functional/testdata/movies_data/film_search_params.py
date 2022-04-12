@@ -2,19 +2,19 @@ from http import HTTPStatus
 
 film_list_params = [
     # параметры без query
-    ("films", {}, HTTPStatus.OK),
+    ("films/search", {}, HTTPStatus.OK),
     # проверяем сортировку по возрастанию без параметра query
-    ("films", {"sort": "imdb_rating"}, HTTPStatus.OK),
+    ("films/search", {"sort": "imdb_rating"}, HTTPStatus.OK),
     # проверяем сортировку по убыванию без параметра query
-    ("films", {"sort": "-imdb_rating"}, HTTPStatus.OK),
+    ("films/search", {"sort": "-imdb_rating"}, HTTPStatus.OK),
     # фильтрация по жанру
-    ("films", {"genre": "Drama"}, HTTPStatus.OK),
+    ("films/search", {"genre": "Drama"}, HTTPStatus.OK),
     # параметры с query
-    ("films", {"query": "Star"}, HTTPStatus.OK),
+    ("films/search", {"query": "Star", 'page_size': 10}, HTTPStatus.OK),
     # # проверяем сортировку по убыванию
-    ("films", {"query": "Star", "sort": "imdb_rating"}, HTTPStatus.OK),
+    ("films/search", {"query": "Star", "sort": "imdb_rating"}, HTTPStatus.OK),
     # # проверяем сортировку по возрастанию
-    ("films", {"query": "Star", "sort": "-imdb_rating"}, HTTPStatus.OK),
+    ("films/search", {"query": "Star", "sort": "-imdb_rating", 'page_size': 10}, HTTPStatus.OK),
     # проверка наличия фильма
-    ("films", {"query": "Sonic", "sort": "-imdb_rating",}, HTTPStatus.OK)
+    ("films", {"query": "Sonic", "sort": "-imdb_rating", 'page_size': 10}, HTTPStatus.OK)
 ]
