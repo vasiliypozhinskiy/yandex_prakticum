@@ -83,7 +83,3 @@ class BaseService:
     async def _put_data_to_cache(self, key: str, data: Union[BaseServiceModel, List[BaseServiceModel]]) -> None:
         value = orjson.dumps([item.dict() for item in data])
         await self.cache.set(key=key, value=value, expire=CACHE_EXPIRE_IN_SECONDS)
-
-
-class CacheMixin:
-    pass

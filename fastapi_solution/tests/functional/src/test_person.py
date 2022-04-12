@@ -42,9 +42,9 @@ class TestPerson:
         assert query in test_person.get("full_name")
         # Проверка результата Redis
         page_size: int = response_body.get("page_size")
-        params = f"{page_size}{query}"
+        params ={'sorting': None, 'page_size': page_size, 'query': query}
         key: str = create_hash_key(
-            index='persons', params=params.lower()
+            index='persons', params=params
         )
         assert await redis_client.get(key=key) is not None
         await redis_client.flushall()

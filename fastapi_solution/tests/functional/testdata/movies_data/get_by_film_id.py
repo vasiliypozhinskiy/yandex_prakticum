@@ -2,7 +2,7 @@ from typing import List
 
 films_data: List[dict] = [{
     'id': '3d825f60-9fff-4dfe-b294-1a45fa1e115d',
-    'imdb_rating': float(8.6), 'genre': ['Action', 'Adventure', 'Fantasy', 'Sci-Fi'],
+    'imdb_rating': float(2.5), 'genre': ['Action', 'Adventure', 'Fantasy', 'Sci-Fi'],
     'title': 'Star Wars: Episode IV - A New Hope',
     'description': 'The Imperial Forces, under orders from cruel Darth Vader, hold Princess Leia hostage in their efforts to quell the rebellion against the Galactic Empire. Luke Skywalker and Han Solo, captain of the Millennium Falcon, work together with the companionable droid duo R2-D2 and C-3PO to rescue the beautiful princess, help the Rebel Alliance and restore freedom and justice to the Galaxy.',
     'director': {'id': 'a5a8f573-3cee-4ccc-8a2b-91cb9f55250a', 'name': 'George Lucas'},
