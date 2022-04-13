@@ -1,14 +1,16 @@
-from typing import Tuple, List
+from typing import Tuple
 
+import backoff
 from elasticsearch import Elasticsearch, RequestError, ConnectionError
 from elasticsearch.helpers import bulk
 
-from es_schema.movies import Movies
 from es_schema.genres import Genres
+from es_schema.movies import Movies
 from es_schema.persons import Persons
 from es_schema.settings import settings as schema_settings
-from utils.backoff import backoff
 from utils.logger import logger
+
+MAX_TIME = 30
 
 
 class ElasticUpdater:
@@ -33,7 +35,11 @@ class ElasticUpdater:
         for index_name, index_schema in self.SCHEMAS.items():
             self._create_schema(index_name, index_schema)
 
-    @backoff(errors=ERRORS)
+    @backoff.on_exception(
+        wait_gen=backoff.expo,
+        exception=ERRORS,
+        max_time=MAX_TIME
+    )
     def _create_schema(self, name: str, schema: dict) -> None:
         connection = self.get_connection()
         try:
@@ -54,7 +60,11 @@ class ElasticUpdater:
         for index, values in data.items():
             self._do_load(index, values)
 
-    @backoff(errors=ERRORS)
+    @backoff.on_exception(
+        wait_gen=backoff.expo,
+        exception=ERRORS,
+        max_time=MAX_TIME
+    )
     def _do_load(self, index: str, data: list) -> None:
         connection = self.get_connection()
         try:

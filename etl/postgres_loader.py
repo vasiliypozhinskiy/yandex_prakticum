@@ -1,16 +1,18 @@
 from typing import Tuple, List, Optional, Set
 
+import backoff
 import psycopg2
 from psycopg2 import OperationalError as PostgresOperationalError
 from psycopg2.extras import RealDictCursor, RealDictRow
 
 from storage import State
-from utils.backoff import backoff
 from utils.logger import logger
+
+MAX_TIME = 30
 
 
 class PostgresLoader:
-    ERRORS: Tuple[Exception] = (PostgresOperationalError,)
+    ERRORS: Tuple[Exception] = (PostgresOperationalError, Exception)
     CHUNK_SIZE: int = 500
 
     def __init__(self, dsl: dict, state: State):
@@ -18,11 +20,19 @@ class PostgresLoader:
         self.connection = None
         self.state = state
 
-    @backoff(errors=ERRORS)
+    @backoff.on_exception(
+        wait_gen=backoff.expo,
+        exception=ERRORS,
+        max_time=MAX_TIME
+    )
     def connect(self) -> None:
         self.connection = psycopg2.connect(**self.dsl)
 
-    @backoff(errors=ERRORS)
+    @backoff.on_exception(
+        wait_gen=backoff.expo,
+        exception=ERRORS,
+        max_time=MAX_TIME
+    )
     def load_data(self, cursor: RealDictCursor, table_name: str, since_ts: str) -> dict:
         modified_ids = self.get_modified_ids_by_since_ts(cursor, table_name, since_ts)
 
@@ -50,12 +60,16 @@ class PostgresLoader:
 
         return data
 
-    @backoff(errors=ERRORS)
+    @backoff.on_exception(
+        wait_gen=backoff.expo,
+        exception=ERRORS,
+        max_time=MAX_TIME
+    )
     def get_modified_ids_by_since_ts(
-        self,
-        cursor: RealDictCursor,
-        table_name: str,
-        since_ts: str
+            self,
+            cursor: RealDictCursor,
+            table_name: str,
+            since_ts: str
     ) -> Optional[List[str]]:
         sql = f"""
             SELECT 
@@ -85,7 +99,11 @@ class PostgresLoader:
         self.state.set_state(table_name, updated_rows_count)
         return [row['id'] for row in rows]
 
-    @backoff(errors=ERRORS)
+    @backoff.on_exception(
+        wait_gen=backoff.expo,
+        exception=ERRORS,
+        max_time=MAX_TIME
+    )
     def get_modified_id_by_filmwork_ids(
             self,
             cursor: RealDictCursor,
@@ -108,12 +126,16 @@ class PostgresLoader:
 
         return [row['id'] for row in rows]
 
-    @backoff(errors=ERRORS)
+    @backoff.on_exception(
+        wait_gen=backoff.expo,
+        exception=ERRORS,
+        max_time=MAX_TIME
+    )
     def get_modified_filmworks_ids(
-        self,
-        cursor: RealDictCursor,
-        table_name: str,
-        updated_ids: List[str]
+            self,
+            cursor: RealDictCursor,
+            table_name: str,
+            updated_ids: List[str]
     ) -> List[str]:
         if not updated_ids:
             return []
@@ -131,7 +153,11 @@ class PostgresLoader:
 
         return [row['id'] for row in rows]
 
-    @backoff(errors=ERRORS)
+    @backoff.on_exception(
+        wait_gen=backoff.expo,
+        exception=ERRORS,
+        max_time=MAX_TIME
+    )
     def get_modified_filmworks(self, cursor: RealDictCursor, updated_ids: Set[str]) -> List[RealDictRow]:
         """
         Возвращает список строк с изменёнными фильмами.
@@ -182,7 +208,11 @@ class PostgresLoader:
 
         return rows
 
-    @backoff(errors=ERRORS)
+    @backoff.on_exception(
+        wait_gen=backoff.expo,
+        exception=ERRORS,
+        max_time=MAX_TIME
+    )
     def get_modified_genres(self, cursor: RealDictCursor, updated_ids: Set[str]) -> Optional[List[RealDictRow]]:
         """
         Возвращает список строк с изменёнными жанрами.
@@ -212,7 +242,11 @@ class PostgresLoader:
         cursor.execute(sql)
         return cursor.fetchall()
 
-    @backoff(errors=ERRORS)
+    @backoff.on_exception(
+        wait_gen=backoff.expo,
+        exception=ERRORS,
+        max_time=MAX_TIME
+    )
     def get_modified_persons(self, cursor: RealDictCursor, updated_ids: Set[str]) -> Optional[List[RealDictRow]]:
         """
         Возвращает список строк с изменёнными персонами.

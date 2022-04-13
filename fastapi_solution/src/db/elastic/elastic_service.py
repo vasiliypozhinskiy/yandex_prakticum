@@ -1,14 +1,15 @@
 from typing import Optional, List
-from uuid import UUID
 
-from elasticsearch import AsyncElasticsearch
-from pydantic import parse_obj_as
-
+import backoff
 from db.db import AbstractDB
+from elasticsearch import AsyncElasticsearch
 from models.base import BaseServiceModel
+from pydantic import parse_obj_as
 
 
 class ElasticService(AbstractDB):
+
+    @backoff.on_exception(backoff.expo, exception=Exception)
     def __init__(self, es):
         self.es: AsyncElasticsearch = es
         self.search_params_mapping = {
@@ -141,4 +142,3 @@ class ElasticService(AbstractDB):
             }
 
         return body
-

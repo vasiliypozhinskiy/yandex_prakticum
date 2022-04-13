@@ -21,6 +21,7 @@ SET row_security = off;
 --
 
 CREATE SCHEMA content;
+CREATE ROLE app;
 
 
 ALTER SCHEMA content OWNER TO app;
