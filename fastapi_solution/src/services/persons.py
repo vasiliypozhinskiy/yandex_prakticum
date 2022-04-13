@@ -1,12 +1,10 @@
 from functools import lru_cache
 from typing import Optional, List
-
-from aioredis import Redis
 from fastapi import Depends
 
 from services.base import BaseService
 from db.db import AbstractDB, get_db
-from db.redis import get_redis
+from db.redis import get_redis, AbstractCache
 from models.person import Person
 
 
@@ -23,7 +21,7 @@ class PersonService(BaseService):
 
 @lru_cache()
 def get_person_service(
-        redis: Redis = Depends(get_redis),
+        redis: AbstractCache = Depends(get_redis),
         elastic: AbstractDB = Depends(get_db),
 ) -> PersonService:
     return PersonService(redis, elastic)

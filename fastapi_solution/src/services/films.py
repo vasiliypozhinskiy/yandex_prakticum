@@ -1,13 +1,11 @@
 from functools import lru_cache
 from typing import Optional, List
-
-from aioredis import Redis
 from fastapi import Depends
 
 from db.db import get_db, AbstractDB
 from models.film import Film
 from services.base import BaseService
-from db.redis import get_redis
+from db.redis import get_redis, AbstractCache
 
 
 class FilmService(BaseService):
@@ -26,7 +24,7 @@ class FilmService(BaseService):
 
 @lru_cache()
 def get_film_service(
-        cache: Redis = Depends(get_redis),
+        cache: AbstractCache = Depends(get_redis),
         db: AbstractDB = Depends(get_db)
 ) -> FilmService:
     return FilmService(cache, db)

@@ -1,13 +1,11 @@
 from functools import lru_cache
 from typing import Optional, List
-from uuid import UUID
 
-from aioredis import Redis
 from fastapi import Depends
 
 from services.base import BaseService
 from db.db import AbstractDB, get_db
-from db.redis import get_redis
+from db.redis import get_redis, AbstractCache
 from models.genre import Genre
 
 
@@ -24,7 +22,7 @@ class GenreService(BaseService):
 
 @lru_cache()
 def get_genre_service(
-        cache: Redis = Depends(get_redis),
+        cache: AbstractCache = Depends(get_redis),
         db: AbstractDB = Depends(get_db)
 ) -> GenreService:
     return GenreService(cache, db)
