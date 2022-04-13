@@ -1,11 +1,11 @@
 from typing import Optional, Union, List
 
 import orjson
-from aioredis import Redis
 from elasticsearch import NotFoundError
 
 from core.config import CACHE_EXPIRE_IN_SECONDS
 from db.db import AbstractDB
+from db.redis import AbstractCache
 from models.base import BaseServiceModel
 from services.utils.utils import create_hash_key
 
@@ -14,7 +14,7 @@ class BaseService:
     model = None
     index = None
 
-    def __init__(self, cache: Redis, db: AbstractDB):
+    def __init__(self, cache: AbstractCache, db: AbstractDB):
         self.cache = cache
         self.db = db
 

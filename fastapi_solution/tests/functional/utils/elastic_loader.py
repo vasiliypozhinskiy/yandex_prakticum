@@ -45,8 +45,4 @@ class ElasticLoader:
 
     @staticmethod
     def generate_docs(index: str, data: list):
-        return [{
-            '_index': index,
-            '_id': item['id'],
-            '_source': item
-        } for item in data]
+        return [{"_index": index, "_id": item["id"], "_source": item} for item in data]

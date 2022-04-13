@@ -18,6 +18,5 @@ class AbstractDB(ABC):
 
 db: AbstractDB
 
-
 async def get_db() -> AbstractDB:
     return db

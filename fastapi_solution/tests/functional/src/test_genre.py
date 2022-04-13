@@ -7,13 +7,14 @@ from testdata.movies_data.get_data_genre import genre_data
 from utils.hash_creater_for_redis import create_hash_key
 from utils.validation import GenreValidation
 
+
 @pytest.mark.usefixtures("create_genres_schema")
 class TestGenre:
     async def test_genre_by_id(self, make_get_request, redis_client):
         for test_genre in genre_data:
             genre_id: str = test_genre.get("id")
             response = await make_get_request(method=f"genres/{genre_id}")
-            response_body = ast.literal_eval(response.data.decode('utf-8'))
+            response_body = ast.literal_eval(response.data.decode("utf-8"))
             # Проверка результата Elastic
             assert response.status == HTTPStatus.OK
             assert test_genre.get("id") == response_body.get("id")
@@ -26,12 +27,12 @@ class TestGenre:
     async def test_list_genre(self, make_get_request, redis_client):
         await asyncio.sleep(1)
         response = await make_get_request(method="genres/")
-        response_body = json.loads(response.data.decode('utf-8'))
+        response_body = json.loads(response.data.decode("utf-8"))
         response_genres = response_body.get("genres")
         # Проверка результата Elastic
         assert response.status == HTTPStatus.OK
         assert GenreValidation(**response_genres[0])
-        assert len(response_body['genres']) == len(genre_data)
+        assert len(response_body["genres"]) == len(genre_data)
         for genre in genre_data:
             for response_genre in response_genres:
                 if genre.get("id") == response_genre.get("id"):
@@ -39,8 +40,8 @@ class TestGenre:
                     assert genre.get("name") == response_genre.get("name")
         # Проверка Redis
         key: str = create_hash_key(
-            index='genres',
-            params={'sorting': None, 'page_size': response_body.get("page_size")}
+            index="genres",
+            params={"sorting": None, "page_size": response_body.get("page_size")},
         )
         assert await redis_client.get(key=key) is not None
         await redis_client.flushall()
