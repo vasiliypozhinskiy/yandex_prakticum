@@ -147,7 +147,7 @@ class ETL:
 
 
 if __name__ == "__main__":
-    storage = JsonFileStorage('/app/state/state.json')
+    storage = JsonFileStorage('/app/state.json')
     state = State(storage)
     elastic_updater = ElasticUpdater(
         host=os.environ.get('ELASTIC_HOST'),

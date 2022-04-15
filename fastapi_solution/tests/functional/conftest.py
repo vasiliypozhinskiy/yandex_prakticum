@@ -27,7 +27,7 @@ def pytest_collection_modifyitems(config, items):
             item.add_marker(pytest.mark.asyncio)
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope="session")
 def event_loop():
     """
     Закрываем event loop только в конце сессии
@@ -37,15 +37,15 @@ def event_loop():
     loop.close()
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope="session")
 async def es_client():
     client = get_elastic()
-    await client.indices.delete('*')
+    await client.indices.delete("*")
     async with client:
         yield client
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope="session")
 async def redis_client():
     client = await get_redis()
     await client.flushdb()
@@ -57,54 +57,54 @@ async def redis_client():
     await client.wait_closed()
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope="session")
 async def session():
     session = aiohttp.ClientSession()
     async with session:
         yield session
 
 
-@pytest.fixture(scope='class')
+@pytest.fixture(scope="class")
 async def create_movies_schema(es_client):
     await es_client.indices.create(
-        index='movies',
-        body={"settings": es_schema_settings, "mappings": Movies.mappings}
+        index="movies",
+        body={"settings": es_schema_settings, "mappings": Movies.mappings},
     )
-    loader = ElasticLoader(es_client, 'movies')
+    loader = ElasticLoader(es_client, "movies")
     await loader.load(films_data)
     yield
-    await es_client.indices.delete('movies')
+    await es_client.indices.delete("movies")
 
 
-@pytest.fixture(scope='class')
+@pytest.fixture(scope="class")
 async def create_persons_schema(es_client):
     await es_client.indices.create(
-        index='persons',
-        body={"settings": es_schema_settings, "mappings": Persons.mappings}
+        index="persons",
+        body={"settings": es_schema_settings, "mappings": Persons.mappings},
     )
-    loader = ElasticLoader(es_client, 'persons')
+    loader = ElasticLoader(es_client, "persons")
     await loader.load(person_data)
     yield
-    await es_client.indices.delete('persons')
+    await es_client.indices.delete("persons")
 
-@pytest.fixture(scope='class')
+
+@pytest.fixture(scope="class")
 async def create_genres_schema(es_client):
     await es_client.indices.create(
-        index='genres',
-        body={"settings": es_schema_settings, "mappings": Genres.mappings}
+        index="genres",
+        body={"settings": es_schema_settings, "mappings": Genres.mappings},
     )
-    loader = ElasticLoader(es_client, 'genres')
+    loader = ElasticLoader(es_client, "genres")
     await loader.load(genre_data)
     yield
-    await es_client.indices.delete('genres')
-
+    await es_client.indices.delete("genres")
 
 
 @pytest.fixture
 def make_get_request(session):
     async def inner(method: str, params: Optional[dict] = None) -> HTTPResponse:
         params = params or {}
-        url = f'{TestSettings().service_url}{TestSettings().api_url}/{method}'
+        url = f"{TestSettings().service_url}{TestSettings().api_url}/{method}"
         async with session.get(url, params=params) as response:
             body = await response.read()
             return HTTPResponse(
@@ -112,4 +112,5 @@ def make_get_request(session):
                 headers=response.headers,
                 status=response.status,
             )
+
     return inner

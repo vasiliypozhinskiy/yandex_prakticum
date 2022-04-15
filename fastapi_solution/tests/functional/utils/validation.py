@@ -7,6 +7,7 @@ from pydantic import BaseModel
 class UUIDValidation(BaseModel):
     id: UUID
 
+
 class FilmValidation(UUIDValidation):
     title: str
     description: Optional[str]
@@ -16,10 +17,12 @@ class FilmValidation(UUIDValidation):
     actors: Optional[List[Dict[str, str]]]
     writers: Optional[List[Dict[str, str]]]
 
+
 class PersonValidation(UUIDValidation):
     full_name: str
     roles: Optional[List[str]] = []
     films_ids: List[UUID] = []
+
 
 class GenreValidation(UUIDValidation):
     name: str

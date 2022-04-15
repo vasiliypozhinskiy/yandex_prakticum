@@ -57,4 +57,3 @@ person_data: List[dict] = [
         ],
     },
 ]
-

@@ -9,6 +9,5 @@ class Persons:
                 "fields": {"raw": {"type": "keyword"}},
             },
             "films_ids": {"type": "keyword"},
-
-        }
+        },
     }
