@@ -9,7 +9,6 @@ from pydantic import parse_obj_as
 
 class ElasticService(AbstractDB):
 
-    @backoff.on_exception(backoff.expo, exception=Exception)
     def __init__(self, es):
         self.es: AsyncElasticsearch = es
         self.search_params_mapping = {
@@ -19,11 +18,13 @@ class ElasticService(AbstractDB):
             'persons': self.get_params_persons
         }
 
+    @backoff.on_exception(backoff.expo, exception=ConnectionError)
     async def get_by_id(self, index, id_: str) -> Optional[BaseServiceModel]:
         doc = await self.es.get(index=index, id=id_)
 
         return doc['_source']
 
+    @backoff.on_exception(backoff.expo, exception=ConnectionError)
     async def search(self, index, params) -> Optional[BaseServiceModel]:
 
         sorting = params.get('sorting')
@@ -96,8 +97,8 @@ class ElasticService(AbstractDB):
         nested_actors_query = {"nested": {"path": "actors", "query": actors_query}}
         nested_writers_query = {"nested": {"path": "writers", "query": writers_query}}
 
-        body.update(
-            {"query":
+        body.update({
+            "query":
                 {
                     "bool": {
                         "should":
@@ -108,8 +109,7 @@ class ElasticService(AbstractDB):
                             ],
                     }
                 }
-            }
-        )
+        })
         return body
 
     @staticmethod

@@ -12,7 +12,7 @@ MAX_TIME = 30
 
 
 class PostgresLoader:
-    ERRORS: Tuple[Exception] = (PostgresOperationalError, Exception)
+    ERRORS: Tuple[Exception] = (PostgresOperationalError,)
     CHUNK_SIZE: int = 500
 
     def __init__(self, dsl: dict, state: State):
