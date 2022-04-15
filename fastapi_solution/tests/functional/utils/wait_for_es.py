@@ -1,19 +1,14 @@
-import time
-import logging
+import backoff
 import requests
 from requests.exceptions import ConnectionError
 
 from settings import TestSettings
 
 
-if __name__ == "__main__":
-    while True:
-        try:
-            res = requests.get(f"{TestSettings().es_host}/_cluster/health")
-            if res.status_code == 200:
-                break
-        except ConnectionError:
-            pass
+@backoff.on_exception(backoff.expo, exception=ConnectionError)
+def es_waiting():
+    requests.get(f'{TestSettings().es_host}/_cluster/health')
 
-        logging.warning("Wait for elastic. Sleep 1 second.")
-        time.sleep(1)
+
+if __name__ == '__main__':
+    es_waiting()
