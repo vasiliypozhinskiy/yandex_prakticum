@@ -29,9 +29,9 @@ services:
   db:
     build: './postgres'
     environment:
-      POSTGRES_USER: ${DB_USER}
+      POSTGRES_USER: app
       POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_DB: movies_database
     volumes:
       - 'postgres_data:/var/lib/postgres/data'
 
@@ -58,9 +58,9 @@ services:
   etl:
     build: './etl'
     environment:
-      DB_USER: ${DB_USER}
+      DB_USER: app
       DB_PASSWORD: ${DB_PASSWORD}
-      DB_NAME: ${DB_NAME}
+      DB_NAME: movies_database
       DB_HOST: db
       DB_PORT: ${DB_PORT}
       ELASTIC_HOST: http://elastic:9200
