@@ -1,7 +1,7 @@
 version: '3'
 services:
   api:
-    build: './fastapi_solution'
+    build: './api'
     environment:
       ELASTIC_HOST: http://elastic
       ELASTIC_PORT: 9200
@@ -15,25 +15,48 @@ services:
       - elastic
       - redis
 
+  auth:
+    build: './auth'
+    environment:
+      SECRET_KEY: $FLASK_SECRET_KEY
+      DB_HOST: auth_db
+      DB_PASSWORD: ${AUTH_DB_PASSWORD}
+      DB_PORT: 4321
+      HOST: auth
+      DEBUG: ${AUTH_DEBUG}
+      WAIT_HOSTS: auth_db:4321, redis:6379
+    depends_on:
+      - auth_db
+      - redis
+
   nginx:
     image: nginx:1.21-alpine
     volumes:
       - './nginx/nginx.conf:/etc/nginx/nginx.conf:ro'
     depends_on:
       - api
-      - db
     ports:
       - "80:80"
     restart: always
 
-  db:
-    build: './postgres'
+  auth_db:
+    build: './auth_db'
+    environment:
+      POSTGRES_USER: auth_app
+      POSTGRES_PASSWORD: ${AUTH_DB_PASSWORD}
+      POSTGRES_DB: auth_database
+    volumes:
+      - 'auth_db_data:/var/lib/postgres/data'
+    command: -p 4321
+
+  content_db:
+    build: './content_db'
     environment:
       POSTGRES_USER: app
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_PASSWORD: ${CONTENT_DB_PASSWORD}
       POSTGRES_DB: movies_database
     volumes:
-      - 'postgres_data:/var/lib/postgres/data'
+      - 'content_db_data:/var/lib/postgres/data'
 
   elastic:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.9.1
@@ -59,22 +82,23 @@ services:
     build: './etl'
     environment:
       DB_USER: app
-      DB_PASSWORD: ${DB_PASSWORD}
+      DB_PASSWORD: ${CONTENT_DB_PASSWORD}
       DB_NAME: movies_database
-      DB_HOST: db
-      DB_PORT: ${DB_PORT}
+      DB_HOST: content_db
+      DB_PORT: ${CONTENT_DB_PORT}
       ELASTIC_HOST: http://elastic:9200
       ELASTIC_USER: elastic
       ELASTIC_PASSWORD: $ELASTIC_PASSWORD
-      WAIT_HOSTS: elastic:9200, db:5432
+      WAIT_HOSTS: elastic:9200, content_db:5432
     volumes:
     - $STATE_PATH:/app/state
     depends_on:
-      - db
+      - content_db
       - elastic
 
 volumes:
-  postgres_data:
+  content_db_data:
+  auth_db_data:
   elastic_data:
   redis_data:
 
