@@ -22,6 +22,9 @@ services:
       DB_HOST: auth_db
       DB_PASSWORD: ${AUTH_DB_PASSWORD}
       DB_PORT: 4321
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: $REDIS_PASSWORD
       HOST: auth
       DEBUG: ${AUTH_DEBUG}
       WAIT_HOSTS: auth_db:4321, redis:6379
