@@ -1,3 +1,5 @@
+SWAGGER_DOCS_RELATIVE_PATH = '../../swagger_docs'
+
 swagger_config = {
     "headers": [
     ],

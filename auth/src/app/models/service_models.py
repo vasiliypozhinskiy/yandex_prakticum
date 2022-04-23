@@ -42,5 +42,5 @@ class User(BaseModel):
     @validator('first_name', 'middle_name', 'last_name', 'login')
     def validate_length(cls, field):
         if len(field) > 100:
-            raise BadLengthError(message=f'Wrong length of field. Max 100 characters')
+            raise BadLengthError(message='Wrong length of field. Max 100 characters')
         return field

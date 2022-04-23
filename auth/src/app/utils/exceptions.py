@@ -1,5 +1,8 @@
-class ValidationError(Exception):
-    pass
+class FieldValidationError(Exception):
+    default_message = "Wrong field value"
+
+    def __init__(self, message=default_message):
+        self.message = message
 
 
 class AlreadyExistsError(Exception):
@@ -7,7 +10,10 @@ class AlreadyExistsError(Exception):
 
 
 class NotFoundError(Exception):
-    pass
+    default_message = "Resource not found"
+
+    def __init__(self, message=default_message):
+        self.message = message
 
 
 class BadPasswordError(Exception):
@@ -29,6 +35,13 @@ class BadEmailError(Exception):
 
 class BadLengthError(Exception):
     default_message = "Wrong length of field"
+
+    def __init__(self, message=default_message):
+        self.message = message
+
+
+class BadIdFormat(Exception):
+    default_message = "Wrong id format"
 
     def __init__(self, message=default_message):
         self.message = message
