@@ -1,8 +1,9 @@
 import bcrypt
 
 
-def remove_password(dict_):
-    dict_.update({'password': '****'})
+def hide_password(dict_):
+    if dict_.get('password'):
+        dict_.update({'password': '****'})
     return dict_
 
 
@@ -18,4 +19,12 @@ def check_password(password: str) -> bool:
         return True
     else:
         return False
+
+
+def row2dict(row):
+    d = {}
+    for column in row.__table__.columns:
+        d[column.name] = getattr(row, column.name)
+
+    return d
 

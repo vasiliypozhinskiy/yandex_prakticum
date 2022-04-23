@@ -1,0 +1,37 @@
+summary: Метод для получения данных пользователя по id
+parameters:
+  - in: path
+    name: user_id
+    description: id пользователя (UUID)
+    schema:
+      type: string
+responses:
+  200:
+    description: Данные пользователя
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            login:
+              type: string
+              example: login
+            password:
+              type: string
+              example: 123qweQWE!@#
+            email:
+              type: string
+              example: example@email.com
+            first_name:
+              type: string
+              example: Иван
+            middle_name:
+              type: string
+              example: Иванович
+            last_name:
+              type: string
+              example: Иванов
+  400:
+    description: Неправильные параметры запроса
+  404:
+    description: Данные не найдены
