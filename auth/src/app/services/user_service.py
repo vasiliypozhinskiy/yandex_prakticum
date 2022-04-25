@@ -1,13 +1,12 @@
 from typing import Optional
 
-from pydantic import ValidationError
-from sqlalchemy.exc import IntegrityError, DataError
-
+from app.core import db
 from app.models.db_models import User as DBUserModel
 from app.models.service_models import User as UserServiceModel
-from app.core import db
 from app.utils.exceptions import AlreadyExistsError, BadIdFormat, FieldValidationError, NotFoundError
 from app.utils.utils import hash_password, row2dict
+from pydantic import ValidationError
+from sqlalchemy.exc import IntegrityError, DataError
 
 
 class UserService:
@@ -44,6 +43,7 @@ class UserService:
             raise AlreadyExistsError
 
     def delete_user(self, user_id) -> None:
+        print(user_id)
         self.try_get_from_db(user_id)
 
         DBUserModel.query.filter_by(id=user_id).delete()

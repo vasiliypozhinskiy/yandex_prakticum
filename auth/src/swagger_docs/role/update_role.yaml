@@ -1,0 +1,28 @@
+tags:
+  - role
+summary: Метод для изменения названия роли
+parameters:
+  - in: path
+    title: role_title
+    description: Название роли
+    schema:
+      type: string
+  - in: body
+    name: user_data
+    description: данные пользователя
+    schema:
+      type: object
+      properties:
+        login:
+          type: string
+          example: other permission
+responses:
+  200:
+    description: Данные обновлены
+  400:
+    description: Неправильные параметры запроса
+  404:
+    description: Пользователь не найден
+  409:
+    description: Невозможно обновить
+

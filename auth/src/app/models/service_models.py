@@ -1,12 +1,10 @@
 import re
 from typing import Optional, List
-
 from uuid import UUID
 
+from app.utils.exceptions import BadEmailError, BadPasswordError, BadLengthError
 from pydantic import validator
 from pydantic.main import BaseModel
-
-from app.utils.exceptions import BadEmailError, BadPasswordError, BadLengthError
 
 PASSWORD_REGEXP = re.compile(r'^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$')
 

@@ -1,0 +1,22 @@
+tags:
+  - role
+summary: Создание роли
+parameters:
+  - in: body
+    name: role
+    description: Данные пользователя
+    schema:
+      type: object
+      required:
+        - title
+      properties:
+        title:
+          type: string
+          example: hard permission
+responses:
+  201:
+    description: Роль успешно созданна
+  400:
+    description: Неправильные параметры запроса
+  409:
+    description: Роль уже существует
