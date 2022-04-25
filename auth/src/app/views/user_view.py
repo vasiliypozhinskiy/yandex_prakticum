@@ -1,8 +1,3 @@
-from flask import Blueprint
-from flask import jsonify
-from flask import request
-from flasgger.utils import swag_from
-
 from app.core.swagger_config import SWAGGER_DOCS_RELATIVE_PATH
 from app.services.user_service import UserService
 from app.utils.exceptions import FieldValidationError, AlreadyExistsError, BadPasswordError, BadEmailError, \
@@ -10,9 +5,11 @@ from app.utils.exceptions import FieldValidationError, AlreadyExistsError, BadPa
 from app.utils.logger import logger
 from app.utils.utils import hide_password
 from app.views.models.user import UserResponse
+from flasgger.utils import swag_from
+from flask import Blueprint, jsonify, request
+
 
 user_blueprint = Blueprint('user', __name__, url_prefix='/auth/api/v1')
-
 
 @user_blueprint.route('/user/', endpoint='create_user', methods=['POST'])
 @user_blueprint.route('/user/<string:user_id>', endpoint='user_with_id', methods=['GET', 'PATCH', 'DELETE'])
@@ -28,6 +25,7 @@ def user_request_handler(user_id: str = None):
     elif request.method == 'PATCH':
         response = update_user(request, user_id)
     elif request.method == 'DELETE':
+        print(user_id)
         response = delete_user(user_id)
     else:
         return 'Method not allowed', 405

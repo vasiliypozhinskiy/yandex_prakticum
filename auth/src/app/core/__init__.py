@@ -1,9 +1,8 @@
-from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
-from flasgger import Swagger
-
 from app.core.config import Config
 from app.core.swagger_config import swagger_config
+from flasgger import Swagger
+from flask import Flask
+from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__, instance_relative_config=True)
 
