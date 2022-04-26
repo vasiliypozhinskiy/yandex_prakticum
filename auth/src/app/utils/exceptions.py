@@ -9,6 +9,10 @@ class AlreadyExistsError(Exception):
     pass
 
 
+class RoleAlreadyExists(Exception):
+    message = 'Role to be created already exists'
+
+
 class NotFoundError(Exception):
     default_message = "Resource not found"
 

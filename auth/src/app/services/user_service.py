@@ -43,7 +43,6 @@ class UserService:
             raise AlreadyExistsError
 
     def delete_user(self, user_id) -> None:
-        print(user_id)
         self.try_get_from_db(user_id)
 
         DBUserModel.query.filter_by(id=user_id).delete()

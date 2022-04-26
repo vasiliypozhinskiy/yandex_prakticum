@@ -12,7 +12,7 @@ parameters:
       properties:
         title:
           type: string
-          example: hard permission
+          example: hard_permission
 responses:
   201:
     description: Роль успешно созданна

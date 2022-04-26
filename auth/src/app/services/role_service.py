@@ -1,9 +1,8 @@
 from app.core import db
 from app.models.db_models import Role
 from app.utils.exceptions import AlreadyExistsError
+from app.utils.exceptions import BadIdFormat, NotFoundError,RoleAlreadyExists
 from sqlalchemy.exc import IntegrityError, DataError
-
-from app.utils.exceptions import BadIdFormat, NotFoundError
 
 
 class RoleService:
@@ -27,7 +26,12 @@ class RoleService:
         return roles
 
     def update_role(self, role_title, data):
+        role = self.try_get_from_db(role_title)
+        roles = self.get_list_role()
+        if data['title'] in roles['role_list']:
+            raise RoleAlreadyExists
         Role.query.filter_by(title=role_title).update(data)
+        db.session.commit()
 
     @staticmethod
     def try_get_from_db(role_title):
