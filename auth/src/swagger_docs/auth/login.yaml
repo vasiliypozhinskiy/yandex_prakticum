@@ -1,0 +1,24 @@
+summary: Метод для регистрации пользователя
+parameters:
+  - in: body
+    name: user
+    description: Данные пользователя
+    schema:
+      type: object
+      required:
+        - login
+        - password
+      properties:
+        login:
+          type: string
+          example: login
+        password:
+          type: string
+          example: 123qweQWE!@#
+responses:
+  200:
+    description: Пользователь авторизирован
+  404:
+    description: Неверный логин
+  403:
+    description: Неверный пароль
