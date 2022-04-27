@@ -14,7 +14,7 @@ class UserService:
         self.validate_user(user_data)
         user_data['password'] = hash_password(user_data['password']).decode()
         user = DBUserModel(**user_data)
-
+        print(user)
         db.session.add(user)
 
         try:

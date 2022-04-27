@@ -2,20 +2,14 @@ tags:
   - role
 summary: Метод для изменения названия роли
 parameters:
-  - in: path
-    name: role_title
+  - name: role_title
+    in: path
     description: Название роли старое
-    schema:
-      type: string
-  - in: body
-    name: role_title
+    type: string
+  - name: new_role
+    in: path
     description: Название роли новое
-    schema:
-      type: object
-      properties:
-        title:
-          type: string
-          example: other permission
+    type: string
 responses:
   200:
     description: Данные обновлены

@@ -2,17 +2,19 @@ tags:
   - role
 summary: Создание роли
 parameters:
-  - in: body
-    name: role
-    description: Данные пользователя
-    schema:
-      type: object
-      required:
-        - title
-      properties:
-        title:
-          type: string
-          example: hard_permission
+  - name: new_role
+    in: path
+    description: Новая роль
+    type: string
+    required: True
+#    schema:
+#      type: object
+#      required:
+#        - title
+#      properties:
+#        title:
+#          type: string
+#          example: hard_permission
 responses:
   201:
     description: Роль успешно созданна
