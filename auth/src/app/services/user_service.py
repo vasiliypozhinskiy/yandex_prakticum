@@ -1,4 +1,5 @@
 from typing import Optional
+import uuid
 
 from app.core import db
 from app.models.db_models import User as DBUserModel
@@ -16,16 +17,23 @@ from sqlalchemy.exc import IntegrityError, DataError
 
 class UserService:
     def create_user(self, user_data: dict) -> None:
+
+        new_user_id = uuid.uuid4()
+        user_data.update({'id': new_user_id})
         self.validate_user(user_data)
         user_data["password"] = hash_password(user_data["password"]).decode()
+
         user = DBUserModel(**user_data)
-        print(user)
+        
         db.session.add(user)
 
         try:
             db.session.commit()
         except IntegrityError:
             raise AlreadyExistsError
+        out = ({"user_id": new_user_id}, 201)
+        return out
+
 
     def get_user(self, user_id) -> Optional[UserServiceModel]:
         user = self.try_get_from_db(user_id)
@@ -38,7 +46,6 @@ class UserService:
 
         old_data = row2dict(user)
         new_data = dict(old_data, **user_data)
-
         self.validate_user(new_data)
 
         try:
