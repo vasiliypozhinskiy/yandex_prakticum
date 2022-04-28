@@ -3,7 +3,12 @@ from typing import Optional
 from app.core import db
 from app.models.db_models import User as DBUserModel
 from app.models.service_models import User as UserServiceModel
-from app.utils.exceptions import AlreadyExistsError, BadIdFormat, FieldValidationError, NotFoundError
+from app.utils.exceptions import (
+    AlreadyExistsError,
+    BadIdFormat,
+    FieldValidationError,
+    NotFoundError,
+)
 from app.utils.utils import hash_password, row2dict
 from pydantic import ValidationError
 from sqlalchemy.exc import IntegrityError, DataError
@@ -12,7 +17,7 @@ from sqlalchemy.exc import IntegrityError, DataError
 class UserService:
     def create_user(self, user_data: dict) -> None:
         self.validate_user(user_data)
-        user_data['password'] = hash_password(user_data['password']).decode()
+        user_data["password"] = hash_password(user_data["password"]).decode()
         user = DBUserModel(**user_data)
         print(user)
         db.session.add(user)
@@ -66,8 +71,3 @@ class UserService:
             raise NotFoundError
 
         return user
-
-
-
-
-

@@ -15,10 +15,10 @@ parameters:
     required: True
 responses:
   200:
-    description: Пользователь удалён
+    description: Роль добавлена
   400:
     description: Неправильные параметры запроса
   404:
-    description: Пользователь не найден
+    description: Пользователь или роль не найдены
 
 
