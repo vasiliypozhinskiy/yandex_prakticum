@@ -1,0 +1,49 @@
+version: "3"
+services:
+  auth_db:
+    build: '../../../auth_db'
+    environment:
+      POSTGRES_USER: auth_app
+      POSTGRES_PASSWORD: ${AUTH_DB_PASSWORD}
+      POSTGRES_DB: auth_database
+    volumes:
+      - 'auth_db_data:/var/lib/postgres/data'
+    command: -p 4321
+
+  redis:
+    image: redis:6.2.6
+    command: redis-server --requirepass $REDIS_PASSWORD
+    expose:
+      - 6379
+    volumes:
+      - redis_data:/var/lib/redis
+
+  auth:
+    build: ../../.
+    environment:
+      SECRET_KEY: $FLASK_SECRET_KEY
+      DB_HOST: auth_db
+      DB_PASSWORD: ${AUTH_DB_PASSWORD}
+      DB_PORT: 4321
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: $REDIS_PASSWORD
+      HOST: auth
+      DEBUG: ${AUTH_DEBUG}
+      WAIT_HOSTS: auth_db:4321, redis:6379
+    depends_on:
+      - auth_db
+      - redis
+
+  tests:
+    build: .
+    environment:
+      DB_PASSWORD: ${AUTH_DB_PASSWORD}
+      REDIS_PASSWORD: $REDIS_PASSWORD
+    tty: true
+    depends_on:
+      - auth
+
+volumes:
+  auth_db_data:
+  redis_data: 
