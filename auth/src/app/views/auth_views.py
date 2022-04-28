@@ -24,7 +24,7 @@ def logout_all():
     return "", 200
 
 
-@auth_blueprint.route('/check/', endpoint='check', methods=['POST'])
-@swag_from(f'{SWAGGER_DOCS_RELATIVE_PATH}/auth/check.yaml', endpoint='auth.check', methods=['POST'])
-def check():
+@auth_blueprint.route('/authorize/', endpoint='authorize', methods=['POST'])
+@swag_from(f'{SWAGGER_DOCS_RELATIVE_PATH}/auth/authorize.yaml', endpoint='auth.authorize', methods=['POST'])
+def authorize():
     return "", 200
