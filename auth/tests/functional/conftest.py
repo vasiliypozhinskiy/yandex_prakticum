@@ -77,7 +77,7 @@ def make_request(session):
         async def inner(
             method: str, json: Optional[dict] = None, headers: Optional[dict] = None
         ) -> HTTPResponse:
-            url = f"http://{SETTINGS.auth_host}:{SETTINGS.auth_port}/api/v1/{method.lstrip('/')}"  # noqa: E501
+            url = f"http://{SETTINGS.auth_host}:{SETTINGS.auth_port}/auth/api/v1/{method}"  # noqa: E501
             async with getattr(session, type)(
                 url, json=json, headers=headers
             ) as response:
