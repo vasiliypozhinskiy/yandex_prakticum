@@ -18,7 +18,7 @@ def logout():
     return "", 200
 
 
-@auth_blueprint.route('/logout-all/<string:user_id>', endpoint='logout-all', methods=['POST'])
+@auth_blueprint.route('/logout_all/<string:user_id>', endpoint='logout-all', methods=['POST'])
 @swag_from(f'{SWAGGER_DOCS_RELATIVE_PATH}/auth/logout_all.yaml', endpoint='auth.logout-all', methods=['POST'])
 def logout_all():
     return "", 200
