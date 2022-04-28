@@ -1,0 +1,17 @@
+tags:
+  - auth
+summary: Метод для логаута пользователя со всех устройств
+parameters:
+parameters:
+  - in: path
+    name: user_id
+    description: id пользователя (UUID)
+    schema:
+      type: string
+responses:
+  200:
+    description: Успешныый логаут 
+  404:
+    description: Неверный id пользователя
+  403:
+    description: Нет прав
