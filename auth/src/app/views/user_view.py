@@ -55,7 +55,6 @@ def user_request_handler(user_id: str = None):
         response = delete_user(user_id)
     else:
         return "Method not allowed", 405
-
     return response
 
 
@@ -66,7 +65,7 @@ def create_user(request_):
     service = UserService()
 
     try:
-        service.create_user(user_data)
+        resp = service.create_user(user_data)
     except BadPasswordError as e:
         return e.message, 400
     except BadEmailError as e:
@@ -78,7 +77,7 @@ def create_user(request_):
         return e.message, 400
     except AlreadyExistsError:
         return "Resource already exists", 409
-    return "Created", 201
+    return resp
 
 
 def get_user(user_id: str):
