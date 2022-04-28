@@ -20,6 +20,15 @@ parameters:
 responses:
   200:
     description: Пользователь авторизирован
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            access_token:
+              type: string
+            refresh_token:
+              type: string
   404:
     description: Неверный логин
   403:

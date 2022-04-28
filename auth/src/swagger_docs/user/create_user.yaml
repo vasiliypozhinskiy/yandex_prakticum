@@ -1,4 +1,4 @@
-summary: Метод для регистрации пользователя lala
+summary: Метод для регистрации пользователя
 parameters:
   - in: body
     name: user
