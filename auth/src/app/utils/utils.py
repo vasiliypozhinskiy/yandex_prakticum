@@ -2,8 +2,8 @@ import bcrypt
 
 
 def hide_password(dict_):
-    if dict_.get('password'):
-        dict_.update({'password': '****'})
+    if dict_.get("password"):
+        dict_.update({"password": "****"})
     return dict_
 
 
@@ -27,4 +27,3 @@ def row2dict(row):
         d[column.name] = getattr(row, column.name)
 
     return d
-

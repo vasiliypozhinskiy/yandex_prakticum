@@ -1,43 +1,66 @@
-from flask import Blueprint
-from flask import jsonify
-from flask import request
-from flasgger.utils import swag_from
-
 from app.core.swagger_config import SWAGGER_DOCS_RELATIVE_PATH
 from app.services.user_service import UserService
-from app.utils.exceptions import FieldValidationError, AlreadyExistsError, BadPasswordError, BadEmailError, \
-    BadLengthError, BadIdFormat, NotFoundError
+from app.utils.exceptions import (
+    FieldValidationError,
+    AlreadyExistsError,
+    BadPasswordError,
+    BadEmailError,
+    BadLengthError,
+    BadIdFormat,
+    NotFoundError,
+)
 from app.utils.logger import logger
 from app.utils.utils import hide_password
 from app.views.models.user import UserResponse
+from flasgger.utils import swag_from
+from flask import Blueprint, jsonify, request
 
-user_blueprint = Blueprint('user', __name__, url_prefix='/auth/api/v1')
+
+user_blueprint = Blueprint("user", __name__, url_prefix="/auth/api/v1")
 
 
-@user_blueprint.route('/user/', endpoint='create_user', methods=['POST'])
-@user_blueprint.route('/user/<string:user_id>', endpoint='user_with_id', methods=['GET', 'PATCH', 'DELETE'])
-@swag_from(f'{SWAGGER_DOCS_RELATIVE_PATH}/user/create_user.yaml', endpoint='user.create_user')
-@swag_from(f'{SWAGGER_DOCS_RELATIVE_PATH}/user/get_user.yaml', endpoint='user.user_with_id', methods=['GET'])
-@swag_from(f'{SWAGGER_DOCS_RELATIVE_PATH}/user/update_user.yaml', endpoint='user.user_with_id', methods=['PATCH'])
-@swag_from(f'{SWAGGER_DOCS_RELATIVE_PATH}/user/delete_user.yaml', endpoint='user.user_with_id', methods=['DELETE'])
+@user_blueprint.route("/user/", endpoint="create_user", methods=["POST"])
+@user_blueprint.route(
+    "/user/<string:user_id>",
+    endpoint="user_with_id",
+    methods=["GET", "PATCH", "DELETE"],
+)
+@swag_from(
+    f"{SWAGGER_DOCS_RELATIVE_PATH}/user/create_user.yaml", endpoint="user.create_user"
+)
+@swag_from(
+    f"{SWAGGER_DOCS_RELATIVE_PATH}/user/get_user.yaml",
+    endpoint="user.user_with_id",
+    methods=["GET"],
+)
+@swag_from(
+    f"{SWAGGER_DOCS_RELATIVE_PATH}/user/update_user.yaml",
+    endpoint="user.user_with_id",
+    methods=["PATCH"],
+)
+@swag_from(
+    f"{SWAGGER_DOCS_RELATIVE_PATH}/user/delete_user.yaml",
+    endpoint="user.user_with_id",
+    methods=["DELETE"],
+)
 def user_request_handler(user_id: str = None):
-    if request.method == 'POST':
+    if request.method == "POST":
         response = create_user(request)
-    elif request.method == 'GET':
+    elif request.method == "GET":
         response = get_user(user_id)
-    elif request.method == 'PATCH':
+    elif request.method == "PATCH":
         response = update_user(request, user_id)
-    elif request.method == 'DELETE':
+    elif request.method == "DELETE":
+        print(user_id)
         response = delete_user(user_id)
     else:
-        return 'Method not allowed', 405
+        return "Method not allowed", 405
 
     return response
 
 
 def create_user(request_):
-    """Метод для регистрации пользователя
-    """
+    """Метод для регистрации пользователя"""
     user_data = request_.json
 
     service = UserService()
@@ -51,22 +74,21 @@ def create_user(request_):
     except BadLengthError as e:
         return e.message, 400
     except FieldValidationError as e:
-        logger.error(f'Can\'t create user with params: {hide_password(user_data)}')
+        logger.error(f"Can't create user with params: {hide_password(user_data)}")
         return e.message, 400
     except AlreadyExistsError:
-        return 'Resource already exists', 409
-    return 'Created', 201
+        return "Resource already exists", 409
+    return "Created", 201
 
 
 def get_user(user_id: str):
-    """Метод для получения данных пользователя по id
-    """
+    """Метод для получения данных пользователя по id"""
     try:
         service = UserService()
 
         user = service.get_user(user_id)
         if not user:
-            return 'Not found', 404
+            return "Not found", 404
 
         response = UserResponse(
             id=user.id,
@@ -90,8 +112,7 @@ def get_user(user_id: str):
 
 
 def update_user(request_, user_id: str):
-    """Метод для обновления данных пользователя (кроме пароля) по id
-    """
+    """Метод для обновления данных пользователя (кроме пароля) по id"""
     service = UserService()
     user_data = request_.json
 
@@ -106,17 +127,16 @@ def update_user(request_, user_id: str):
     except BadIdFormat as e:
         return e.message, 400
     except FieldValidationError as e:
-        logger.error(f'Can\'t update user with params: {user_data}')
+        logger.error(f"Can't update user with params: {user_data}")
         return e.message, 400
     except AlreadyExistsError:
-        return 'Resource already exists', 409
+        return "Resource already exists", 409
 
-    return 'User updated', 200
+    return "User updated", 200
 
 
 def delete_user(user_id: str):
-    """Метод для удаления пользователя по id
-    """
+    """Метод для удаления пользователя по id"""
     service = UserService()
 
     try:
@@ -126,4 +146,4 @@ def delete_user(user_id: str):
     except BadIdFormat as e:
         return e.message, 400
 
-    return 'User deleted', 200
+    return "User deleted", 200

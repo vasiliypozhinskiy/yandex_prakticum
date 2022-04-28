@@ -9,6 +9,10 @@ class AlreadyExistsError(Exception):
     pass
 
 
+class RoleAlreadyExists(Exception):
+    message = "Role to be created already exists"
+
+
 class NotFoundError(Exception):
     default_message = "Resource not found"
 
@@ -18,7 +22,8 @@ class NotFoundError(Exception):
 
 class BadPasswordError(Exception):
     default_message = """
-    Password must contain minimum eight characters, at least one uppercase letter, 
+    Password must contain minimum eight characters, 
+    at least one uppercase letter, 
     one lowercase letter, one number and one special character
     """
 
