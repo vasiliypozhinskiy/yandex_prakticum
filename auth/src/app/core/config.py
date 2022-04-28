@@ -1,8 +1,12 @@
 import os
 
-DB_PORT = os.getenv('DB_PORT', 4321)
-DB_HOST = os.getenv('DB_HOST', 'localhost')
-DB_PASSWORD = os.getenv('DB_PASSWORD', '')
+from dotenv import load_dotenv
+
+load_dotenv()
+
+DB_PORT = os.getenv('AUTH_DB_PORT', 4321)
+DB_HOST = os.getenv('AUTH_DB_HOST', 'localhost')
+DB_PASSWORD = os.getenv('AUTH_DB_PASSWORD', '')
 
 
 class Config:
