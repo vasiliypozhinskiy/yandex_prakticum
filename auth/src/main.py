@@ -11,4 +11,7 @@ app.register_blueprint(add_role_blueprint)
 
 
 if __name__ == "__main__":
-    app.run(host=os.getenv('HOST', 'localhost'))
+    app.run(
+        host=os.getenv('HOST', 'localhost'),
+        debug=bool(os.getenv('DEBUG', 1))
+    )
