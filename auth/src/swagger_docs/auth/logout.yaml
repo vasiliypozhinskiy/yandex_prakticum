@@ -1,3 +1,5 @@
+tags:
+  - auth
 summary: Метод для логаута пользователя
 parameters:
 parameters:

@@ -1,4 +1,6 @@
 summary: Проверка валидности access token и получение ролей из токена
+tags:
+  - auth
 responses:
   200:
     description: Успешныый логаут, вот роли
