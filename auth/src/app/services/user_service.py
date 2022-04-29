@@ -8,18 +8,15 @@ from app.utils.exceptions import (
     AlreadyExistsError,
     BadIdFormat,
     FieldValidationError,
-    NotFoundError,
+    NotFoundError, AccessDenied,
 )
-from app.utils.utils import hash_password, row2dict
+from app.utils.utils import hash_password, row2dict, check_password
 from pydantic import ValidationError
 from sqlalchemy.exc import IntegrityError, DataError
 
 
 class UserService:
-    def create_user(self, user_data: dict) -> None:
-
-        new_user_id = uuid.uuid4()
-        user_data.update({'id': new_user_id})
+    def create_user(self, user_data: dict) -> uuid:
         self.validate_user(user_data)
         user_data["password"] = hash_password(user_data["password"]).decode()
 
@@ -31,9 +28,8 @@ class UserService:
             db.session.commit()
         except IntegrityError:
             raise AlreadyExistsError
-        out = ({"user_id": new_user_id}, 201)
-        return out
 
+        return user.id
 
     def get_user(self, user_id) -> Optional[UserServiceModel]:
         user = self.try_get_from_db(user_id)
@@ -60,6 +56,22 @@ class UserService:
         DBUserModel.query.filter_by(id=user_id).delete()
         db.session.commit()
 
+    def change_password(self, user_id, passwords) -> None:
+        user = self.try_get_from_db(user_id)
+
+        if not check_password(passwords["old_password"], user.password):
+            raise AccessDenied("Wrong password")
+
+        user_data = row2dict(user)
+
+        user_data["password"] = passwords["new_password"]
+        self.validate_user(user_data)
+
+        user_data["password"] = hash_password(passwords["new_password"]).decode()
+
+        DBUserModel.query.filter_by(id=user_id).update({"password": user_data["password"]})
+        db.session.commit()
+
     @staticmethod
     def validate_user(user_data):
         try:
@@ -78,3 +90,6 @@ class UserService:
             raise NotFoundError
 
         return user
+
+
+user_service = UserService()

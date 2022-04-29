@@ -50,3 +50,10 @@ class BadIdFormat(Exception):
 
     def __init__(self, message=default_message):
         self.message = message
+
+
+class AccessDenied(Exception):
+    default_message = "Wrong email or password"
+
+    def __init__(self, message=default_message):
+        self.message = message

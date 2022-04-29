@@ -12,10 +12,8 @@ def hash_password(password: str) -> bytes:
     return bcrypt.hashpw(password.encode(), salt)
 
 
-def check_password(password: str) -> bool:
-    hashed = hash_password(password)
-
-    if bcrypt.checkpw(password.encode(), hashed):
+def check_password(password: str, hashed_password: str) -> bool:
+    if bcrypt.checkpw(password.encode(), hashed_password.encode()):
         return True
     else:
         return False
