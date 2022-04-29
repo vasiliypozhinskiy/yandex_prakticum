@@ -65,7 +65,7 @@ def create_user(request_):
     service = UserService()
 
     try:
-        resp = service.create_user(user_data)
+        new_user_id = service.create_user(user_data)
     except BadPasswordError as e:
         return e.message, 400
     except BadEmailError as e:
@@ -77,7 +77,8 @@ def create_user(request_):
         return e.message, 400
     except AlreadyExistsError:
         return "Resource already exists", 409
-    return resp
+
+    return {"user_id": new_user_id}, 201
 
 
 def get_user(user_id: str):

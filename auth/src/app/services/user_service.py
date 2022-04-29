@@ -16,10 +16,7 @@ from sqlalchemy.exc import IntegrityError, DataError
 
 
 class UserService:
-    def create_user(self, user_data: dict) -> None:
-
-        new_user_id = uuid.uuid4()
-        user_data.update({'id': new_user_id})
+    def create_user(self, user_data: dict) -> uuid:
         self.validate_user(user_data)
         user_data["password"] = hash_password(user_data["password"]).decode()
 
@@ -31,9 +28,8 @@ class UserService:
             db.session.commit()
         except IntegrityError:
             raise AlreadyExistsError
-        out = ({"user_id": new_user_id}, 201)
-        return out
 
+        return user.id
 
     def get_user(self, user_id) -> Optional[UserServiceModel]:
         user = self.try_get_from_db(user_id)
