@@ -89,15 +89,7 @@ def get_user(user_id: str):
         if not user:
             return "Not found", 404
 
-        response = UserResponse(
-            id=user.id,
-            login=user.login,
-            is_superuser=user.is_superuser,
-            email=user.email,
-            first_name=user.first_name,
-            middle_name=user.middle_name,
-            last_name=user.last_name,
-        )
+        response = UserResponse.parse_obj(user)
     except NotFoundError as e:
         return e.message, 404
     except BadEmailError as e:

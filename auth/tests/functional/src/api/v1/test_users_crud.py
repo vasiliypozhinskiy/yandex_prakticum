@@ -32,10 +32,6 @@ class UserResponse(BaseModel):
     last_name: str
     login: str
     middle_name: str
-    id: str
-    history_entries: list = None
-    roles: list = None
-    is_superuser: bool = False
 
 
 async def test_user_create(make_request):
