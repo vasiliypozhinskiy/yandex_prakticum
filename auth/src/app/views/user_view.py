@@ -1,5 +1,5 @@
 from app.core.swagger_config import SWAGGER_DOCS_RELATIVE_PATH
-from app.services.user_service import UserService
+from app.services.user_service import user_service
 from app.utils.exceptions import (
     FieldValidationError,
     AlreadyExistsError,
@@ -7,7 +7,7 @@ from app.utils.exceptions import (
     BadEmailError,
     BadLengthError,
     BadIdFormat,
-    NotFoundError,
+    NotFoundError, AccessDenied,
 )
 from app.utils.logger import logger
 from app.utils.utils import hide_password
@@ -62,10 +62,8 @@ def create_user(request_):
     """Метод для регистрации пользователя"""
     user_data = request_.json
 
-    service = UserService()
-
     try:
-        new_user_id = service.create_user(user_data)
+        new_user_id = user_service.create_user(user_data)
     except BadPasswordError as e:
         return e.message, 400
     except BadEmailError as e:
@@ -84,9 +82,7 @@ def create_user(request_):
 def get_user(user_id: str):
     """Метод для получения данных пользователя по id"""
     try:
-        service = UserService()
-
-        user = service.get_user(user_id)
+        user = user_service.get_user(user_id)
         if not user:
             return "Not found", 404
 
@@ -105,11 +101,10 @@ def get_user(user_id: str):
 
 def update_user(request_, user_id: str):
     """Метод для обновления данных пользователя (кроме пароля) по id"""
-    service = UserService()
     user_data = request_.json
 
     try:
-        service.update_user(user_id, user_data)
+        user_service.update_user(user_id, user_data)
     except NotFoundError as e:
         return e.message, 404
     except BadEmailError as e:
@@ -129,13 +124,32 @@ def update_user(request_, user_id: str):
 
 def delete_user(user_id: str):
     """Метод для удаления пользователя по id"""
-    service = UserService()
-
     try:
-        service.delete_user(user_id)
+        user_service.delete_user(user_id)
     except NotFoundError as e:
         return e.message, 404
     except BadIdFormat as e:
         return e.message, 400
 
     return "User deleted", 200
+
+
+@user_blueprint.route("/user/<string:user_id>/change_password", endpoint="change_password", methods=["PUT"])
+@swag_from(
+    f"{SWAGGER_DOCS_RELATIVE_PATH}/user/change_password.yaml", endpoint="user.change_password"
+)
+def user_password(user_id):
+    passwords = request.json
+
+    try:
+        user_service.change_password(user_id, passwords)
+    except BadIdFormat as e:
+        return e.message, 400
+    except BadPasswordError as e:
+        return e.message, 400
+    except AccessDenied as e:
+        return e.message, 403
+    except NotFoundError as e:
+        return e.message, 404
+
+    return "Password changed", 200
