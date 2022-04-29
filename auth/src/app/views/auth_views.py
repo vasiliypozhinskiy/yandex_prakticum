@@ -44,10 +44,15 @@ def logout():
         return str(e), 403
 
 
-@auth_blueprint.route('/logout_all/<string:user_id>', endpoint='logout-all', methods=['POST'])
+@auth_blueprint.route('/logout_all/', endpoint='logout-all', methods=['POST'])
 @swag_from(f'{SWAGGER_DOCS_RELATIVE_PATH}/auth/logout_all.yaml', endpoint='auth.logout-all', methods=['POST'])
 def logout_all():
-    return "", 200
+    access_token = request.headers.get("Authorization", "")
+    try:
+        AUTH_SERVICE.logout_all(access_token=access_token)
+        return '', 200
+    except InvalidToken as e:
+        return str(e), 403
 
 
 @auth_blueprint.route('/authorize/', endpoint='authorize', methods=['POST'])

@@ -1,12 +1,13 @@
 from typing import List
+import json
 
 from app.views.models.auth import AuthReqView, AuthRespView
 from app.models.db_models import User as DBUserModel
 from app.utils.utils import check_password
 from app.utils.exceptions import UnExistingLogin, InvalidToken, AccessDenied
-from app.services.auth_services.jwt_service import JWT_SERVICE
+from app.services.auth_services.jwt_service import JWT_SERVICE, AccessPayload
 from app.services.auth_services.storages import REF_TOK_STORAGE
-from app.services.auth_services.black_list import REVOKED_ACCESS
+from app.services.auth_services.black_list import REVOKED_ACCESS, LOG_OUT_ALL
 
 
 class AuthService:
@@ -44,15 +45,21 @@ class AuthService:
             raise InvalidToken
     
     @staticmethod
-    def logout_all():
-        return
+    def logout_all(access_token: str):
+        payload = JWT_SERVICE.get_access_payload(access_token)
+        if payload is not None:
+            LOG_OUT_ALL.add(payload=payload)
+        else:
+            raise AccessDenied
     
     @staticmethod
     def authorize(access_token: str) -> List[str]:
         payload = JWT_SERVICE.get_access_payload(access_token)
         if payload is not None:
             if REVOKED_ACCESS.is_ok(access_token):
-                return payload.roles
+                payload = JWT_SERVICE.get_access_payload(access_token)
+                if LOG_OUT_ALL.is_ok(payload):
+                    return payload.roles
         raise InvalidToken
 
 AUTH_SERVICE = AuthService()

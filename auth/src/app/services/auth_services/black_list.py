@@ -1,8 +1,11 @@
 from abc import abstractmethod, ABC
-import redis
 
-from app.db.redis import  redis_revoked_tokens
-from app.core.config import REFRESH_TOKEN_EXP, ACCESS_TOKEN_EXP
+import redis
+from datetime import datetime
+
+from app.db.redis import redis_revoked_tokens, redis_log_out_all
+from app.core.config import REFRESH_TOKEN_EXP, ACCESS_TOKEN_EXP, DATE_TIME_FORMAT
+from app.services.auth_services.jwt_service import AccessPayload
 
 
 class BaseBlackList(ABC):
@@ -33,4 +36,30 @@ class RedisBlackList(BaseBlackList):
         return not bool(self.storage.exists(token))
 
 
+class LogOutAllBlackList(BaseBlackList):
+    def __init__(self, storage: redis.Redis, exp_time: int):
+        self.storage = storage
+        self.exp_time = exp_time
+
+    def add(self, payload: AccessPayload) -> None:
+        self.storage.setex(
+            str(payload.user_id),
+            REFRESH_TOKEN_EXP,
+            datetime.strftime(datetime.now(), DATE_TIME_FORMAT),
+        )
+
+
+    def is_ok(self, payload: AccessPayload, **kwargs) -> bool:
+        str_time = self.storage.get(str(payload.user_id))
+        if str_time is None:
+            return True  # no request to logout for this user
+
+        iat = datetime.fromtimestamp(payload.iat)
+        set_time = datetime.strptime(str_time.decode(), DATE_TIME_FORMAT)
+        if iat < set_time:
+            return False  # logged in after request on logout
+        return True
+
+
 REVOKED_ACCESS = RedisBlackList(storage=redis_revoked_tokens, exp_time=ACCESS_TOKEN_EXP, reason='revoked')
+LOG_OUT_ALL = LogOutAllBlackList(storage=redis_log_out_all, exp_time=REFRESH_TOKEN_EXP)
