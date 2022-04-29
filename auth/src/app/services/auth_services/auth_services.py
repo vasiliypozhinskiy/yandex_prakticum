@@ -11,7 +11,8 @@ from app.services.auth_services.black_list import REVOKED_ACCESS
 
 class AuthService:
 
-    def login(self, request_data: AuthReqView) -> AuthRespView:
+    @staticmethod
+    def login( request_data: AuthReqView) -> AuthRespView:
         try:
             login_data = AuthReqView.parse_obj(request_data)
         except Exception as err:
@@ -35,10 +36,8 @@ class AuthService:
             return BadPasswordError, 403
 
 
-    def logout(self, request):
-        access_token = request.headers.get("Authorization") or ""
-        
-        print("access_token got", flush=True)
+    @staticmethod
+    def logout(access_token: str):
         payload = JWT_SERVICE.get_access_payload(access_token)
         if payload is not None:
             REVOKED_ACCESS.add(access_token)
@@ -46,16 +45,18 @@ class AuthService:
             return 
         else:
             raise InvalidToken
-
-    def logout_all(self, request):
+    
+    @staticmethod
+    def logout_all():
         return
 
-    def authorize(self, request) -> List[str]:
-        access_token = request.headers.get("Authorization") or ""
+    
+    @staticmethod
+    def authorize(access_token: str) -> List[str]:
         payload = JWT_SERVICE.get_access_payload(access_token)
         if payload is not None:
             if REVOKED_ACCESS.is_ok(access_token):
-                payload.roles
+                return payload.roles
         raise InvalidToken
 
 AUTH_SERVICE = AuthService()
