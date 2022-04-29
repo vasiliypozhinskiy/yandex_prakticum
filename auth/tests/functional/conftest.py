@@ -40,9 +40,9 @@ async def pg_connection() -> AsyncGenerator[aiopg.connection.Connection, None]:
             yield conn
 
             async with conn.cursor() as cur:
-                await cur.execute("TRUNCATE users CASCADE;")
-                await cur.execute("TRUNCATE login_history CASCADE;")
-                await cur.execute("TRUNCATE roles CASCADE;")
+                await cur.execute("TRUNCATE auth.user CASCADE;")
+                await cur.execute("TRUNCATE auth.login_history CASCADE;")
+                await cur.execute("TRUNCATE auth.role CASCADE;")
 
 
 @pytest_asyncio.fixture(scope="module")

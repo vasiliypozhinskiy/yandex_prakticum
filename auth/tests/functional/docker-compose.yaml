@@ -7,7 +7,7 @@ services:
       POSTGRES_PASSWORD: ${AUTH_DB_PASSWORD}
       POSTGRES_DB: auth_database
     volumes:
-      - 'auth_db_data:/var/lib/postgres/data'
+      - 'auth_db_test_data:/var/lib/postgres/data'
     command: -p 4321
 
   redis:
@@ -45,5 +45,5 @@ services:
       - auth
 
 volumes:
-  auth_db_data:
+  auth_db_test_data:
   redis_data: 

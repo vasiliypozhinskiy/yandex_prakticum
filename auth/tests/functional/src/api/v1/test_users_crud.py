@@ -4,6 +4,7 @@ import pytest
 import json
 
 from pydantic import BaseModel
+from pydantic.types import date
 
 # All test coroutines will be treated as marked with this decorator.
 pytestmark = pytest.mark.asyncio
@@ -14,7 +15,7 @@ USER = {
   "first_name": "Ivan",
   "last_name": "Ivan",
   "login": "login",
-  "middle_name": "Ivan",
+  "birthdate": "2000-01-20",
   "password": "123qweQWE!@#",
 }
 
@@ -23,15 +24,16 @@ NEW_USER_DATA = {
   "first_name": "Ivan1",
   "last_name": "Ivan1",
   "login": "login1",
-  "middle_name": "Ivan1",
+  "birthdate": "2000-04-30",
 }
+
 
 class UserResponse(BaseModel):
     email: str
     first_name: str
     last_name: str
     login: str
-    middle_name: str
+    birthdate: date
 
 
 async def test_user_create(make_request):
@@ -44,7 +46,6 @@ async def test_user_create(make_request):
     )
     assert response.status == HTTPStatus.CREATED
     USER_ID = response.body["user_id"]
-
 
 
 async def test_user_data(make_request, access_token):

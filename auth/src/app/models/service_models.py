@@ -2,9 +2,11 @@ import re
 from typing import Optional, List
 from uuid import UUID
 
-from app.utils.exceptions import BadEmailError, BadPasswordError, BadLengthError
+from pydantic.types import date
 from pydantic import validator
 from pydantic.main import BaseModel
+
+from app.utils.exceptions import BadEmailError, BadPasswordError, BadLengthError
 
 PASSWORD_REGEXP = re.compile(
     r"^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$"
@@ -23,8 +25,8 @@ class User(BaseModel):
     is_superuser: Optional[bool]
     email: str
     first_name: Optional[str]
-    middle_name: Optional[str]
     last_name: Optional[str]
+    birthdate: Optional[date]
 
     history_entries: Optional[List[UUID]]
     roles: Optional[List[str]]
@@ -41,7 +43,7 @@ class User(BaseModel):
             raise BadEmailError
         return email
 
-    @validator("first_name", "middle_name", "last_name", "login")
+    @validator("first_name", "last_name", "login")
     def validate_length(cls, field):
         if len(field) > 100:
             raise BadLengthError(message="Wrong length of field. Max 100 characters")

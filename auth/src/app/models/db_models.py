@@ -6,7 +6,8 @@ from sqlalchemy.dialects.postgresql import UUID
 
 
 class User(db.Model):
-    __tablename__ = "users"
+    __tablename__ = "user"
+    __table_args__ = {"schema": "auth"}
 
     id = db.Column(
         UUID(as_uuid=True),
@@ -21,21 +22,40 @@ class User(db.Model):
 
     email = db.Column(db.String, unique=True, index=True)
 
-    first_name = db.Column(db.String(100))
-    middle_name = db.Column(db.String(100))
-    last_name = db.Column(db.String(100))
-
     history_entries = db.relationship("LoginHistory", backref="user")
     roles = db.relationship(
-        "Role", secondary="users_roles", backref=db.backref("users", lazy="dynamic")
+        "Role", secondary="auth.user_role", backref=db.backref("user", lazy="dynamic")
     )
 
     def __repr__(self):
         return f"<User: {self.login}>"
 
 
+class UserData(db.Model):
+    __tablename__ = "user_data"
+    __table_args__ = {"schema": "auth"}
+
+    id = db.Column(
+        UUID(as_uuid=True),
+        primary_key=True,
+        default=uuid.uuid4,
+        unique=True,
+        nullable=False,
+    )
+
+    user_id = db.Column(UUID(as_uuid=True), db.ForeignKey(User.id))
+
+    first_name = db.Column(db.String(100))
+    last_name = db.Column(db.String(100))
+    birthdate = db.Column(db.Date)
+
+    def __repr__(self):
+        return f"<UserData: {self.user_id}>"
+
+
 class LoginHistory(db.Model):
     __tablename__ = "login_history"
+    __table_args__ = {"schema": "auth"}
 
     id = db.Column(
         UUID(as_uuid=True),
@@ -55,7 +75,8 @@ class LoginHistory(db.Model):
 
 
 class Role(db.Model):
-    __tablename__ = "roles"
+    __tablename__ = "role"
+    __table_args__ = {"schema": "auth"}
 
     title = db.Column(db.String(50), primary_key=True, unique=True, nullable=False)
 
@@ -63,8 +84,9 @@ class Role(db.Model):
         return f"<Role: {self.title}>"
 
 
-users_roles = db.Table(
-    "users_roles",
-    db.Column("user_id", UUID(as_uuid=True), db.ForeignKey("users.id")),
-    db.Column("role_id", db.String, db.ForeignKey("roles.title")),
+user_role = db.Table(
+    "user_role",
+    db.Column("user_id", UUID(as_uuid=True), db.ForeignKey(User.id)),
+    db.Column("role_id", db.String, db.ForeignKey(Role.title)),
+    schema="auth"
 )
