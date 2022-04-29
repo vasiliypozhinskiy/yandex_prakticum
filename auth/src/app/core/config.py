@@ -4,6 +4,11 @@ DB_PORT = os.getenv("DB_PORT", 4321)
 DB_HOST = os.getenv("DB_HOST", "localhost")
 DB_PASSWORD = os.getenv("DB_PASSWORD", "")
 
+SECRET_SIGNATURE = os.getenv("SECRET_SIGNATURE", "secret")
+
+
+ACCESS_TOKEN_EXP = 60 * 60 * 10
+REFRESH_TOKEN_EXP = 60 * 60 * 24 * 7
 
 class Config:
     SECRET_KEY = os.getenv("SECRET_KEY")

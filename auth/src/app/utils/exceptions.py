@@ -57,3 +57,17 @@ class AccessDenied(Exception):
 
     def __init__(self, message=default_message):
         self.message = message
+
+
+class InvalidToken(Exception):
+    default_message = "Inalid access token"
+
+    def __init__(self, message=default_message):
+        self.message = message
+
+
+class UnExistingLogin(Exception):
+    default_message = "See this login first time bro"
+
+    def __init__(self, message=default_message):
+        self.message = message
