@@ -5,98 +5,111 @@ import pytest
 
 # All test coroutines will be treated as marked with this decorator.
 pytestmark = pytest.mark.asyncio
+FIRST_ACCESS_TOKEN = None
+SECOND_ACCESS_TOKEN = None
+THIRD_ACCESS_TOKEN = None
 
+USER_ID = None
+USER = {
+  "email": "example@email.com",
+  "first_name": "Ivan",
+  "last_name": "Ivan",
+  "login": "login",
+  "middle_name": "Ivan",
+  "password": "123qweQWE!@#",
+}
 
 async def test_user_create(make_request):
-    pass
-    # response = await make_request("post")(
-    #     "users",
-    #     json={
-    #         "credentials": {"login": "test1", "password": "test1"},
-    #         "user_data": {"first_name": "13", "second_name": "Est"},
-    #     },
-    # )
+    global USER_ID
+    global USER
 
-    # assert response.status == HTTPStatus.CREATED
+    response = await make_request("post")(
+        "user/",
+        json=USER,
+    )
+    assert response.status == HTTPStatus.CREATED
+    USER_ID = response.body["user_id"]
 
 
 async def test_login(make_request):
-    pass
-    # response = await make_request("post")(
-    #     "auth/login",
-    #     json={"login": "test1", "password": "test1"},
-    # )
+    global FIRST_ACCESS_TOKEN
+    response = await make_request("post")(
+        "login/",
+        json={"login": "login", "password": "123qweQWE!@#"},
+    )
 
-    # assert response.status == HTTPStatus.OK
-
-
-async def test_check_authorized(make_request, access_token):
-    pass
-    # response = await make_request("post")(
-    #     "auth/check",
-    #     headers={"Authorization": access_token},
-    # )
-
-    # assert response.status == HTTPStatus.OK
+    assert response.status == HTTPStatus.OK
+    FIRST_ACCESS_TOKEN = response.body['access_token']
 
 
-async def test_logout_all(make_request, access_token):
-    pass
-    # time.sleep(1)
-    # response = await make_request("post")(
-    #     "auth/logout_all",
-    #     headers={"Authorization": access_token},
-    # )
-    # assert response.status == HTTPStatus.OK
+async def test_check_authorized(make_request):
+    global FIRST_ACCESS_TOKEN
+    response = await make_request("post")(
+        "authorize/",
+        headers={"Authorization": FIRST_ACCESS_TOKEN},
+    )
+
+    assert response.status == HTTPStatus.OK
+
+async def test_login_again(make_request):
+    global SECOND_ACCESS_TOKEN
+    response = await make_request("post")(
+        "login/",
+        json={"login": "login", "password": "123qweQWE!@#"},
+    )
+
+    assert response.status == HTTPStatus.OK
+    SECOND_ACCESS_TOKEN = response.body['access_token']
 
 
-async def test_check_notauthorized_first_agent(make_request, access_token):
-    pass
-    # response = await make_request("post")(
-    #     "auth/check",
-    #     headers={"Authorization": access_token, "User-Agent": "agent_1"},
-    # )
-
-    # assert response.status == HTTPStatus.FORBIDDEN
-
-
-async def test_check_notauthorized_second_agent(make_request, second_access_token):
-    pass
-    # response = await make_request("post")(
-    #     "auth/check",
-    #     headers={"Authorization": second_access_token, "User-Agent": "agent_2"},
-    # )
-
-    # assert response.status == HTTPStatus.FORBIDDEN
+async def test_logout_all(make_request):
+    global SECOND_ACCESS_TOKEN
+    time.sleep(1)
+    response = await make_request("post")(
+        "logout_all/",
+        headers={"Authorization": SECOND_ACCESS_TOKEN},
+    )
+    assert response.status == HTTPStatus.OK
 
 
-async def test_log_in_first(make_request, access_token):
-    pass
-    # time.sleep(1)
-    # response = await make_request("post")(
-    #     "auth/login",
-    #     json={"login": "test1", "password": "test1"},
-    #     headers={"User-Agent": "agent_1"},
-    # )
+async def test_check_notauthorized_first_agent(make_request):
+    global FIRST_ACCESS_TOKEN
+    response = await make_request("post")(
+        "authorize/",
+        headers={"Authorization": FIRST_ACCESS_TOKEN, "User-Agent": "agent_1"},
+    )
 
-    # assert response.status == HTTPStatus.OK
+    assert response.status == HTTPStatus.FORBIDDEN
 
 
-async def test_check_after_first_logged_in(make_request, third_access_token):
-    pass
-    # response = await make_request("post")(
-    #     "auth/check",
-    #     headers={"Authorization": third_access_token, "User-Agent": "agent_1"},
-    # )
+async def test_check_notauthorized_second_agent(make_request):
+    global SECOND_ACCESS_TOKEN
+    response = await make_request("post")(
+        "authorize/",
+        headers={"Authorization": SECOND_ACCESS_TOKEN, "User-Agent": "agent_2"},
+    )
 
-    # assert response.status == HTTPStatus.OK
+    assert response.status == HTTPStatus.FORBIDDEN
 
 
-async def test_check_socend_after_first_logged_in(make_request, second_access_token):
-    pass
-    # response = await make_request("post")(
-    #     "auth/check",
-    #     headers={"Authorization": second_access_token, "User-Agent": "agent_2"},
-    # )
+async def test_log_in_third(make_request):
+    global THIRD_ACCESS_TOKEN
+    time.sleep(1)
+    response = await make_request("post")(
+        "login/",
+        json={"login": "login", "password": "123qweQWE!@#"},
+    )
 
-    # assert response.status == HTTPStatus.FORBIDDEN
+    assert response.status == HTTPStatus.OK
+    THIRD_ACCESS_TOKEN = response.body['access_token']
+
+
+async def test_check_after_first_logged_in(make_request):
+
+    global THIRD_ACCESS_TOKEN
+    response = await make_request("post")(
+        "authorize/",
+        headers={"Authorization": THIRD_ACCESS_TOKEN, "User-Agent": "agent_1"},
+    )
+
+    assert response.status == HTTPStatus.OK
