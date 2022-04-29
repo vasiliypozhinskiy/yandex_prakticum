@@ -48,7 +48,7 @@ class AuthService:
     def logout_all(access_token: str):
         payload = JWT_SERVICE.get_access_payload(access_token)
         if payload is not None:
-            LOG_OUT_ALL.add(payload=payload)
+            LOG_OUT_ALL.add(access_token)
         else:
             raise AccessDenied
     
@@ -57,8 +57,7 @@ class AuthService:
         payload = JWT_SERVICE.get_access_payload(access_token)
         if payload is not None:
             if REVOKED_ACCESS.is_ok(access_token):
-                payload = JWT_SERVICE.get_access_payload(access_token)
-                if LOG_OUT_ALL.is_ok(payload):
+                if LOG_OUT_ALL.is_ok(access_token):
                     return payload.roles
         raise InvalidToken
 
