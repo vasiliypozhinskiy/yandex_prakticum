@@ -1,13 +1,6 @@
 tags:
   - auth
 summary: Метод для логаута пользователя
-parameters:
-parameters:
-  - in: path
-    name: user_id
-    description: id пользователя (UUID)
-    schema:
-      type: string
 responses:
   200:
     description: Успешныый логаут 
