@@ -34,7 +34,7 @@ class AuthService:
             REF_TOK_STORAGE.add_token(refresh_token)
             return AuthRespView(access_token=access_token, refresh_token=refresh_token)
         else:
-            return AccessDenied, 403
+            raise AccessDenied
 
     @staticmethod
     def logout(access_token: str):

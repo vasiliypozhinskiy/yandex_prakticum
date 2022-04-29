@@ -38,6 +38,14 @@ async def test_login(make_request):
     assert response.status == HTTPStatus.OK
     ACCESS_TOKEN = response.body['access_token']
 
+async def test_login_invalid(make_request):
+    response = await make_request("post")(
+        "login/",
+        json={"login": "login", "password": "123qweQWE!@#222"},
+    )
+
+    assert response.status == HTTPStatus.FORBIDDEN
+
 
 async def test_check_authorized(make_request):
     global ACCESS_TOKEN
