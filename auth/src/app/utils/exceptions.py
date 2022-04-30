@@ -6,11 +6,10 @@ class FieldValidationError(Exception):
 
 
 class AlreadyExistsError(Exception):
-    pass
+    default_message = "Resource already exists"
 
-
-class RoleAlreadyExists(Exception):
-    message = "Role to be created already exists"
+    def __init__(self, message=default_message):
+        self.message = message
 
 
 class NotFoundError(Exception):
@@ -60,7 +59,7 @@ class AccessDenied(Exception):
 
 
 class InvalidToken(Exception):
-    default_message = "Inalid access token"
+    default_message = "Invalid access token"
 
     def __init__(self, message=default_message):
         self.message = message

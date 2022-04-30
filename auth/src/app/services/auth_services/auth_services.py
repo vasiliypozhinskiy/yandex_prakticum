@@ -14,10 +14,7 @@ class AuthService:
 
     @staticmethod
     def login(request_data: AuthReqView) -> AuthRespView:
-        try:
-            login_data = AuthReqView.parse_obj(request_data)
-        except Exception as err:
-            return err.messages, 400
+        login_data = AuthReqView.parse_obj(request_data)
 
         creds_from_storage = DBUserModel.query.filter_by(login=login_data.login).first()
         if creds_from_storage is None:
@@ -63,5 +60,6 @@ class AuthService:
                 if LOG_OUT_ALL.is_ok(access_token):
                     return payload.roles
         raise InvalidToken
+
 
 AUTH_SERVICE = AuthService()

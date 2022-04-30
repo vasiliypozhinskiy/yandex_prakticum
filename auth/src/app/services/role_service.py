@@ -1,7 +1,7 @@
 from app.core import db
 from app.models.db_models import Role
 from app.utils.exceptions import AlreadyExistsError
-from app.utils.exceptions import BadIdFormat, NotFoundError, RoleAlreadyExists
+from app.utils.exceptions import BadIdFormat, NotFoundError
 from sqlalchemy.exc import IntegrityError, DataError
 
 
@@ -28,7 +28,7 @@ class RoleService:
     def update_role(self, role_title, new_role):
         roles = self.get_list_role()
         if new_role in roles["role_list"]:
-            raise RoleAlreadyExists
+            raise AlreadyExistsError("Role already exists")
         Role.query.filter_by(title=role_title).update(new_role)
         db.session.commit()
 
