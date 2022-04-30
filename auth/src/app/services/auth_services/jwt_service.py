@@ -3,9 +3,7 @@ from abc import ABC, abstractmethod
 from typing import List
 from datetime import datetime, timedelta
 from typing import Optional, Tuple
-from functools import wraps
 
-from flask import request
 from pydantic import BaseModel
 import jwt
 from jwt.exceptions import DecodeError, InvalidSignatureError
@@ -58,15 +56,15 @@ class ServiceJWT(BaseServiceJWT):
         )
 
     def get_access_payload(self, token) -> Optional[AccessPayload]:
-        payload = self._decode_token(token)
+        payload = self.decode_token(token)
         return AccessPayload(**payload) if payload else None
     
     def get_refresh_payload(self, token) -> Optional[RefreshPayload]:
-        payload = self._decode_token(token)
+        payload = self.decode_token(token)
         return RefreshPayload(**payload) if payload else None
 
     @staticmethod
-    def _decode_token(token) -> Optional[dict]:
+    def decode_token(token) -> Optional[dict]:
         try:
             payload = jwt.decode(token, SECRET_SIGNATURE, algorithms=["HS256"])
         except (
@@ -95,28 +93,6 @@ class ServiceJWT(BaseServiceJWT):
             SECRET_SIGNATURE,
             algorithm="HS256",
         )
-
-    def token_required(self, check_is_me=False, check_is_superuser=False):
-        """
-        Декоратор для проверки токена. При включенном флаге check_is_me в именнованых аргументах
-        функции обязательно должен быть user_id
-        """
-        def inner(func):
-            @wraps(func)
-            def wrapper(*args, **kwargs):
-                if not request.headers.get("Authorization"):
-                    raise InvalidToken
-                payload = self._decode_token(request.headers["Authorization"])
-                if not payload["is_superuser"] and check_is_me:
-                    if payload["user_id"] != kwargs["user_id"]:
-                        raise AccessDenied
-                if check_is_superuser:
-                    if not payload["is_superuser"]:
-                        raise AccessDenied
-                value = func(*args, **kwargs)
-                return value
-            return wrapper
-        return inner
 
 
 JWT_SERVICE = ServiceJWT(refresh_timeout=REFRESH_TOKEN_EXP, access_timeout=ACCESS_TOKEN_EXP)

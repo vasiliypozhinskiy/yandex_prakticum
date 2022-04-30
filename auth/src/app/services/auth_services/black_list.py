@@ -6,7 +6,7 @@ from datetime import datetime
 
 from app.db.redis import redis_revoked_tokens, redis_log_out_all
 from app.core.config import REFRESH_TOKEN_EXP, ACCESS_TOKEN_EXP, DATE_TIME_FORMAT
-from app.services.auth_services.jwt_service import AccessPayload, JWT_SERVICE
+from app.services.auth_services.jwt_service import JWT_SERVICE
 
 
 class BaseBlackList(ABC):
@@ -48,7 +48,6 @@ class UserIDBlackList(BaseBlackList):
             REFRESH_TOKEN_EXP,
             datetime.strftime(datetime.now(), DATE_TIME_FORMAT),
         )
-
 
     def is_ok(self, access_token: str) -> bool:
         payload = JWT_SERVICE.get_access_payload(access_token)

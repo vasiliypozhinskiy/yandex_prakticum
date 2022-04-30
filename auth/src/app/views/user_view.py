@@ -1,6 +1,5 @@
 from app.core.swagger_config import SWAGGER_DOCS_PATH
 from app.services.user_service import user_service
-from app.services.auth_services.jwt_service import JWT_SERVICE
 from app.services.auth_services.auth_services import AUTH_SERVICE
 from app.utils.exceptions import (
     FieldValidationError,
@@ -92,7 +91,7 @@ def get_user(user_id: str):
     return jsonify(dict(response))
 
 
-@JWT_SERVICE.token_required(check_is_me=True)
+@AUTH_SERVICE.token_required(check_is_me=True)
 def update_user(request_, user_id: str):
     """Метод для обновления данных пользователя (кроме пароля) по id"""
     user_data = request_.json
@@ -102,7 +101,7 @@ def update_user(request_, user_id: str):
     return "User updated", 200
 
 
-@JWT_SERVICE.token_required(check_is_me=True)
+@AUTH_SERVICE.token_required(check_is_me=True)
 def delete_user(user_id: str):
     """Метод для удаления пользователя по id"""
     user_service.delete_user(user_id)
@@ -115,7 +114,7 @@ def delete_user(user_id: str):
 @swag_from(
     f"{SWAGGER_DOCS_PATH}/user/change_password.yaml", endpoint="user.change_password"
 )
-@JWT_SERVICE.token_required(check_is_me=True)
+@AUTH_SERVICE.token_required(check_is_me=True)
 def user_password(user_id):
     passwords = request.json
 

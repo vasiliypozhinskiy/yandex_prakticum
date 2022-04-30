@@ -1,10 +1,11 @@
+from flasgger.utils import swag_from
+from flask import Blueprint, request
+
 from app.core.swagger_config import SWAGGER_DOCS_PATH
-from app.services.auth_services.jwt_service import JWT_SERVICE
+from app.services.auth_services.auth_services import AUTH_SERVICE
 from app.services.role_service import role_service
 from app.utils.exceptions import AlreadyExistsError
 from app.utils.exceptions import NotFoundError
-from flasgger.utils import swag_from
-from flask import Blueprint, request
 
 role_blueprint = Blueprint("role", __name__, url_prefix="/auth/api/v1")
 
@@ -51,7 +52,7 @@ def role_handler(new_role: str = None, role_title: str = None):
     return response
 
 
-@JWT_SERVICE.token_required(check_is_superuser=True)
+@AUTH_SERVICE.token_required(check_is_superuser=True)
 def create_role(new_role):
     """
     Метод для создания роли
@@ -69,7 +70,7 @@ def get_list_role():
     return roles
 
 
-@JWT_SERVICE.token_required(check_is_superuser=True)
+@AUTH_SERVICE.token_required(check_is_superuser=True)
 def update_role(role_title: str, new_role: str):
     try:
         role_service.update_role(role_title, new_role)
@@ -80,7 +81,7 @@ def update_role(role_title: str, new_role: str):
     return "Role updated", 200
 
 
-@JWT_SERVICE.token_required(check_is_superuser=True)
+@AUTH_SERVICE.token_required(check_is_superuser=True)
 def delete_role(role_title):
     """Метод для удаления роли"""
     try:

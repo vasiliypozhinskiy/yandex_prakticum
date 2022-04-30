@@ -5,7 +5,7 @@ from app.models.db_models import User, Role
 from app.core import db
 
 from app.core.swagger_config import SWAGGER_DOCS_PATH
-from app.services.auth_services.jwt_service import JWT_SERVICE
+from app.services.auth_services.auth_services import AUTH_SERVICE
 
 from app.utils.utils import check_password
 
@@ -31,7 +31,7 @@ add_role_blueprint = Blueprint("role_add_user", __name__, url_prefix="/auth/api/
     f"{SWAGGER_DOCS_PATH}/role/remove_role_for_user.yaml",
     endpoint="role_add_user.delete_role",
 )
-@JWT_SERVICE.token_required(check_is_superuser=True)
+@AUTH_SERVICE.token_required(check_is_superuser=True)
 def user_add_delete_role(user_id: str = None, role_title: str = None):
     user = User.query.filter_by(id=user_id).first()
     role = Role.query.filter_by(title=role_title).first()
@@ -61,7 +61,7 @@ def user_add_delete_role(user_id: str = None, role_title: str = None):
     f"{SWAGGER_DOCS_PATH}/role/create_admin.yaml",
     endpoint="role_add_user.create_admin",
 )
-@JWT_SERVICE.token_required(check_is_superuser=True)
+@AUTH_SERVICE.token_required(check_is_superuser=True)
 def create_admin():
     if request.method == "POST":
         data = request.json
@@ -86,7 +86,7 @@ def create_admin():
     f"{SWAGGER_DOCS_PATH}/role/delete_admin.yaml",
     endpoint="role_add_user.delete_admin",
 )
-@JWT_SERVICE.token_required(check_is_superuser=True)
+@AUTH_SERVICE.token_required(check_is_superuser=True)
 def delete_admin(user_id: str):
     if request.method == "DELETE":
         user = User.query.filter_by(id=user_id).first()

@@ -6,7 +6,6 @@ from flask import Blueprint, jsonify, request
 from flasgger.utils import swag_from
 from pydantic import ValidationError
 
-from app.services.auth_services.jwt_service import JWT_SERVICE
 from app.utils.exceptions import AccessDenied, UnExistingLogin, InvalidToken
 from app.core.swagger_config import SWAGGER_DOCS_PATH
 from app.views.models.auth import AuthReqView
@@ -37,7 +36,7 @@ def login():
 
 @auth_blueprint.route('/logout', endpoint='logout', methods=['POST'])
 @swag_from(f'{SWAGGER_DOCS_PATH}/auth/logout.yaml', endpoint='auth.logout', methods=['POST'])
-@JWT_SERVICE.token_required(check_is_me=True)
+@AUTH_SERVICE.token_required()
 def logout():
     access_token = request.headers["Authorization"]
     try:
@@ -51,7 +50,7 @@ def logout():
 @auth_blueprint.route('/logout_all/<string:user_id>', endpoint='logout-all', methods=['POST'])
 @swag_from(f'{SWAGGER_DOCS_PATH}/auth/logout_all.yaml', endpoint='auth.logout-all', methods=['POST'])
 @swag_from(f'{SWAGGER_DOCS_PATH}/auth/logout_all_id.yaml', endpoint='auth.logout-all', methods=['POST'])
-@JWT_SERVICE.token_required(check_is_me=True)
+@AUTH_SERVICE.token_required()
 def logout_all(user_id: Optional[str] = None):
     access_token = request.headers["Authorization"]
     try:
@@ -67,8 +66,9 @@ def logout_all(user_id: Optional[str] = None):
 
 @auth_blueprint.route('/authorize/', endpoint='authorize', methods=['POST'])
 @swag_from(f'{SWAGGER_DOCS_PATH}/auth/authorize.yaml', endpoint='auth.authorize', methods=['POST'])
+@AUTH_SERVICE.token_required()
 def authorize():
-    access_token = request.headers.get("Authorization", "")
+    access_token = request.headers["Authorization"]
     try:
         roles = AUTH_SERVICE.authorize(access_token=access_token)
         return jsonify(roles), 200

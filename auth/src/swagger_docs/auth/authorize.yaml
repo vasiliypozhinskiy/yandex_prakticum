@@ -1,6 +1,8 @@
 summary: Проверка валидности access token и получение ролей из токена
 tags:
   - auth
+security:
+  - bearerAuth: ["authorization"]
 responses:
   200:
     description: Успешный логаут, вот роли
