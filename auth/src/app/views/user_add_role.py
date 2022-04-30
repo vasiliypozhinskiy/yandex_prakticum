@@ -61,6 +61,7 @@ def user_add_delete_role(user_id: str = None, role_title: str = None):
     f"{SWAGGER_DOCS_PATH}/role/create_admin.yaml",
     endpoint="role_add_user.create_admin",
 )
+@JWT_SERVICE.token_required(check_is_superuser=True)
 def create_admin():
     if request.method == "POST":
         data = request.json
@@ -85,6 +86,7 @@ def create_admin():
     f"{SWAGGER_DOCS_PATH}/role/delete_admin.yaml",
     endpoint="role_add_user.delete_admin",
 )
+@JWT_SERVICE.token_required(check_is_superuser=True)
 def delete_admin(user_id: str):
     if request.method == "DELETE":
         user = User.query.filter_by(id=user_id).first()

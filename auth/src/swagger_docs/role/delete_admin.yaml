@@ -7,6 +7,8 @@ parameters:
     description: id пользователя
     schema:
       type: string
+security:
+  - bearerAuth: ["authorization"]
 responses:
   200:
     description: Запрос успешный

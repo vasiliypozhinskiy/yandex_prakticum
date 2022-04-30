@@ -17,6 +17,8 @@ parameters:
         password:
           type: string
           example: 123qweQWE!@#
+security:
+  - bearerAuth: ["authorization"]
 responses:
   201:
     description: Пользователь зарегестрирован
