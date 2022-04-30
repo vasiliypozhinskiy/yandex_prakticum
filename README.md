@@ -3,6 +3,8 @@
 2. создать файл .env заполнить по примеру .env.example
 3. перейти в дирректорию с проектом (Async-Api_practicum_comand) и запустить docker-compose build, docker-compose up
 4. http://localhost:80/auth/openapi - расположена документация swagger сервира.
+
+
 Для тестирования сервиса auth:
 1. перейти в дирректорию c с тестами(auth/tests/functional).
 2. Создать файл .env по примеру файла .env.sample
