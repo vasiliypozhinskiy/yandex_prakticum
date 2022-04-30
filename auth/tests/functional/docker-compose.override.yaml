@@ -8,7 +8,7 @@ services:
       - ../../src:/app
     ports:
       - '5000:5000'
-    command: python3 main.py
+    command: python create_superuser.py && python main.py
 
   tests:
     volumes:
