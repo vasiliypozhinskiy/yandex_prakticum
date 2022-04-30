@@ -1,11 +1,14 @@
+from functools import wraps
 from typing import List, Optional
 import uuid
+
+from flask import request
 
 from app.views.models.auth import AuthReqView, AuthRespView
 from app.models.db_models import User as DBUserModel
 from app.utils.utils import check_password
 from app.utils.exceptions import UnExistingLogin, InvalidToken, AccessDenied
-from app.services.auth_services.jwt_service import JWT_SERVICE, AccessPayload
+from app.services.auth_services.jwt_service import JWT_SERVICE
 from app.services.auth_services.storages import REF_TOK_STORAGE
 from app.services.auth_services.black_list import REVOKED_ACCESS, LOG_OUT_ALL
 
@@ -14,10 +17,7 @@ class AuthService:
 
     @staticmethod
     def login(request_data: AuthReqView) -> AuthRespView:
-        try:
-            login_data = AuthReqView.parse_obj(request_data)
-        except Exception as err:
-            return err.messages, 400
+        login_data = AuthReqView.parse_obj(request_data)
 
         creds_from_storage = DBUserModel.query.filter_by(login=login_data.login).first()
         if creds_from_storage is None:
@@ -54,14 +54,46 @@ class AuthService:
             LOG_OUT_ALL.add(user_id=user_id)
         else:
             raise AccessDenied
-    
-    @staticmethod
-    def authorize(access_token: str) -> List[str]:
+
+    def authorize(self, access_token: str) -> List[str]:
+        if not self.check_token(access_token):
+            raise InvalidToken
+
         payload = JWT_SERVICE.get_access_payload(access_token)
         if payload is not None:
-            if REVOKED_ACCESS.is_ok(access_token):
-                if LOG_OUT_ALL.is_ok(access_token):
-                    return payload.roles
+            return payload.roles
         raise InvalidToken
+
+    @staticmethod
+    def check_token(access_token):
+        if REVOKED_ACCESS.is_ok(access_token) and LOG_OUT_ALL.is_ok(access_token):
+            return True
+        else:
+            return False
+
+    def token_required(self, check_is_me=False, check_is_superuser=False):
+        """
+        Декоратор для проверки токена. При включенном флаге check_is_me в именнованых аргументах
+        функции обязательно должен быть user_id
+        """
+        def inner(func):
+            @wraps(func)
+            def wrapper(*args, **kwargs):
+                access_token = request.headers.get("Authorization")
+                if not access_token:
+                    raise InvalidToken
+                self.check_token(access_token)
+                payload = JWT_SERVICE.decode_token(access_token)
+                if not payload["is_superuser"] and check_is_me:
+                    if payload["user_id"] != kwargs["user_id"]:
+                        raise AccessDenied
+                if check_is_superuser:
+                    if not payload["is_superuser"]:
+                        raise AccessDenied
+                value = func(*args, **kwargs)
+                return value
+            return wrapper
+        return inner
+
 
 AUTH_SERVICE = AuthService()

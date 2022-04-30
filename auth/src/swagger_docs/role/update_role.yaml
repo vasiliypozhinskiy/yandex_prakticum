@@ -10,6 +10,8 @@ parameters:
     in: path
     description: Название роли новое
     type: string
+security:
+  - bearerAuth: ["authorization"]
 responses:
   200:
     description: Данные обновлены

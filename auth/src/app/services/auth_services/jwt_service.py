@@ -1,25 +1,31 @@
 import uuid
-
 from abc import ABC, abstractmethod
-from typing import Tuple, List
-from pydantic import BaseModel
-
+from typing import List
 from datetime import datetime, timedelta
 from typing import Optional, Tuple
 
-from app.utils.exceptions import InvalidToken
-from app.core.config import SECRET_SIGNATURE, REFRESH_TOKEN_EXP, ACCESS_TOKEN_EXP
-
+from pydantic import BaseModel
 import jwt
 from jwt.exceptions import DecodeError, InvalidSignatureError
 
-class RefreshPayload(BaseModel):
+from app.models.db_models import User
+from app.utils.exceptions import InvalidToken, AccessDenied
+from app.core.config import SECRET_SIGNATURE, REFRESH_TOKEN_EXP, ACCESS_TOKEN_EXP
+
+
+class BasePayload(BaseModel):
     iat: int
     exp: int
     user_id: uuid.UUID
 
-class AccessPayload(RefreshPayload):
+
+class RefreshPayload(BasePayload):
+    pass
+
+
+class AccessPayload(BasePayload):
     roles: List[str]
+    is_superuser: bool
 
 
 class BaseServiceJWT(ABC):
@@ -50,15 +56,15 @@ class ServiceJWT(BaseServiceJWT):
         )
 
     def get_access_payload(self, token) -> Optional[AccessPayload]:
-        payload = self._validate_token(token)
-        return AccessPayload(**payload) if payload is not None else None
+        payload = self.decode_token(token)
+        return AccessPayload(**payload) if payload else None
     
     def get_refresh_payload(self, token) -> Optional[RefreshPayload]:
-        payload = self._validate_token(token)
-        return RefreshPayload(**payload) if payload is not None else None
+        payload = self.decode_token(token)
+        return RefreshPayload(**payload) if payload else None
 
-
-    def _validate_token(self, token) -> Optional[dict]:
+    @staticmethod
+    def decode_token(token) -> Optional[dict]:
         try:
             payload = jwt.decode(token, SECRET_SIGNATURE, algorithms=["HS256"])
         except (
@@ -69,16 +75,18 @@ class ServiceJWT(BaseServiceJWT):
         return payload
         
     def _get_refresh_jwt(self, user_id: uuid.UUID):
+        #TODO Отдавать рефреш токен
         return self._get_access_jwt(user_id=user_id)
 
     def _get_access_jwt(self, user_id: uuid.UUID) -> str:
+        user = User.query.filter_by(id=user_id).first()
 
-        roles = ['None']
         payload = {
             "exp": datetime.now() + timedelta(seconds=self.access_timeout),
             "iat": datetime.now(),
             "user_id": str(user_id),
-            "roles": roles,
+            "roles": user.roles,
+            "is_superuser": user.is_superuser
         }
         return jwt.encode(
             payload,

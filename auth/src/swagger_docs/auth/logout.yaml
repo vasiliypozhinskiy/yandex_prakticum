@@ -1,6 +1,8 @@
 tags:
   - auth
 summary: Метод для логаута пользователя
+security:
+  - bearerAuth: ["authorization"]
 responses:
   200:
     description: Успешныый логаут 

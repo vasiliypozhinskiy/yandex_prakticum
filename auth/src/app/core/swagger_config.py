@@ -1,4 +1,6 @@
-SWAGGER_DOCS_RELATIVE_PATH = "../../swagger_docs"
+import os
+
+SWAGGER_DOCS_PATH = os.getcwd() + "/swagger_docs"
 
 swagger_config = {
     "headers": [],
@@ -13,4 +15,13 @@ swagger_config = {
     "static_url_path": "/auth/flasgger_static",
     "swagger_ui": True,
     "specs_route": "/auth/apidocs/",
+}
+
+swagger_template = {
+    "securityDefinitions":
+        {"bearerAuth":
+            {
+                "type": "apiKey", "name": "authorization", "in": "header"
+            }
+        }
 }

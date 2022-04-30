@@ -1,9 +1,11 @@
-from app.core.swagger_config import SWAGGER_DOCS_RELATIVE_PATH
-from app.services.role_service import role_service
-from app.utils.exceptions import AlreadyExistsError
-from app.utils.exceptions import NotFoundError, BadIdFormat, RoleAlreadyExists
 from flasgger.utils import swag_from
 from flask import Blueprint, request
+
+from app.core.swagger_config import SWAGGER_DOCS_PATH
+from app.services.auth_services.auth_services import AUTH_SERVICE
+from app.services.role_service import role_service
+from app.utils.exceptions import AlreadyExistsError
+from app.utils.exceptions import NotFoundError
 
 role_blueprint = Blueprint("role", __name__, url_prefix="/auth/api/v1")
 
@@ -19,20 +21,20 @@ role_blueprint = Blueprint("role", __name__, url_prefix="/auth/api/v1")
     "/role/<string:role_title>/<new_role>", endpoint="update_role", methods=["PATCH"]
 )
 @swag_from(
-    f"{SWAGGER_DOCS_RELATIVE_PATH}/role/create_role.yaml", endpoint="role.create_role"
+    f"{SWAGGER_DOCS_PATH}/role/create_role.yaml", endpoint="role.create_role"
 )
 @swag_from(
-    f"{SWAGGER_DOCS_RELATIVE_PATH}/role/delete_role.yaml",
+    f"{SWAGGER_DOCS_PATH}/role/delete_role.yaml",
     endpoint="role.delete_role",
     methods=["DELETE"],
 )
 @swag_from(
-    f"{SWAGGER_DOCS_RELATIVE_PATH}/role/get_list_role.yaml",
+    f"{SWAGGER_DOCS_PATH}/role/get_list_role.yaml",
     endpoint="role.list_role",
     methods=["GET"],
 )
 @swag_from(
-    f"{SWAGGER_DOCS_RELATIVE_PATH}/role/update_role.yaml",
+    f"{SWAGGER_DOCS_PATH}/role/update_role.yaml",
     endpoint="role.update_role",
     methods=["PATCH"],
 )
@@ -50,17 +52,16 @@ def role_handler(new_role: str = None, role_title: str = None):
     return response
 
 
+@AUTH_SERVICE.token_required(check_is_superuser=True)
 def create_role(new_role):
     """
     Метод для создания роли
     """
-    # data = request_.json
-    role = {}
-    role["title"] = new_role
+    role = {"title": new_role}
     try:
         role_service.create_role(role)
-    except AlreadyExistsError:
-        return "Resource already exists", 409
+    except AlreadyExistsError as e:
+        return e.message, 409
     return "Created", 201
 
 
@@ -69,17 +70,18 @@ def get_list_role():
     return roles
 
 
+@AUTH_SERVICE.token_required(check_is_superuser=True)
 def update_role(role_title: str, new_role: str):
-
     try:
         role_service.update_role(role_title, new_role)
     except NotFoundError as e:
         return e.message, 404
-    except RoleAlreadyExists as e:
-        return e.message, 405
+    except AlreadyExistsError as e:
+        return e.message, 409
     return "Role updated", 200
 
 
+@AUTH_SERVICE.token_required(check_is_superuser=True)
 def delete_role(role_title):
     """Метод для удаления роли"""
     try:

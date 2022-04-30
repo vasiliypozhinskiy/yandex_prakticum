@@ -10,4 +10,4 @@ COPY /src /app/
 
 EXPOSE 5000
 
-CMD /wait && gunicorn --worker-class gevent --workers 4 --bind 0.0.0.0:5000 main:app
+CMD /wait && python create_superuser.py && gunicorn --worker-class gevent --workers 4 --bind 0.0.0.0:5000 main:app
