@@ -37,13 +37,14 @@ def login():
 
 @auth_blueprint.route('/logout', endpoint='logout', methods=['POST'])
 @swag_from(f'{SWAGGER_DOCS_PATH}/auth/logout.yaml', endpoint='auth.logout', methods=['POST'])
+@JWT_SERVICE.token_required(check_is_me=True)
 def logout():
-    access_token = request.headers.get("Authorization", "")
+    access_token = request.headers["Authorization"]
     try:
         AUTH_SERVICE.logout(access_token=access_token)
         return '', 200
     except InvalidToken as e:
-        return str(e), 401
+        return e.message, 401
 
 
 @auth_blueprint.route('/logout_all/', endpoint='logout-all', methods=['POST'])

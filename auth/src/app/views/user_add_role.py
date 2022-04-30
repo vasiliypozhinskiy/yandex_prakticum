@@ -28,7 +28,7 @@ add_role_blueprint = Blueprint("role_add_user", __name__, url_prefix="/auth/api/
     endpoint="role_add_user.add_role",
 )
 @swag_from(
-    f"{SWAGGER_DOCS_RELATIVE_PATH}/role/remove_role_for_user.yaml",
+    f"{SWAGGER_DOCS_PATH}/role/remove_role_for_user.yaml",
     endpoint="role_add_user.delete_role",
 )
 @JWT_SERVICE.token_required(check_is_superuser=True)
@@ -58,7 +58,7 @@ def user_add_delete_role(user_id: str = None, role_title: str = None):
     methods=["POST"],
 )
 @swag_from(
-    f"{SWAGGER_DOCS_RELATIVE_PATH}/role/create_admin.yaml",
+    f"{SWAGGER_DOCS_PATH}/role/create_admin.yaml",
     endpoint="role_add_user.create_admin",
 )
 def create_admin():
@@ -82,7 +82,7 @@ def create_admin():
     methods=["DELETE"],
 )
 @swag_from(
-    f"{SWAGGER_DOCS_RELATIVE_PATH}/role/delete_admin.yaml",
+    f"{SWAGGER_DOCS_PATH}/role/delete_admin.yaml",
     endpoint="role_add_user.delete_admin",
 )
 def delete_admin(user_id: str):
@@ -92,7 +92,7 @@ def delete_admin(user_id: str):
             # Логика для отправки email с ссылкой для подтверждения действия
             db.session.query(User).get(user_id).is_superuser = False
             db.session.commit()
-            return 'Запрос успешный', 404
+            return 'Запрос успешный', 200
         return 'Проверьте параметры запроса', 404
 
 

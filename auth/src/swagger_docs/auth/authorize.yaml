@@ -3,7 +3,7 @@ tags:
   - auth
 responses:
   200:
-    description: Успешныый логаут, вот роли
+    description: Успешный логаут, вот роли
     content:
       application/json:
         schema:
@@ -13,6 +13,5 @@ responses:
           type: array
           items:
             type: string
-
   400:
     description: Невалидный токен

@@ -13,6 +13,8 @@ parameters:
     description: Имя поля
     type: string
     required: True
+security:
+  - bearerAuth: ["authorization"]
 responses:
   200:
     description: Роль удалена

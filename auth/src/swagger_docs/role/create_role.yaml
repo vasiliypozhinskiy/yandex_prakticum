@@ -7,6 +7,8 @@ parameters:
     description: Новая роль
     type: string
     required: True
+security:
+  - bearerAuth: ["authorization"]
 responses:
   201:
     description: Роль успешно созданна
