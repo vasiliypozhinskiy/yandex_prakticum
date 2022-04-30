@@ -14,7 +14,12 @@ add_role_blueprint = Blueprint("role_add_user", __name__, url_prefix="/auth/api/
 @add_role_blueprint.route(
     "/user_add_role/<string:user_id>/<string:role_title>",
     endpoint="add_role",
-    methods=["POST", "DELETE"],
+    methods=["POST"],
+)
+@add_role_blueprint.route(
+    "/user_delete_role/<string:user_id>/<string:role_title>",
+    endpoint="delete_role",
+    methods=["DELETE"],
 )
 @swag_from(
     f"{SWAGGER_DOCS_RELATIVE_PATH}/role/add_role_for_user.yaml",
@@ -22,7 +27,7 @@ add_role_blueprint = Blueprint("role_add_user", __name__, url_prefix="/auth/api/
 )
 @swag_from(
     f"{SWAGGER_DOCS_RELATIVE_PATH}/role/remove_role_for_user.yaml",
-    endpoint="role_add_user.add_role",
+    endpoint="role_add_user.delete_role",
 )
 def user_add_delete_role(user_id: str = None, role_title: str = None):
     user = User.query.filter_by(id=user_id).first()
@@ -65,3 +70,5 @@ def create_admin():
             db.session.commit()
             return 'Администратор успешно создан', 200
         return 'Проверьте параметры запроса', 404
+
+
