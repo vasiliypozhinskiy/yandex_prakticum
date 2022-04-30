@@ -71,4 +71,3 @@ def authorize():
     except InvalidToken as e:
         return str(e), 403
     return ("", 403)
-    
