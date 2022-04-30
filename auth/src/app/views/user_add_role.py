@@ -6,6 +6,8 @@ from app.core import db
 
 from app.core.swagger_config import SWAGGER_DOCS_RELATIVE_PATH
 
+from app.utils.utils import check_password
+
 add_role_blueprint = Blueprint("role_add_user", __name__, url_prefix="/auth/api/v1")
 
 
@@ -40,3 +42,26 @@ def user_add_delete_role(user_id: str = None, role_title: str = None):
         return "Роль успешно удалена", 200
     else:
         return "Method not allowed", 405
+
+
+@add_role_blueprint.route(
+    "/create_admin/",
+    endpoint="create_admin",
+    methods=["POST"],
+)
+@swag_from(
+    f"{SWAGGER_DOCS_RELATIVE_PATH}/role/create_admin.yaml",
+    endpoint="role_add_user.create_admin",
+)
+def create_admin():
+    if request.method == "POST":
+        data = request.json
+        user = User.query.filter_by(email=data['email']).first()
+        if user.is_superuser:
+            return 'Пользователь уже администратор', 409
+        if user and check_password(data['password'], user.password):
+            # Логика для отправки email с ссылкой для подтверждения действия
+            db.session.query(User).get(user.id).is_superuser = True
+            db.session.commit()
+            return 'Администратор успешно создан', 200
+        return 'Проверьте параметры запроса', 404
