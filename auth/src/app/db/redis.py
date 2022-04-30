@@ -12,6 +12,7 @@ if os.getenv("REDIS_PASSWORD"):
 
 redis_ref_tokens = redis.Redis(db=1, **settings)
 redis_revoked_tokens = redis.Redis(db=2, **settings)
+redis_log_out_all = redis.Redis(db=3, **settings)
 redis = redis.Redis(**settings)
 
 def get_redis():
