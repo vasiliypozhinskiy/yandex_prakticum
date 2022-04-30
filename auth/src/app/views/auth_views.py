@@ -36,27 +36,30 @@ def login():
 
 @auth_blueprint.route('/logout', endpoint='logout', methods=['POST'])
 @swag_from(f'{SWAGGER_DOCS_PATH}/auth/logout.yaml', endpoint='auth.logout', methods=['POST'])
-@AUTH_SERVICE.token_required()
 def logout():
-    access_token = request.headers["Authorization"]
     try:
-        AUTH_SERVICE.logout(access_token=access_token)
+        do_logout()
         return '', 200
     except InvalidToken as e:
         return e.message, 401
+
+
+@AUTH_SERVICE.token_required()
+def do_logout():
+    access_token = request.headers["Authorization"]
+    AUTH_SERVICE.logout(access_token=access_token)
 
 
 @auth_blueprint.route('/logout_all/', endpoint='logout-all', methods=['POST'])
 @auth_blueprint.route('/logout_all/<string:user_id>', endpoint='logout-all', methods=['POST'])
 @swag_from(f'{SWAGGER_DOCS_PATH}/auth/logout_all.yaml', endpoint='auth.logout-all', methods=['POST'])
 @swag_from(f'{SWAGGER_DOCS_PATH}/auth/logout_all_id.yaml', endpoint='auth.logout-all', methods=['POST'])
-@AUTH_SERVICE.token_required()
 def logout_all(user_id: Optional[str] = None):
-    access_token = request.headers["Authorization"]
     try:
-        if user_id is not None:
-            user_id = uuid.UUID(user_id)
-        AUTH_SERVICE.logout_all(access_token=access_token, user_id=user_id)
+        if user_id:
+            do_logout_all_with_id(user_id=user_id)
+        else:
+            do_logout_all()
         return '', 200
     except InvalidToken as e:
         return e.message, 401
@@ -64,13 +67,31 @@ def logout_all(user_id: Optional[str] = None):
         return e.message, 403
 
 
+@AUTH_SERVICE.token_required(check_is_superuser=True)
+def do_logout_all_with_id(user_id):
+    access_token = request.headers["Authorization"]
+    if user_id is not None:
+        user_id = uuid.UUID(user_id)
+    AUTH_SERVICE.logout_all(access_token=access_token, user_id=user_id)
+
+
+@AUTH_SERVICE.token_required()
+def do_logout_all():
+    access_token = request.headers["Authorization"]
+    AUTH_SERVICE.logout_all(access_token=access_token)
+
+
 @auth_blueprint.route('/authorize/', endpoint='authorize', methods=['POST'])
 @swag_from(f'{SWAGGER_DOCS_PATH}/auth/authorize.yaml', endpoint='auth.authorize', methods=['POST'])
-@AUTH_SERVICE.token_required()
 def authorize():
-    access_token = request.headers["Authorization"]
     try:
-        roles = AUTH_SERVICE.authorize(access_token=access_token)
+        roles = do_authorize()
         return jsonify(roles), 200
     except InvalidToken as e:
         return e.message, 401
+
+
+@AUTH_SERVICE.token_required()
+def do_authorize():
+    access_token = request.headers["Authorization"]
+    return AUTH_SERVICE.authorize(access_token=access_token)
