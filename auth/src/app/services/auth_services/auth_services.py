@@ -1,5 +1,5 @@
-from typing import List
-import json
+from typing import List, Optional
+import uuid
 
 from app.views.models.auth import AuthReqView, AuthRespView
 from app.models.db_models import User as DBUserModel
@@ -45,10 +45,13 @@ class AuthService:
             raise InvalidToken
     
     @staticmethod
-    def logout_all(access_token: str):
+    def logout_all(access_token: str, user_id: Optional[uuid.UUID] = None):
         payload = JWT_SERVICE.get_access_payload(access_token)
+        
         if payload is not None:
-            LOG_OUT_ALL.add(access_token)
+            if user_id is None:
+                user_id = payload.user_id
+            LOG_OUT_ALL.add(user_id=user_id)
         else:
             raise AccessDenied
     

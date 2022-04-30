@@ -1,4 +1,6 @@
 import json
+import uuid
+from typing import Optional
 
 from flask import Blueprint, jsonify, request
 from flasgger.utils import swag_from
@@ -45,11 +47,15 @@ def logout():
 
 
 @auth_blueprint.route('/logout_all/', endpoint='logout-all', methods=['POST'])
+@auth_blueprint.route('/logout_all/<string:user_id>', endpoint='logout-all', methods=['POST'])
 @swag_from(f'{SWAGGER_DOCS_RELATIVE_PATH}/auth/logout_all.yaml', endpoint='auth.logout-all', methods=['POST'])
-def logout_all():
+@swag_from(f'{SWAGGER_DOCS_RELATIVE_PATH}/auth/logout_all_id.yaml', endpoint='auth.logout-all', methods=['POST'])
+def logout_all(user_id: Optional[str] = None):
     access_token = request.headers.get("Authorization", "")
     try:
-        AUTH_SERVICE.logout_all(access_token=access_token)
+        if user_id is not None:
+            user_id = uuid.UUID(user_id)
+        AUTH_SERVICE.logout_all(access_token=access_token, user_id=user_id)
         return '', 200
     except InvalidToken as e:
         return str(e), 403

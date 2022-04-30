@@ -12,7 +12,7 @@ USER = {
   "first_name": "Ivan",
   "last_name": "Ivan",
   "login": "login",
-  "middle_name": "Ivan",
+  "birthdate": "2000-01-20",
   "password": "123qweQWE!@#",
 }
 

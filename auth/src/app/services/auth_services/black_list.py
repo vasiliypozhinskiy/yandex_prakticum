@@ -1,4 +1,5 @@
 from abc import abstractmethod, ABC
+import uuid
 
 import redis
 from datetime import datetime
@@ -18,7 +19,7 @@ class BaseBlackList(ABC):
         pass
 
 
-class RedisBlackList(BaseBlackList):
+class TokenBlackList(BaseBlackList):
     def __init__(self, storage: redis.Redis, exp_time: int,  reason: str = ""):
         self.reason = reason
         self.storage = storage
@@ -36,15 +37,14 @@ class RedisBlackList(BaseBlackList):
         return not bool(self.storage.exists(token))
 
 
-class LogOutAllBlackList(BaseBlackList):
+class UserIDBlackList(BaseBlackList):
     def __init__(self, storage: redis.Redis, exp_time: int):
         self.storage = storage
         self.exp_time = exp_time
 
-    def add(self, access_token: str) -> None:
-        payload = JWT_SERVICE.get_access_payload(access_token)
+    def add(self, user_id: uuid.UUID) -> None:
         self.storage.setex(
-            str(payload.user_id),
+            str(user_id),
             REFRESH_TOKEN_EXP,
             datetime.strftime(datetime.now(), DATE_TIME_FORMAT),
         )
@@ -63,5 +63,5 @@ class LogOutAllBlackList(BaseBlackList):
         return True
 
 
-REVOKED_ACCESS = RedisBlackList(storage=redis_revoked_tokens, exp_time=ACCESS_TOKEN_EXP, reason='revoked')
-LOG_OUT_ALL = LogOutAllBlackList(storage=redis_log_out_all, exp_time=REFRESH_TOKEN_EXP)
+REVOKED_ACCESS = TokenBlackList(storage=redis_revoked_tokens, exp_time=ACCESS_TOKEN_EXP, reason='revoked')
+LOG_OUT_ALL = UserIDBlackList(storage=redis_log_out_all, exp_time=REFRESH_TOKEN_EXP)
