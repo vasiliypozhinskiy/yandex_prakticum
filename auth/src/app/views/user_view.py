@@ -86,6 +86,7 @@ def get_user(user_id: str):
         if not user:
             return "Not found", 404
 
+        user.birthdate = user.birthdate.strftime('%Y-%m-%d')
         response = UserResponse.parse_obj(user)
     except NotFoundError as e:
         return e.message, 404

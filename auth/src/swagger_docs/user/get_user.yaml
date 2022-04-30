@@ -24,12 +24,13 @@ responses:
             first_name:
               type: string
               example: Иван
-            middle_name:
-              type: string
-              example: Иванович
             last_name:
               type: string
               example: Иванов
+            birthdate:
+              type: string
+              format: date
+              example: "2000-01-20"
   400:
     description: Неправильные параметры запроса
   404:

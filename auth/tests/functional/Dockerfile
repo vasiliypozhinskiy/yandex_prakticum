@@ -1,5 +1,7 @@
 FROM python:3.8-alpine
 
+RUN apk update && apk add bash
+
 WORKDIR /app
 RUN addgroup -S app && adduser -S app app
 
