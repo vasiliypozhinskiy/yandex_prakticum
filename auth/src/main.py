@@ -12,7 +12,6 @@ app.register_blueprint(user_blueprint)
 app.register_blueprint(auth_blueprint)
 
 
-
 if __name__ == "__main__":
     app.run(
         host=os.getenv('HOST', 'localhost'),
