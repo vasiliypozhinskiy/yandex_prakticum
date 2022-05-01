@@ -8,7 +8,7 @@ from pydantic import ValidationError
 
 from app.utils.exceptions import AccessDenied, UnExistingLogin, InvalidToken
 from app.core.swagger_config import SWAGGER_DOCS_PATH
-from app.views.models.auth import AuthReqView
+from app.views.models.auth import AuthRefreshReqView, AuthReqView
 from app.services.auth_services.auth_services import AUTH_SERVICE
 
 auth_blueprint = Blueprint('auth', __name__, url_prefix='/auth/api/v1')
@@ -21,7 +21,7 @@ def login():
     try:
         login_data = AuthReqView.parse_obj(request_data)
     except ValidationError as e:
-        return str(e), str(e)
+        return str(e), 400
 
     try:
         login_resp = AUTH_SERVICE.login(login_data)
@@ -65,6 +65,20 @@ def logout_all(user_id: Optional[str] = None):
         return e.message, 401
     except AccessDenied as e:
         return e.message, 403
+
+
+@auth_blueprint.route('/refresh/', endpoint='refresh', methods=['POST'])
+def refresh():
+    try:
+        req = AuthRefreshReqView(**request.json)
+    except ValidationError as e:
+        return str(e), 400
+
+    try:
+        response = AUTH_SERVICE.refresh_jwt(refresh_jwt=req.refresh_token)
+        return jsonify(response.dict())
+    except InvalidToken as e:
+        return e.message, 401
 
 
 @AUTH_SERVICE.token_required(check_is_superuser=True)
