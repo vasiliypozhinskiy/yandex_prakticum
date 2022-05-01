@@ -24,12 +24,15 @@ services:
       SECRET_KEY: $FLASK_SECRET_KEY
       DB_HOST: auth_db
       DB_PASSWORD: ${AUTH_DB_PASSWORD}
+      DB_USER: auth_app
       DB_PORT: 4321
+      DB_NAME: auth_database
       REDIS_HOST: redis
       REDIS_PORT: 6379
       REDIS_PASSWORD: $REDIS_PASSWORD
       HOST: auth
       DEBUG: ${AUTH_DEBUG}
+      SUPERUSER_PASSWORD: ${SUPERUSER_PASSWORD}
       WAIT_HOSTS: auth_db:4321, redis:6379
     depends_on:
       - auth_db
