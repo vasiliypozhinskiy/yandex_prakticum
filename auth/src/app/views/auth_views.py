@@ -50,6 +50,16 @@ class Authorize(View):
         return jsonify(roles), 200
 
 
+class Refresh(View):
+    methods = ['POST']
+    
+    @catch_exceptions
+    def dispatch_request(self):
+        req = AuthRefreshReqView(**request.json)
+        response = AUTH_SERVICE.refresh_jwt(refresh_jwt=req.refresh_token)
+        return jsonify(response.dict())
+
+
 @auth_blueprint.route('/logout_all/', endpoint='logout-all', methods=['POST'])
 @auth_blueprint.route('/logout_all/<string:user_id>', endpoint='logout-all', methods=['POST'])
 @swag_from(f'{SWAGGER_DOCS_PATH}/auth/logout_all.yaml', endpoint='auth.logout-all', methods=['POST'])
@@ -67,18 +77,6 @@ def logout_all(user_id: Optional[str] = None):
         return e.message, 403
 
 
-@auth_blueprint.route('/refresh/', endpoint='refresh', methods=['POST'])
-def refresh():
-    try:
-        req = AuthRefreshReqView(**request.json)
-    except ValidationError as e:
-        return str(e), 400
-
-    try:
-        response = AUTH_SERVICE.refresh_jwt(refresh_jwt=req.refresh_token)
-        return jsonify(response.dict())
-    except InvalidToken as e:
-        return e.message, 401
 
 
 @AUTH_SERVICE.token_required(check_is_superuser=True)
@@ -93,8 +91,9 @@ def do_logout_all_with_id(user_id):
 def do_logout_all():
     access_token = request.headers["Authorization"]
     AUTH_SERVICE.logout_all(access_token=access_token)
-    
+
 
 auth_blueprint.add_url_rule('/login/', endpoint='login', view_func=Login.as_view('login'))
 auth_blueprint.add_url_rule('/logout', endpoint='logout', view_func=LogOut.as_view('logout'))
 auth_blueprint.add_url_rule('/authorize/', endpoint='authorize', view_func=Authorize.as_view('authorize'))
+auth_blueprint.add_url_rule('/refresh/', endpoint='refresh', view_func=Refresh.as_view('refresh'))
