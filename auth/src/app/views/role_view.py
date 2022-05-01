@@ -55,8 +55,7 @@ def create_role(new_role):
     """
     Метод для создания роли
     """
-    role = {"title": new_role}
-    role_service.create_role(role)
+    role_service.create_role(new_role)
 
     return "Created", HTTPStatus.CREATED
 
