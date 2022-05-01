@@ -1,51 +1,38 @@
+from http import HTTPStatus
+
 from flask import request, Blueprint
 from flasgger.utils import swag_from
+from flask.views import MethodView
 
 from app.models.db_models import User, Role
 from app.core import db
-
 from app.core.swagger_config import SWAGGER_DOCS_PATH
 from app.services.auth_services.auth_services import AUTH_SERVICE
 from app.utils.exceptions import NotFoundError, AlreadyExistsError
-
 from app.utils.utils import check_password
+from app.views.utils.decorator import catch_exceptions
+
+user_role_blueprint = Blueprint("user_role", __name__, url_prefix="/auth/api/v1")
 
 
-add_role_blueprint = Blueprint("role_add_user", __name__, url_prefix="/auth/api/v1")
+class UserRoleView(MethodView):
+    @swag_from(
+        f"{SWAGGER_DOCS_PATH}/role/add_role_for_user.yaml",
+        endpoint="user_role.add_role",
+    )
+    @catch_exceptions
+    def post(self, user_id, role_title):
+        add_role(user_id, role_title)
+        return "Роль успешно добавленна", HTTPStatus.OK
 
-
-@add_role_blueprint.route(
-    "/user_add_role/<string:user_id>/<string:role_title>",
-    endpoint="add_role",
-    methods=["POST"],
-)
-@add_role_blueprint.route(
-    "/user_delete_role/<string:user_id>/<string:role_title>",
-    endpoint="delete_role",
-    methods=["DELETE"],
-)
-@swag_from(
-    f"{SWAGGER_DOCS_PATH}/role/add_role_for_user.yaml",
-    endpoint="role_add_user.add_role",
-)
-@swag_from(
-    f"{SWAGGER_DOCS_PATH}/role/remove_role_for_user.yaml",
-    endpoint="role_add_user.delete_role",
-)
-def user_add_delete_role(user_id: str, role_title: str):
-    try:
-        if request.method == "POST":
-            add_role(user_id, role_title)
-            return "Роль успешно добавленна", 200
-        elif request.method == "DELETE":
-            delete_role(user_id, role_title)
-            return "Роль успешно удалена", 200
-        else:
-            return "Method not allowed", 405
-    except NotFoundError as e:
-        return e.message, 404
-    except AlreadyExistsError as e:
-        return e.message, 409
+    @swag_from(
+        f"{SWAGGER_DOCS_PATH}/role/remove_role_for_user.yaml",
+        endpoint="user_role.delete_role",
+    )
+    @catch_exceptions
+    def delete(self, user_id, role_title):
+        delete_role(user_id, role_title)
+        return "Роль успешно удалена", 200
 
 
 @AUTH_SERVICE.token_required(check_is_superuser=True)
@@ -69,36 +56,24 @@ def add_role(user_id: str = None, role_title: str = None):
     db.session.commit()
 
 
-@add_role_blueprint.route(
-    "/change_admin_rights/",
-    endpoint="create_admin",
-    methods=["POST"],
-)
-@add_role_blueprint.route(
-    "/change_admin_rights/<string:user_id>",
-    endpoint="delete_admin",
-    methods=["DELETE"],
-)
-@swag_from(
-    f"{SWAGGER_DOCS_PATH}/role/create_admin.yaml",
-    endpoint="role_add_user.create_admin",
-)
-@swag_from(
-    f"{SWAGGER_DOCS_PATH}/role/delete_admin.yaml",
-    endpoint="role_add_user.delete_admin",
-)
-def change_superuser_rights(user_id: str = None):
-    try:
-        if request.method == "POST":
-            create_admin()
-            return "Admin created", 200
-        if request.method == "DELETE":
-            delete_admin(user_id)
-            return "Admin deleted", 200
-    except NotFoundError as e:
-        return e.message, 404
-    except AlreadyExistsError as e:
-        return e.message, 409
+class ChangeSuperuserRights(MethodView):
+    @swag_from(
+        f"{SWAGGER_DOCS_PATH}/role/create_admin.yaml",
+        endpoint="user_role.create_admin",
+    )
+    @catch_exceptions
+    def post(self):
+        create_admin()
+        return "Admin created", 200
+
+    @swag_from(
+        f"{SWAGGER_DOCS_PATH}/role/delete_admin.yaml",
+        endpoint="user_role.delete_admin",
+    )
+    @catch_exceptions
+    def delete(self, user_id):
+        delete_admin(user_id)
+        return "Admin deleted", 200
 
 
 @AUTH_SERVICE.token_required(check_is_superuser=True)
@@ -122,11 +97,40 @@ def delete_admin(user_id: str):
     if not user:
         raise NotFoundError("User not found")
     if not user.is_superuser:
-        raise AlreadyExistsError("")
+        raise AlreadyExistsError("Already not admin")
 
     # Логика для отправки email с ссылкой для подтверждения действия
     db.session.query(User).get(user_id).is_superuser = False
     db.session.commit()
+
+
+user_role_blueprint.add_url_rule(
+    "/user_add_role/<string:user_id>/<string:role_title>",
+    endpoint="add_role",
+    methods=["POST"],
+    view_func=UserRoleView.as_view("user_role")
+)
+
+user_role_blueprint.add_url_rule(
+    "/user_delete_role/<string:user_id>/<string:role_title>",
+    endpoint="delete_role",
+    methods=["DELETE"],
+    view_func=UserRoleView.as_view("user_role")
+)
+
+user_role_blueprint.add_url_rule(
+    "/change_admin_rights/",
+    endpoint="create_admin",
+    methods=["POST"],
+    view_func=ChangeSuperuserRights.as_view("user_role")
+)
+
+user_role_blueprint.add_url_rule(
+    "/change_admin_rights/<string:user_id>",
+    endpoint="delete_admin",
+    methods=["DELETE"],
+    view_func=ChangeSuperuserRights.as_view("user_role")
+)
 
 
 
