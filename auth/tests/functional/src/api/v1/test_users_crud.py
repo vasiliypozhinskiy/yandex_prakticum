@@ -49,8 +49,31 @@ async def test_user_create(make_request):
     USER_ID = response.body["user_id"]
 
 
+async def test_login(make_request):
+    global ACCESS_TOKEN
+    global USER
+
+    response = await make_request("post")(
+        "login/",
+        json={"login": USER["login"], "password": USER["password"]},
+    )
+
+    assert response.status == HTTPStatus.OK
+    ACCESS_TOKEN = response.body['access_token']
+
+
+async def test_user_create_again(make_request):
+    global USER
+
+    response = await make_request("post")(
+        "user/",
+        json=USER,
+    )
+    assert response.status == HTTPStatus.CONFLICT
+
+
 async def test_user_data(make_request):
-    pass
+    global ACCESS_TOKEN
     global USER_ID
     global USER
     _user = copy.deepcopy(USER)
@@ -59,22 +82,59 @@ async def test_user_data(make_request):
 
     response = await make_request("get")(
         f"user/{USER_ID}",
-        headers={"Authorization": "access_token"},
+        headers={"Authorization": ACCESS_TOKEN},
     )
 
     assert response.status == HTTPStatus.OK
     assert response.body == json.loads(user_to_view.json())
 
-async def test_login(make_request):
-    global ACCESS_TOKEN
 
-    response = await make_request("post")(
-        "login/",
-        json={"login": USER["login"], "password": USER['password']},
+async def test_user_data_no_token(make_request):
+    
+    global USER_ID
+    global USER
+    _user = copy.deepcopy(USER)
+    _user['id'] = USER_ID
+    user_to_view = UserResponse.parse_obj(_user)
+
+    response = await make_request("get")(
+        f"user/{USER_ID}",
     )
 
     assert response.status == HTTPStatus.OK
-    ACCESS_TOKEN = response.body['access_token']
+    assert response.body == json.loads(user_to_view.json())
+
+
+async def test_user_data_inv_token(make_request):
+    
+    global USER_ID
+    global USER
+    _user = copy.deepcopy(USER)
+    _user['id'] = USER_ID
+    user_to_view = UserResponse.parse_obj(_user)
+
+    response = await make_request("get")(
+        f"user/{USER_ID}",
+        headers={"Authorization": "ACCESS_TOKEN"},
+    )
+
+    assert response.status == HTTPStatus.OK
+    assert response.body == json.loads(user_to_view.json())
+
+
+# async def test_update_user_data_no_token(make_request):
+
+#     global USER_ID
+#     global NEW_USER_DATA
+#     global ACCESS_TOKEN
+
+#     response = await make_request("patch")(
+#         f"user/{USER_ID}",
+#         json=NEW_USER_DATA,
+#     )
+
+#     assert response.status == HTTPStatus.UNAUTHORIZED
+
 
 async def test_update_user_data(make_request):
 
@@ -104,8 +164,31 @@ async def test_user_data_after_upd(make_request):
     new_data['id'] = USER_ID
     new_data.update(NEW_USER_DATA)
     user_to_view = UserResponse.parse_obj(new_data)
-    assert response.body == json.loads(user_to_view.json())
     assert response.status == HTTPStatus.OK
+    assert response.body == json.loads(user_to_view.json())
+
+
+async def test_user_delete_no_token(make_request):
+    global ACCESS_TOKEN
+    global USER_ID
+
+    response = await make_request("delete")(
+        f"user/{USER_ID}",
+    )
+
+    assert response.status == HTTPStatus.UNAUTHORIZED
+
+    
+async def test_user_delete_inv_token(make_request):
+    global ACCESS_TOKEN
+    global USER_ID
+
+    response = await make_request("delete")(
+        f"user/{USER_ID}",
+        headers={"Authorization": "ACCESS_TOKEN"},
+    )
+
+    assert response.status == HTTPStatus.UNAUTHORIZED
 
 
 async def test_user_delete(make_request):

@@ -114,6 +114,24 @@ async def test_login_second_user(make_request):
     U2_FIRST_ACCESS_TOKEN = response.body['access_token']
 
 
+async def test_logout_all_wrong_itself_on_id(make_request):
+    global U1_FIRST_ACCESS_TOKEN
+    global USER_ID_FIRST
+    response = await make_request("post")(
+        f"logout_all/{USER_ID_FIRST}",
+        headers={"Authorization": U1_FIRST_ACCESS_TOKEN},
+    )
+    assert response.status == HTTPStatus.FORBIDDEN
+
+async def test_logout_all_wrong_other_on_id(make_request):
+    global U2_FIRST_ACCESS_TOKEN
+    global USER_ID_FIRST
+    response = await make_request("post")(
+        f"logout_all/{USER_ID_FIRST}",
+        headers={"Authorization": U2_FIRST_ACCESS_TOKEN},
+    )
+    assert response.status == HTTPStatus.FORBIDDEN
+    
 async def test_logout_all(make_request):
     global SU_ACCESS_TOKEN
     global USER_ID_FIRST

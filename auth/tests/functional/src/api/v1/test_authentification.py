@@ -57,6 +57,16 @@ async def test_check_authorized(make_request):
     assert response.status == HTTPStatus.OK
 
 
+async def test_check_authorized_inv_token(make_request):
+    global ACCESS_TOKEN
+    response = await make_request("post")(
+        "authorize/",
+        headers={"Authorization": "invalid_token"},
+    )
+
+    assert response.status == HTTPStatus.UNAUTHORIZED
+
+
 async def test_logout(make_request):
     global ACCESS_TOKEN
     response = await make_request("post")(
