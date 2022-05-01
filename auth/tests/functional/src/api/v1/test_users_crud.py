@@ -10,6 +10,7 @@ from pydantic.types import date
 pytestmark = pytest.mark.asyncio
 
 USER_ID = "14"
+ACCESS_TOKEN = None
 USER = {
   "email": "example@email.com",
   "first_name": "Ivan",
@@ -48,7 +49,7 @@ async def test_user_create(make_request):
     USER_ID = response.body["user_id"]
 
 
-async def test_user_data(make_request, access_token):
+async def test_user_data(make_request):
     pass
     global USER_ID
     global USER
@@ -64,16 +65,27 @@ async def test_user_data(make_request, access_token):
     assert response.status == HTTPStatus.OK
     assert response.body == json.loads(user_to_view.json())
 
+async def test_login(make_request):
+    global ACCESS_TOKEN
 
-async def test_update_user_data(make_request, access_token):
+    response = await make_request("post")(
+        "login/",
+        json={"login": USER["login"], "password": USER['password']},
+    )
+
+    assert response.status == HTTPStatus.OK
+    ACCESS_TOKEN = response.body['access_token']
+
+async def test_update_user_data(make_request):
 
     global USER_ID
     global NEW_USER_DATA
+    global ACCESS_TOKEN
 
     response = await make_request("patch")(
         f"user/{USER_ID}",
         json=NEW_USER_DATA,
-        headers={"Authorization": 'access_token'},
+        headers={"Authorization": ACCESS_TOKEN},
     )
 
     assert response.status == HTTPStatus.OK
@@ -96,13 +108,13 @@ async def test_user_data_after_upd(make_request):
     assert response.status == HTTPStatus.OK
 
 
-async def test_user_delete(make_request, access_token):
-
+async def test_user_delete(make_request):
+    global ACCESS_TOKEN
     global USER_ID
 
     response = await make_request("delete")(
         f"user/{USER_ID}",
-        headers={"Authorization": "access_token"},
+        headers={"Authorization": ACCESS_TOKEN},
     )
 
     assert response.status == HTTPStatus.OK
@@ -110,16 +122,23 @@ async def test_user_delete(make_request, access_token):
 
 async def test_user_data_after_del(make_request):
     global USER_ID
+    global ACCESS_TOKEN
 
     response = await make_request("get")(
         f"user/{USER_ID}",
+        headers={"Authorization": ACCESS_TOKEN},
     )
 
     assert response.status == HTTPStatus.NOT_FOUND
 
 
 async def test_login_after_del(make_request):
-    pass
-    # response = await make_request("post")("auth/login", json=USER["credentials"])
+    global NEW_USER_DATA
+    global USER
 
-    # assert response.status == HTTPStatus.NOT_FOUND
+    response = await make_request("post")(
+        "login/",
+        json={"login": NEW_USER_DATA["login"], "password": USER['password']},
+    )
+
+    assert response.status == HTTPStatus.NOT_FOUND

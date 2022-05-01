@@ -3,8 +3,14 @@ from http import HTTPStatus
 
 import pytest
 
+from settings import Settings
+
+SETTINGS = Settings()
+
 # All test coroutines will be treated as marked with this decorator.
 pytestmark = pytest.mark.asyncio
+
+SU_ACCESS_TOKEN = None
 
 U1_FIRST_ACCESS_TOKEN = None
 U1_SECOND_ACCESS_TOKEN = None
@@ -66,6 +72,17 @@ async def test_login(make_request):
     U1_FIRST_ACCESS_TOKEN = response.body['access_token']
 
 
+async def test_login_su(make_request):
+    global SU_ACCESS_TOKEN
+    response = await make_request("post")(
+        "login/",
+        json={"login": "superuser", "password": SETTINGS.super_user_password},
+    )
+
+    assert response.status == HTTPStatus.OK
+    SU_ACCESS_TOKEN = response.body['access_token']
+
+
 async def test_check_authorized(make_request):
     global U1_FIRST_ACCESS_TOKEN
     response = await make_request("post")(
@@ -98,12 +115,12 @@ async def test_login_second_user(make_request):
 
 
 async def test_logout_all(make_request):
-    global U1_SECOND_ACCESS_TOKEN
+    global SU_ACCESS_TOKEN
     global USER_ID_FIRST
     time.sleep(1)
     response = await make_request("post")(
         f"logout_all/{USER_ID_FIRST}",
-        headers={"Authorization": U2_FIRST_ACCESS_TOKEN},
+        headers={"Authorization": SU_ACCESS_TOKEN},
     )
     assert response.status == HTTPStatus.OK
 
@@ -115,7 +132,7 @@ async def test_check_notauthorized_first_agent(make_request):
         headers={"Authorization": U1_FIRST_ACCESS_TOKEN, "User-Agent": "agent_1"},
     )
 
-    assert response.status == HTTPStatus.FORBIDDEN
+    assert response.status == HTTPStatus.UNAUTHORIZED
 
 
 async def test_check_notauthorized_second_agent(make_request):
@@ -125,7 +142,7 @@ async def test_check_notauthorized_second_agent(make_request):
         headers={"Authorization": U1_SECOND_ACCESS_TOKEN, "User-Agent": "agent_2"},
     )
 
-    assert response.status == HTTPStatus.FORBIDDEN
+    assert response.status == HTTPStatus.UNAUTHORIZED
 
 
 async def test_check_authorized_second_user(make_request):

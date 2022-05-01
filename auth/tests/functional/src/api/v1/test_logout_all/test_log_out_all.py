@@ -79,7 +79,7 @@ async def test_check_notauthorized_first_agent(make_request):
         headers={"Authorization": FIRST_ACCESS_TOKEN, "User-Agent": "agent_1"},
     )
 
-    assert response.status == HTTPStatus.FORBIDDEN
+    assert response.status == HTTPStatus.UNAUTHORIZED
 
 
 async def test_check_notauthorized_second_agent(make_request):
@@ -89,7 +89,7 @@ async def test_check_notauthorized_second_agent(make_request):
         headers={"Authorization": SECOND_ACCESS_TOKEN, "User-Agent": "agent_2"},
     )
 
-    assert response.status == HTTPStatus.FORBIDDEN
+    assert response.status == HTTPStatus.UNAUTHORIZED
 
 
 async def test_log_in_third(make_request):
