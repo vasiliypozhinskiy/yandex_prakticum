@@ -10,3 +10,11 @@ class AuthReqView(BaseModel):
 class AuthRespView(BaseModel):
     access_token: str
     refresh_token: str
+
+class AuthRefreshReqView(BaseModel):
+    refresh_token: str
+
+class AuthRefreshRespView(BaseModel):
+    access_token: str
+    refresh_token: str
+    
