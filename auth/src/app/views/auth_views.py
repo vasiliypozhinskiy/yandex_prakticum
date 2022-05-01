@@ -2,6 +2,7 @@ import json
 import uuid
 from typing import Optional
 
+from flask.views import View
 from flask import Blueprint, jsonify, request
 from flasgger.utils import swag_from
 from pydantic import ValidationError
@@ -10,44 +11,36 @@ from app.utils.exceptions import AccessDenied, UnExistingLogin, InvalidToken
 from app.core.swagger_config import SWAGGER_DOCS_PATH
 from app.views.models.auth import AuthRefreshReqView, AuthReqView
 from app.services.auth_services.auth_services import AUTH_SERVICE
+from app.views.utils.decorator import catch_exceptions
 
 auth_blueprint = Blueprint('auth', __name__, url_prefix='/auth/api/v1')
 
-
-@auth_blueprint.route('/login/', endpoint='login', methods=['POST'])
-@swag_from(f'{SWAGGER_DOCS_PATH}/auth/login.yaml', endpoint='auth.login', methods=['POST'])
-def login():
-    request_data = request.json
-    try:
+class Login(View):
+    methods = ['POST']
+    
+    @swag_from(f'{SWAGGER_DOCS_PATH}/auth/login.yaml', endpoint='auth.login', methods=['POST'])
+    @catch_exceptions
+    def dispatch_request(self):
+        request_data = request.json
         login_data = AuthReqView.parse_obj(request_data)
-    except ValidationError as e:
-        return str(e), 400
-
-    try:
         login_resp = AUTH_SERVICE.login(login_data)
-    except UnExistingLogin as e:
-        return str(e), 404
-    except AccessDenied as e:
-        return str(e), 401
-    except ValidationError as e:
-        return str(e), 400
-    return jsonify(json.loads(login_resp.json())), 200
+        return jsonify(json.loads(login_resp.json())), 200
 
+auth_blueprint.add_url_rule('/login/', endpoint='login', view_func=Login.as_view('login'))
 
-@auth_blueprint.route('/logout', endpoint='logout', methods=['POST'])
-@swag_from(f'{SWAGGER_DOCS_PATH}/auth/logout.yaml', endpoint='auth.logout', methods=['POST'])
-def logout():
-    try:
-        do_logout()
+class LogOut(View):
+    methods = ['POST']
+    
+    
+    @swag_from(f'{SWAGGER_DOCS_PATH}/auth/logout.yaml', endpoint='auth.logout', methods=['POST'])
+    @catch_exceptions
+    def dispatch_request(self):
+        access_token = request.headers["Authorization"]
+        AUTH_SERVICE.logout(access_token=access_token)
         return '', 200
-    except InvalidToken as e:
-        return e.message, 401
 
+auth_blueprint.add_url_rule('/logout', endpoint='logout', view_func=LogOut.as_view('logout'))
 
-@AUTH_SERVICE.token_required()
-def do_logout():
-    access_token = request.headers["Authorization"]
-    AUTH_SERVICE.logout(access_token=access_token)
 
 
 @auth_blueprint.route('/logout_all/', endpoint='logout-all', methods=['POST'])

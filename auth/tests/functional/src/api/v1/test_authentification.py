@@ -44,7 +44,7 @@ async def test_login_invalid(make_request):
         json={"login": "login", "password": "123qweQWE!@#222"},
     )
 
-    assert response.status == HTTPStatus.UNAUTHORIZED
+    assert response.status == HTTPStatus.FORBIDDEN
 
 
 async def test_check_authorized(make_request):
