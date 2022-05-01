@@ -43,6 +43,7 @@ services:
     environment:
       DB_PASSWORD: ${AUTH_DB_PASSWORD}
       REDIS_PASSWORD: $REDIS_PASSWORD
+      SUPERUSER_PASSWORD: ${SUPERUSER_PASSWORD}
     tty: true
     depends_on:
       - auth

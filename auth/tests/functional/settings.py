@@ -17,3 +17,6 @@ class Settings(BaseSettings):
     redis_host: str = Field("redis", env="REDIS_HOST")
     redis_port: int = Field(6379, env="REDIS_PORT")
     redis_password = Field("123qwe", env="REDIS_PASSWORD")
+
+    super_user_password: str = Field("password", env="SUPERUSER_PASSWORD")
+
