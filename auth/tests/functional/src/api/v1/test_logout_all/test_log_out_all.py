@@ -64,7 +64,6 @@ async def test_login_again(make_request):
 
 async def test_logout_all(make_request):
     global SECOND_ACCESS_TOKEN
-    time.sleep(1)
     response = await make_request("post")(
         "logout_all/",
         headers={"Authorization": SECOND_ACCESS_TOKEN},
@@ -94,7 +93,6 @@ async def test_check_notauthorized_second_agent(make_request):
 
 async def test_log_in_third(make_request):
     global THIRD_ACCESS_TOKEN
-    time.sleep(1)
     response = await make_request("post")(
         "login/",
         json={"login": "login", "password": "123qweQWE!@#"},

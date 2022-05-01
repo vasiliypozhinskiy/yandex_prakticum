@@ -117,7 +117,6 @@ async def test_login_second_user(make_request):
 async def test_logout_all(make_request):
     global SU_ACCESS_TOKEN
     global USER_ID_FIRST
-    time.sleep(1)
     response = await make_request("post")(
         f"logout_all/{USER_ID_FIRST}",
         headers={"Authorization": SU_ACCESS_TOKEN},
@@ -157,7 +156,6 @@ async def test_check_authorized_second_user(make_request):
 
 async def test_log_in_third(make_request):
     global U1_THIRD_ACCESS_TOKEN
-    time.sleep(1)
     response = await make_request("post")(
         "login/",
         json={"login": "login", "password": "123qweQWE!@#"},

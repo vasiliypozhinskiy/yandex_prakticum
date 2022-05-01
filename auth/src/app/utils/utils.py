@@ -1,4 +1,6 @@
 import bcrypt
+import math
+import time
 
 
 def hide_password(dict_):
@@ -25,3 +27,7 @@ def row2dict(row):
         d[column.name] = getattr(row, column.name)
 
     return d
+
+
+def get_now_ms() -> int:
+    return math.floor((time.time() * 1000))
