@@ -4,8 +4,9 @@ import uuid
 
 from flask import request
 
+from app.core import db
 from app.views.models.auth import AuthReqView, AuthRespView
-from app.models.db_models import User as DBUserModel
+from app.models.db_models import User, LoginHistory
 from app.utils.utils import check_password
 from app.utils.exceptions import UnExistingLogin, InvalidToken, AccessDenied
 from app.services.auth_services.jwt_service import JWT_SERVICE
@@ -16,10 +17,10 @@ from app.services.auth_services.black_list import REVOKED_ACCESS, LOG_OUT_ALL
 class AuthService:
 
     @staticmethod
-    def login(request_data: AuthReqView) -> AuthRespView:
+    def login(request_data: AuthReqView, agent="") -> AuthRespView:
         login_data = AuthReqView.parse_obj(request_data)
 
-        creds_from_storage = DBUserModel.query.filter_by(login=login_data.login).first()
+        creds_from_storage = User.query.filter_by(login=login_data.login).first()
         if creds_from_storage is None:
             raise UnExistingLogin
 
@@ -32,6 +33,16 @@ class AuthService:
                 user_id=creds_from_storage.id,
             )
             REF_TOK_STORAGE.add_token(refresh_token)
+
+            login_event = LoginHistory(
+                user_id=creds_from_storage.id,
+                user_agent=agent,
+                refresh_token=refresh_token,
+            )
+
+            db.session.add(login_event)
+            db.session.commit()
+
             return AuthRespView(access_token=access_token, refresh_token=refresh_token)
         else:
             raise AccessDenied
@@ -82,13 +93,15 @@ class AuthService:
                 access_token = request.headers.get("Authorization")
                 if not access_token:
                     raise InvalidToken
-                self.check_token(access_token)
-                payload = JWT_SERVICE.decode_token(access_token)
-                if not payload["is_superuser"] and check_is_me:
-                    if payload["user_id"] != kwargs["user_id"]:
+                if not self.check_token(access_token):
+                    raise InvalidToken
+
+                payload = JWT_SERVICE.get_access_payload(access_token)
+                if not payload.is_superuser and check_is_me:
+                    if str(payload.user_id) != kwargs["user_id"]:
                         raise AccessDenied
                 if check_is_superuser:
-                    if not payload["is_superuser"]:
+                    if not payload.is_superuser:
                         raise AccessDenied
                 value = func(*args, **kwargs)
                 return value

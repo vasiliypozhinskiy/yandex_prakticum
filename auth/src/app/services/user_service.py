@@ -5,7 +5,7 @@ from pydantic import ValidationError
 from sqlalchemy.exc import IntegrityError, DataError
 
 from app.core import db
-from app.models.db_models import User as DBUserModel, UserData as DBUserDataModel
+from app.models.db_models import User as DBUserModel, UserData as DBUserDataModel, LoginHistory as DBUserLoginModel
 from app.models.service_models import User as UserServiceModel
 from app.utils.exceptions import (
     AlreadyExistsError,
@@ -75,9 +75,9 @@ class UserService:
 
     def delete_user(self, user_id) -> None:
         self.try_get_from_db(user_id)
-
         DBUserModel.query.filter_by(id=user_id).delete()
         DBUserDataModel.query.filter_by(user_id=user_id).delete()
+        DBUserLoginModel.query.filter_by(user_id=user_id).delete()
         db.session.commit()
 
     def change_password(self, user_id, passwords) -> None:

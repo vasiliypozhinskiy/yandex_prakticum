@@ -1,7 +1,6 @@
 import uuid
 from abc import ABC, abstractmethod
 from typing import List
-from datetime import datetime, timedelta
 from typing import Optional, Tuple
 
 from pydantic import BaseModel
@@ -10,6 +9,7 @@ from jwt.exceptions import DecodeError, InvalidSignatureError
 
 from app.models.db_models import User
 from app.utils.exceptions import InvalidToken, AccessDenied
+from app.utils.utils import get_now_ms
 from app.core.config import SECRET_SIGNATURE, REFRESH_TOKEN_EXP, ACCESS_TOKEN_EXP
 
 
@@ -80,10 +80,10 @@ class ServiceJWT(BaseServiceJWT):
 
     def _get_access_jwt(self, user_id: uuid.UUID) -> str:
         user = User.query.filter_by(id=user_id).first()
-
+        now_ms = get_now_ms()
         payload = {
-            "exp": datetime.now() + timedelta(seconds=self.access_timeout),
-            "iat": datetime.now(),
+            "exp": now_ms + self.access_timeout * 1000,
+            "iat": now_ms,
             "user_id": str(user_id),
             "roles": user.roles,
             "is_superuser": user.is_superuser

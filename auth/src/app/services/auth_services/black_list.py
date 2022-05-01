@@ -1,11 +1,13 @@
 from abc import abstractmethod, ABC
 import uuid
+import math
+import time
 
 import redis
-from datetime import datetime
 
+from app.utils.utils import get_now_ms
 from app.db.redis import redis_revoked_tokens, redis_log_out_all
-from app.core.config import REFRESH_TOKEN_EXP, ACCESS_TOKEN_EXP, DATE_TIME_FORMAT
+from app.core.config import REFRESH_TOKEN_EXP, ACCESS_TOKEN_EXP
 from app.services.auth_services.jwt_service import JWT_SERVICE
 
 
@@ -46,18 +48,16 @@ class UserIDBlackList(BaseBlackList):
         self.storage.setex(
             str(user_id),
             REFRESH_TOKEN_EXP,
-            datetime.strftime(datetime.now(), DATE_TIME_FORMAT),
+            get_now_ms(),
         )
 
     def is_ok(self, access_token: str) -> bool:
         payload = JWT_SERVICE.get_access_payload(access_token)
-        str_time = self.storage.get(str(payload.user_id))
-        if str_time is None:
+        set_time = self.storage.get(str(payload.user_id))
+        if set_time is None:
             return True  # no request to logout for this user
-
-        iat = datetime.fromtimestamp(payload.iat)
-        set_time = datetime.strptime(str_time.decode(), DATE_TIME_FORMAT)
-        if iat < set_time:
+        set_time = int(set_time.decode())
+        if payload.iat < set_time:
             return False  # logged in after request on logout
         return True
 

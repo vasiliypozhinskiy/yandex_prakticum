@@ -49,9 +49,10 @@ def user_request_handler(user_id: str = None):
         elif request.method == "GET":
             response = get_user(user_id)
         elif request.method == "PATCH":
+            print('gonna upd user', flush=True)
             response = update_user(request, user_id=user_id)
         elif request.method == "DELETE":
-            response = delete_user(user_id)
+            response = delete_user(user_id=user_id)
         else:
             return "Method not allowed", 405
 
