@@ -20,7 +20,7 @@ class RoleView(MethodView):
     )
     @catch_exceptions
     def post(self, new_role):
-        return create_role(new_role)
+        return self._create_role(new_role)
 
     @swag_from(
         f"{SWAGGER_DOCS_PATH}/role/get_list_role.yaml",
@@ -29,7 +29,7 @@ class RoleView(MethodView):
     )
     @catch_exceptions
     def get(self):
-        return get_list_role()
+        return self._get_list_role()
 
     @swag_from(
         f"{SWAGGER_DOCS_PATH}/role/update_role.yaml",
@@ -38,7 +38,7 @@ class RoleView(MethodView):
     )
     @catch_exceptions
     def patch(self, role_title, new_role):
-        return update_role(role_title, new_role)
+        return self._update_role(role_title, new_role)
 
     @swag_from(
         f"{SWAGGER_DOCS_PATH}/role/delete_role.yaml",
@@ -47,36 +47,36 @@ class RoleView(MethodView):
     )
     @catch_exceptions
     def delete(self, role_title):
-        return delete_role(role_title)
+        return self._delete_role(role_title)
 
+    @staticmethod
+    @AUTH_SERVICE.token_required(check_is_superuser=True)
+    def _create_role(new_role):
+        """
+        Метод для создания роли
+        """
+        role_service.create_role(new_role)
 
-@AUTH_SERVICE.token_required(check_is_superuser=True)
-def create_role(new_role):
-    """
-    Метод для создания роли
-    """
-    role_service.create_role(new_role)
+        return "Created", HTTPStatus.CREATED
 
-    return "Created", HTTPStatus.CREATED
+    @staticmethod
+    def _get_list_role():
+        roles = role_service.get_list_role()
+        return roles
 
+    @staticmethod
+    @AUTH_SERVICE.token_required(check_is_superuser=True)
+    def _update_role(role_title: str, new_role: str):
 
-def get_list_role():
-    roles = role_service.get_list_role()
-    return roles
+        role_service.update_role(role_title, new_role)
+        return "Role updated", HTTPStatus.OK
 
-
-@AUTH_SERVICE.token_required(check_is_superuser=True)
-def update_role(role_title: str, new_role: str):
-
-    role_service.update_role(role_title, new_role)
-    return "Role updated", HTTPStatus.OK
-
-
-@AUTH_SERVICE.token_required(check_is_superuser=True)
-def delete_role(role_title):
-    """Метод для удаления роли"""
-    role_service.delete_role(role_title)
-    return "Role deleted", HTTPStatus.OK
+    @staticmethod
+    @AUTH_SERVICE.token_required(check_is_superuser=True)
+    def _delete_role(role_title):
+        """Метод для удаления роли"""
+        role_service.delete_role(role_title)
+        return "Role deleted", HTTPStatus.OK
 
 
 role_blueprint.add_url_rule(

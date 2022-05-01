@@ -22,7 +22,7 @@ class UserRoleView(MethodView):
     )
     @catch_exceptions
     def post(self, user_id, role_title):
-        add_role(user_id, role_title)
+        self._add_role(user_id, role_title)
         return "Роль успешно добавленна", HTTPStatus.OK
 
     @swag_from(
@@ -31,29 +31,29 @@ class UserRoleView(MethodView):
     )
     @catch_exceptions
     def delete(self, user_id, role_title):
-        delete_role(user_id, role_title)
-        return "Роль успешно удалена", 200
+        self._delete_role(user_id, role_title)
+        return "Роль успешно удалена", HTTPStatus.OK
 
+    @staticmethod
+    @AUTH_SERVICE.token_required(check_is_superuser=True)
+    def _delete_role(user_id: str = None, role_title: str = None):
+        user = User.query.filter_by(id=user_id).first()
+        role = Role.query.filter_by(title=role_title).first()
+        user.roles.remove(role)
+        db.session.commit()
 
-@AUTH_SERVICE.token_required(check_is_superuser=True)
-def delete_role(user_id: str = None, role_title: str = None):
-    user = User.query.filter_by(id=user_id).first()
-    role = Role.query.filter_by(title=role_title).first()
-    user.roles.remove(role)
-    db.session.commit()
-
-
-@AUTH_SERVICE.token_required(check_is_superuser=True)
-def add_role(user_id: str = None, role_title: str = None):
-    user = User.query.filter_by(id=user_id).first()
-    role = Role.query.filter_by(title=role_title).first()
-    if not user or not role:
-        raise NotFoundError("Role or user not found")
-    list_roles_in_user = [x.title for x in user.roles]
-    if role.title in list_roles_in_user:
-        return AlreadyExistsError("Role already exist")
-    user.roles.append(role)
-    db.session.commit()
+    @staticmethod
+    @AUTH_SERVICE.token_required(check_is_superuser=True)
+    def _add_role(user_id: str = None, role_title: str = None):
+        user = User.query.filter_by(id=user_id).first()
+        role = Role.query.filter_by(title=role_title).first()
+        if not user or not role:
+            raise NotFoundError("Role or user not found")
+        list_roles_in_user = [x.title for x in user.roles]
+        if role.title in list_roles_in_user:
+            return AlreadyExistsError("Role already exist")
+        user.roles.append(role)
+        db.session.commit()
 
 
 class ChangeSuperuserRights(MethodView):
@@ -63,8 +63,8 @@ class ChangeSuperuserRights(MethodView):
     )
     @catch_exceptions
     def post(self):
-        create_admin()
-        return "Admin created", 200
+        self._create_admin()
+        return "Admin created", HTTPStatus.OK
 
     @swag_from(
         f"{SWAGGER_DOCS_PATH}/role/delete_admin.yaml",
@@ -72,36 +72,36 @@ class ChangeSuperuserRights(MethodView):
     )
     @catch_exceptions
     def delete(self, user_id):
-        delete_admin(user_id)
-        return "Admin deleted", 200
+        self._delete_admin(user_id)
+        return "Admin deleted", HTTPStatus.OK
 
+    @staticmethod
+    @AUTH_SERVICE.token_required(check_is_superuser=True)
+    def _create_admin():
+        data = request.json
+        user = User.query.filter_by(email=data['email']).first()
 
-@AUTH_SERVICE.token_required(check_is_superuser=True)
-def create_admin():
-    data = request.json
-    user = User.query.filter_by(email=data['email']).first()
+        if not user:
+            raise NotFoundError
+        if user.is_superuser:
+            raise AlreadyExistsError("Already admin")
+        if check_password(data['password'], user.password):
+            # Логика для отправки email с ссылкой для подтверждения действия
+            db.session.query(User).get(user.id).is_superuser = True
+            db.session.commit()
 
-    if not user:
-        raise NotFoundError
-    if user.is_superuser:
-        raise AlreadyExistsError("Already admin")
-    if check_password(data['password'], user.password):
+    @staticmethod
+    @AUTH_SERVICE.token_required(check_is_superuser=True)
+    def _delete_admin(user_id: str):
+        user = User.query.filter_by(id=user_id).first()
+        if not user:
+            raise NotFoundError("User not found")
+        if not user.is_superuser:
+            raise AlreadyExistsError("Already not admin")
+
         # Логика для отправки email с ссылкой для подтверждения действия
-        db.session.query(User).get(user.id).is_superuser = True
+        db.session.query(User).get(user_id).is_superuser = False
         db.session.commit()
-
-
-@AUTH_SERVICE.token_required(check_is_superuser=True)
-def delete_admin(user_id: str):
-    user = User.query.filter_by(id=user_id).first()
-    if not user:
-        raise NotFoundError("User not found")
-    if not user.is_superuser:
-        raise AlreadyExistsError("Already not admin")
-
-    # Логика для отправки email с ссылкой для подтверждения действия
-    db.session.query(User).get(user_id).is_superuser = False
-    db.session.commit()
 
 
 user_role_blueprint.add_url_rule(
