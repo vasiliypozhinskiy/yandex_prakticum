@@ -3,11 +3,11 @@ import os
 from app.core import app
 from app.views.user_view import user_blueprint
 from app.views.role_view import role_blueprint
-from app.views.user_add_role import add_role_blueprint
+from app.views.user_add_role import user_role_blueprint
 from app.views.auth_views import auth_blueprint
 
 app.register_blueprint(role_blueprint)
-app.register_blueprint(add_role_blueprint)
+app.register_blueprint(user_role_blueprint)
 app.register_blueprint(user_blueprint)
 app.register_blueprint(auth_blueprint)
 
