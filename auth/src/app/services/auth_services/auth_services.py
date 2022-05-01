@@ -82,13 +82,15 @@ class AuthService:
                 access_token = request.headers.get("Authorization")
                 if not access_token:
                     raise InvalidToken
-                self.check_token(access_token)
-                payload = JWT_SERVICE.decode_token(access_token)
-                if not payload["is_superuser"] and check_is_me:
-                    if payload["user_id"] != kwargs["user_id"]:
+                if not self.check_token(access_token):
+                    raise InvalidToken
+
+                payload = JWT_SERVICE.get_access_payload(access_token)
+                if not payload.is_superuser and check_is_me:
+                    if str(payload.user_id) != kwargs["user_id"]:
                         raise AccessDenied
                 if check_is_superuser:
-                    if not payload["is_superuser"]:
+                    if not payload.is_superuser:
                         raise AccessDenied
                 value = func(*args, **kwargs)
                 return value
