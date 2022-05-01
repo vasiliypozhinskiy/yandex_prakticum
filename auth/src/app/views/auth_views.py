@@ -26,7 +26,6 @@ class Login(View):
         login_resp = AUTH_SERVICE.login(login_data)
         return jsonify(json.loads(login_resp.json())), 200
 
-auth_blueprint.add_url_rule('/login/', endpoint='login', view_func=Login.as_view('login'))
 
 class LogOut(View):
     methods = ['POST']
@@ -39,8 +38,16 @@ class LogOut(View):
         AUTH_SERVICE.logout(access_token=access_token)
         return '', 200
 
-auth_blueprint.add_url_rule('/logout', endpoint='logout', view_func=LogOut.as_view('logout'))
 
+class Authorize(View):
+    methods = ['POST']
+    
+    @swag_from(f'{SWAGGER_DOCS_PATH}/auth/authorize.yaml', endpoint='auth.authorize', methods=['POST'])
+    @catch_exceptions
+    def dispatch_request(self):
+        access_token = request.headers["Authorization"]
+        roles = AUTH_SERVICE.authorize(access_token=access_token)
+        return jsonify(roles), 200
 
 
 @auth_blueprint.route('/logout_all/', endpoint='logout-all', methods=['POST'])
@@ -86,19 +93,8 @@ def do_logout_all_with_id(user_id):
 def do_logout_all():
     access_token = request.headers["Authorization"]
     AUTH_SERVICE.logout_all(access_token=access_token)
+    
 
-
-@auth_blueprint.route('/authorize/', endpoint='authorize', methods=['POST'])
-@swag_from(f'{SWAGGER_DOCS_PATH}/auth/authorize.yaml', endpoint='auth.authorize', methods=['POST'])
-def authorize():
-    try:
-        roles = do_authorize()
-        return jsonify(roles), 200
-    except InvalidToken as e:
-        return e.message, 401
-
-
-@AUTH_SERVICE.token_required()
-def do_authorize():
-    access_token = request.headers["Authorization"]
-    return AUTH_SERVICE.authorize(access_token=access_token)
+auth_blueprint.add_url_rule('/login/', endpoint='login', view_func=Login.as_view('login'))
+auth_blueprint.add_url_rule('/logout', endpoint='logout', view_func=LogOut.as_view('logout'))
+auth_blueprint.add_url_rule('/authorize/', endpoint='authorize', view_func=Authorize.as_view('authorize'))
