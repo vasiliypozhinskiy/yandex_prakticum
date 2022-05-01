@@ -6,7 +6,7 @@ from sqlalchemy.exc import IntegrityError, DataError
 
 from app.core import db
 from app.models.db_models import User as DBUserModel, UserData as DBUserDataModel, LoginHistory as DBUserLoginModel
-from app.models.service_models import User as UserServiceModel
+from app.models.service_models import User as UserServiceModel, HistoryEntry as HistoryEntryServiceModel
 from app.utils.exceptions import (
     AlreadyExistsError,
     BadIdFormat,
@@ -93,6 +93,12 @@ class UserService:
 
         DBUserModel.query.filter_by(id=user_id).update({"password": user["password"]})
         db.session.commit()
+
+    def get_history(self, user_id):
+        user = DBUserModel.query.filter_by(id=user_id).first()
+        history = [HistoryEntryServiceModel(**row2dict(row)) for row in user.history_entries]
+
+        return history
 
     @staticmethod
     def validate_user(user_data):
