@@ -1,55 +1,53 @@
+from http import HTTPStatus
+
 from flasgger.utils import swag_from
-from flask import Blueprint, request
+from flask import Blueprint
+from flask.views import MethodView
 
 from app.core.swagger_config import SWAGGER_DOCS_PATH
 from app.services.auth_services.auth_services import AUTH_SERVICE
 from app.services.role_service import role_service
-from app.utils.exceptions import AlreadyExistsError
-from app.utils.exceptions import NotFoundError
+from app.views.utils.decorator import catch_exceptions
 
 role_blueprint = Blueprint("role", __name__, url_prefix="/auth/api/v1")
 
 
-@role_blueprint.route(
-    "/role/<string:new_role>", endpoint="create_role", methods=["POST"]
-)
-@role_blueprint.route("/role/role_list/", endpoint="list_role", methods=["GET"])
-@role_blueprint.route(
-    "/role/<string:role_title>", endpoint="delete_role", methods=["DELETE"]
-)
-@role_blueprint.route(
-    "/role/<string:role_title>/<new_role>", endpoint="update_role", methods=["PATCH"]
-)
-@swag_from(
-    f"{SWAGGER_DOCS_PATH}/role/create_role.yaml", endpoint="role.create_role"
-)
-@swag_from(
-    f"{SWAGGER_DOCS_PATH}/role/delete_role.yaml",
-    endpoint="role.delete_role",
-    methods=["DELETE"],
-)
-@swag_from(
-    f"{SWAGGER_DOCS_PATH}/role/get_list_role.yaml",
-    endpoint="role.list_role",
-    methods=["GET"],
-)
-@swag_from(
-    f"{SWAGGER_DOCS_PATH}/role/update_role.yaml",
-    endpoint="role.update_role",
-    methods=["PATCH"],
-)
-def role_handler(new_role: str = None, role_title: str = None):
-    if request.method == "POST":
-        response = create_role(new_role)
-    elif request.method == "GET":
-        response = get_list_role()
-    elif request.method == "PATCH":
-        response = update_role(role_title, new_role)
-    elif request.method == "DELETE":
-        response = delete_role(role_title)
-    else:
-        return "Method not allowed", 405
-    return response
+class RoleView(MethodView):
+    @swag_from(
+        f"{SWAGGER_DOCS_PATH}/role/create_role.yaml",
+        endpoint="role.create_role",
+        methods=["POST"]
+    )
+    @catch_exceptions
+    def post(self, new_role):
+        return create_role(new_role)
+
+    @swag_from(
+        f"{SWAGGER_DOCS_PATH}/role/get_list_role.yaml",
+        endpoint="role.list_role",
+        methods=["GET"],
+    )
+    @catch_exceptions
+    def get(self):
+        return get_list_role()
+
+    @swag_from(
+        f"{SWAGGER_DOCS_PATH}/role/update_role.yaml",
+        endpoint="role.update_role",
+        methods=["PATCH"],
+    )
+    @catch_exceptions
+    def patch(self, role_title, new_role):
+        return update_role(role_title, new_role)
+
+    @swag_from(
+        f"{SWAGGER_DOCS_PATH}/role/delete_role.yaml",
+        endpoint="role.delete_role",
+        methods=["DELETE"],
+    )
+    @catch_exceptions
+    def delete(self, role_title):
+        return delete_role(role_title)
 
 
 @AUTH_SERVICE.token_required(check_is_superuser=True)
@@ -57,12 +55,9 @@ def create_role(new_role):
     """
     Метод для создания роли
     """
-    role = {"title": new_role}
-    try:
-        role_service.create_role(role)
-    except AlreadyExistsError as e:
-        return e.message, 409
-    return "Created", 201
+    role_service.create_role(new_role)
+
+    return "Created", HTTPStatus.CREATED
 
 
 def get_list_role():
@@ -72,20 +67,39 @@ def get_list_role():
 
 @AUTH_SERVICE.token_required(check_is_superuser=True)
 def update_role(role_title: str, new_role: str):
-    try:
-        role_service.update_role(role_title, new_role)
-    except NotFoundError as e:
-        return e.message, 404
-    except AlreadyExistsError as e:
-        return e.message, 409
-    return "Role updated", 200
+
+    role_service.update_role(role_title, new_role)
+    return "Role updated", HTTPStatus.OK
 
 
 @AUTH_SERVICE.token_required(check_is_superuser=True)
 def delete_role(role_title):
     """Метод для удаления роли"""
-    try:
-        role_service.delete_role(role_title)
-    except NotFoundError as e:
-        return e.message, 404
-    return "Role deleted", 200
+    role_service.delete_role(role_title)
+    return "Role deleted", HTTPStatus.OK
+
+
+role_blueprint.add_url_rule(
+    "/role/role_list/",
+    endpoint="list_role",
+    methods=["GET"],
+    view_func=RoleView.as_view("role")
+)
+role_blueprint.add_url_rule(
+    "/role/<string:new_role>",
+    endpoint="create_role",
+    methods=["POST"],
+    view_func=RoleView.as_view("role")
+)
+role_blueprint.add_url_rule(
+    "/role/<string:role_title>",
+    endpoint="delete_role",
+    methods=["DELETE"],
+    view_func=RoleView.as_view("role")
+)
+role_blueprint.add_url_rule(
+    "/role/<string:role_title>/<new_role>",
+    endpoint="update_role",
+    methods=["PATCH"],
+    view_func=RoleView.as_view("role")
+)
