@@ -5,9 +5,7 @@ from typing import Optional
 from flask.views import View
 from flask import Blueprint, jsonify, request
 from flasgger.utils import swag_from
-from pydantic import ValidationError
 
-from app.utils.exceptions import AccessDenied, UnExistingLogin, InvalidToken
 from app.core.swagger_config import SWAGGER_DOCS_PATH
 from app.views.models.auth import AuthRefreshReqView, AuthReqView
 from app.services.auth_services.auth_services import AUTH_SERVICE
@@ -54,6 +52,7 @@ class Refresh(View):
     methods = ['POST']
     
     @catch_exceptions
+    @swag_from(f'{SWAGGER_DOCS_PATH}/auth/refresh.yaml', endpoint='auth.refresh', methods=['POST'])
     def dispatch_request(self):
         req = AuthRefreshReqView(**request.json)
         response = AUTH_SERVICE.refresh_jwt(refresh_jwt=req.refresh_token)
@@ -73,8 +72,8 @@ class BaseLogoutAll(View):
 
 class LogOutAllId(BaseLogoutAll):
 
+    @swag_from(f'{SWAGGER_DOCS_PATH}/auth/logout_all_id.yaml', endpoint='auth.logout-all-id', methods=['POST'])
     @catch_exceptions
-    @swag_from(f'{SWAGGER_DOCS_PATH}/auth/logout_all.yaml', endpoint='auth.logout-all', methods=['POST'])
     @AUTH_SERVICE.token_required(check_is_superuser=True)
     def dispatch_request(self, user_id: Optional[str] = None):
         return super().dispatch_request(user_id=user_id)
@@ -83,49 +82,16 @@ class LogOutAllId(BaseLogoutAll):
 
 class LogOutAllAccess(BaseLogoutAll):
     
+    @swag_from(f'{SWAGGER_DOCS_PATH}/auth/logout_all.yaml', endpoint='auth.logout-all-access', methods=['POST'])
     @catch_exceptions
-    @swag_from(f'{SWAGGER_DOCS_PATH}/auth/logout_all.yaml', endpoint='auth.logout-all', methods=['POST'])
     @AUTH_SERVICE.token_required()
     def dispatch_request(self, user_id: Optional[str] = None):
         return super().dispatch_request(user_id=user_id)
 
 
-# @auth_blueprint.route('/logout_all/', endpoint='logout-all', methods=['POST'])
-# @auth_blueprint.route('/logout_all/<string:user_id>', endpoint='logout-all', methods=['POST'])
-# @swag_from(f'{SWAGGER_DOCS_PATH}/auth/logout_all.yaml', endpoint='auth.logout-all', methods=['POST'])
-# @swag_from(f'{SWAGGER_DOCS_PATH}/auth/logout_all_id.yaml', endpoint='auth.logout-all', methods=['POST'])
-# def logout_all(user_id: Optional[str] = None):
-#     try:
-#         if user_id:
-#             do_logout_all_with_id(user_id=user_id)
-#         else:
-#             do_logout_all()
-#         return '', 200
-#     except InvalidToken as e:
-#         return e.message, 401
-#     except AccessDenied as e:
-#         return e.message, 403
-
-
-
-
-
-# def do_logout_all_with_id(user_id):
-#     access_token = request.headers["Authorization"]
-#     if user_id is not None:
-#         user_id = uuid.UUID(user_id)
-#     AUTH_SERVICE.logout_all(access_token=access_token, user_id=user_id)
-
-
-
-# def do_logout_all():
-#     access_token = request.headers["Authorization"]
-#     AUTH_SERVICE.logout_all(access_token=access_token)
-
-
-auth_blueprint.add_url_rule('/login/', endpoint='login', view_func=Login.as_view('login'))
-auth_blueprint.add_url_rule('/logout', endpoint='logout', view_func=LogOut.as_view('logout'))
-auth_blueprint.add_url_rule('/authorize/', endpoint='authorize', view_func=Authorize.as_view('authorize'))
-auth_blueprint.add_url_rule('/refresh/', endpoint='refresh', view_func=Refresh.as_view('refresh'))
-auth_blueprint.add_url_rule('/logout_all/<string:user_id>', endpoint='logout_all_id', view_func=LogOutAllId.as_view('logout_all'))
-auth_blueprint.add_url_rule('/logout_all/', endpoint='logout_all_access', view_func=LogOutAllAccess.as_view('logout_all'))
+auth_blueprint.add_url_rule('/login/', endpoint='login', view_func=Login.as_view('auth'))
+auth_blueprint.add_url_rule('/logout', endpoint='logout', view_func=LogOut.as_view('auth'))
+auth_blueprint.add_url_rule('/authorize/', endpoint='authorize', view_func=Authorize.as_view('auth'))
+auth_blueprint.add_url_rule('/refresh/', endpoint='refresh', view_func=Refresh.as_view('auth'))
+auth_blueprint.add_url_rule('/logout_all/<string:user_id>', endpoint='logout-all-id', view_func=LogOutAllId.as_view('auth'))
+auth_blueprint.add_url_rule('/logout_all/', endpoint='logout-all-access', view_func=LogOutAllAccess.as_view('auth'))
