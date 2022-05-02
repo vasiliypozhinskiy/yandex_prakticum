@@ -85,8 +85,17 @@ class ServiceJWT(BaseServiceJWT):
             )
         
     def _get_refresh_jwt(self, user_id: uuid.UUID):
-        #TODO Отдавать рефреш токен
-        return self._get_access_jwt(user_id=user_id)
+        user = User.query.filter_by(id=user_id).first()
+        now_ms = get_now_ms()
+        payload = {
+            "exp": now_ms + self.refresh_timeout * 1000,
+            "iat": now_ms,
+            "user_id": user_id,
+            "roles": user.roles,
+            "is_superuser": user.is_superuser
+        }
+        payload = AccessPayload(**payload)
+        return self.encode(payload=payload)
 
     def _get_access_jwt(self, user_id: uuid.UUID) -> str:
         user = User.query.filter_by(id=user_id).first()
