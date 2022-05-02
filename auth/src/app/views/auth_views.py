@@ -1,9 +1,8 @@
-import json
 import uuid
 from typing import Optional
 from http import HTTPStatus
 
-from flask.views import MethodView, View
+from flask.views import MethodView
 from flask import Blueprint, jsonify, request
 from flasgger.utils import swag_from
 
