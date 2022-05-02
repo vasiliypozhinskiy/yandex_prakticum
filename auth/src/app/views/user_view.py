@@ -8,7 +8,7 @@ from app.core.swagger_config import SWAGGER_DOCS_PATH
 from app.services.user_service import user_service
 from app.services.auth_services.auth_services import AUTH_SERVICE
 from app.utils.exceptions import NotFoundError
-from app.views.models.user import UserResponse
+from app.views.models.user import UserResponse, UserHistoryResponse, HistoryEntry
 from app.views.utils.decorator import catch_exceptions
 
 user_blueprint = Blueprint("user", __name__, url_prefix="/auth/api/v1")
@@ -98,6 +98,7 @@ class UserChangePassword(MethodView):
         f"{SWAGGER_DOCS_PATH}/user/change_password.yaml",
         endpoint="user.change_password"
     )
+    @catch_exceptions
     def put(self, user_id):
         return self._change_password(user_id=user_id)
 
@@ -113,6 +114,23 @@ class UserChangePassword(MethodView):
         AUTH_SERVICE.logout_all(request.headers["authorization"])
 
         return "Password changed", HTTPStatus.OK
+
+
+class UserHistory(MethodView):
+    @swag_from(
+        f"{SWAGGER_DOCS_PATH}/user/get_history.yaml",
+        endpoint="user.get_history"
+    )
+    @catch_exceptions
+    def get(self, user_id):
+        return jsonify(self._get_history(user_id=user_id))
+
+    @staticmethod
+    @AUTH_SERVICE.token_required(check_is_me=True)
+    def _get_history(user_id):
+        history_entries = [HistoryEntry(**dict(entry)) for entry in user_service.get_history(user_id)]
+        response = UserHistoryResponse(entries=history_entries)
+        return response.to_dict()
 
 
 user_blueprint.add_url_rule(
@@ -133,5 +151,12 @@ user_blueprint.add_url_rule(
     "/user/<string:user_id>/change_password",
     endpoint="change_password",
     methods=["PUT"],
-    view_func=UserView.as_view("user")
+    view_func=UserChangePassword.as_view("user")
+)
+
+user_blueprint.add_url_rule(
+    "/user/<string:user_id>/get_history",
+    endpoint="get_history",
+    methods=["GET"],
+    view_func=UserHistory.as_view("user")
 )

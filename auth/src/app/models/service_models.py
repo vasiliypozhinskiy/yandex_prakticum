@@ -2,7 +2,7 @@ import re
 from typing import Optional, List
 from uuid import UUID
 
-from pydantic.types import date
+from datetime import date, datetime
 from pydantic import validator
 from pydantic.main import BaseModel
 
@@ -48,3 +48,9 @@ class User(BaseModel):
         if len(field) > 100:
             raise BadLengthError(message="Wrong length of field. Max 100 characters")
         return field
+
+
+class HistoryEntry(BaseModel):
+    id: UUID
+    user_agent: str
+    created_at: datetime
