@@ -19,8 +19,9 @@ class Login(MethodView):
     @catch_exceptions
     def post(self):
         request_data = request.json
+        agent = request.headers.get('User-Agent')
         login_data = AuthReqView.parse_obj(request_data)
-        login_resp = AUTH_SERVICE.login(login_data)
+        login_resp = AUTH_SERVICE.login(login_data, agent=agent)
         return login_resp.dict()
 
 
