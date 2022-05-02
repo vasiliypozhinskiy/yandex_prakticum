@@ -1,7 +1,7 @@
 version: "3"
 services:
   auth_db:
-    build: '../../../auth_db'
+    build: '../../../auth_db_test'
     environment:
       POSTGRES_USER: auth_app
       POSTGRES_PASSWORD: ${AUTH_DB_PASSWORD}
