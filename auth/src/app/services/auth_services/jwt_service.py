@@ -1,22 +1,23 @@
 import uuid
 from abc import ABC, abstractmethod
-from typing import List
-from typing import Optional, Tuple
+from typing import Optional, Tuple, List
 
 from pydantic import BaseModel
 import jwt
 from jwt.exceptions import DecodeError, InvalidSignatureError
 
 from app.models.db_models import User
-from app.utils.exceptions import InvalidToken, AccessDenied
+from app.utils.exceptions import InvalidToken
 from app.utils.utils import get_now_ms
 from app.core.config import SECRET_SIGNATURE, REFRESH_TOKEN_EXP, ACCESS_TOKEN_EXP
 
 
-class BasePayload(BaseModel):
+class BasePayload(BaseModel, ABC):
     iat: int
     exp: int
     user_id: uuid.UUID
+    roles: List[str]
+    is_superuser: bool
 
 
 class RefreshPayload(BasePayload):
@@ -24,8 +25,7 @@ class RefreshPayload(BasePayload):
 
 
 class AccessPayload(BasePayload):
-    roles: List[str]
-    is_superuser: bool
+    pass
 
 
 class BaseServiceJWT(ABC):
@@ -73,26 +73,75 @@ class ServiceJWT(BaseServiceJWT):
         ):
             raise InvalidToken
         return payload
+
+    @staticmethod
+    def encode(payload: BaseModel):
+        payload = payload.dict()
+        payload['user_id'] = str(payload['user_id'])
+        return jwt.encode(
+                payload,
+                SECRET_SIGNATURE,
+                algorithm="HS256",
+            )
         
     def _get_refresh_jwt(self, user_id: uuid.UUID):
-        #TODO Отдавать рефреш токен
-        return self._get_access_jwt(user_id=user_id)
+        roles, is_su = self._get_roles_and_su(user_id)
+        now_ms = get_now_ms()
+        payload = {
+            "exp": now_ms + self.refresh_timeout * 1000,
+            "iat": now_ms,
+            "user_id": user_id,
+            "roles": roles,
+            "is_superuser": is_su
+        }
+        payload = AccessPayload(**payload)
+        return self.encode(payload=payload)
 
     def _get_access_jwt(self, user_id: uuid.UUID) -> str:
-        user = User.query.filter_by(id=user_id).first()
+        roles, is_su = self._get_roles_and_su(user_id)
         now_ms = get_now_ms()
         payload = {
             "exp": now_ms + self.access_timeout * 1000,
             "iat": now_ms,
-            "user_id": str(user_id),
-            "roles": user.roles,
-            "is_superuser": user.is_superuser
+            "user_id": user_id,
+            "roles": roles,
+            "is_superuser": is_su
         }
-        return jwt.encode(
-            payload,
-            SECRET_SIGNATURE,
-            algorithm="HS256",
+        payload = AccessPayload(**payload)
+        return self.encode(payload=payload)
+    
+    def refresh_payloads(self, refresh: RefreshPayload, soft: bool = True) -> Tuple[AccessPayload, RefreshPayload]:
+        now = get_now_ms()
+        # refresh refresh
+        if refresh.exp > now:
+            refresh.iat = now
+            refresh.exp = now + REFRESH_TOKEN_EXP
+        
+        # build new access
+        access = AccessPayload(
+            iat=now,
+            exp=now + ACCESS_TOKEN_EXP,
+            user_id=refresh.user_id, 
+            is_superuser=refresh.is_superuser,
+            roles=refresh.roles
         )
+
+        # on special key upd roles
+        if not soft:
+            roles, is_su = self._get_roles_and_su(refresh.user_id)
+            access.roles = roles
+            refresh.roles = roles
+            access.is_superuser = is_su
+            access.is_superuser = is_su
+
+        return (access, refresh)
+
+    @staticmethod
+    def _get_roles_and_su(user_id: uuid.UUID) -> Tuple[List[str], bool]:
+        user = User.query.filter_by(id=user_id).first()
+        return [r.title for r in user.roles], user.is_superuser
+
+
 
 
 JWT_SERVICE = ServiceJWT(refresh_timeout=REFRESH_TOKEN_EXP, access_timeout=ACCESS_TOKEN_EXP)

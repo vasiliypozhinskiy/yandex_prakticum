@@ -11,7 +11,7 @@ from app.utils.utils import check_password
 from app.utils.exceptions import UnExistingLogin, InvalidToken, AccessDenied
 from app.services.auth_services.jwt_service import JWT_SERVICE
 from app.services.auth_services.storages import REF_TOK_STORAGE
-from app.services.auth_services.black_list import REVOKED_ACCESS, LOG_OUT_ALL
+from app.services.auth_services.black_list import REVOKED_ACCESS, LOG_OUT_ALL, ROLES_UPDATE
 
 
 class AuthService:
@@ -67,7 +67,7 @@ class AuthService:
             raise AccessDenied
 
     def authorize(self, access_token: str) -> List[str]:
-        if not self.check_token(access_token):
+        if not self.check_access_token(access_token):
             raise InvalidToken
 
         payload = JWT_SERVICE.get_access_payload(access_token)
@@ -76,11 +76,25 @@ class AuthService:
         raise InvalidToken
 
     @staticmethod
-    def check_token(access_token):
-        if REVOKED_ACCESS.is_ok(access_token) and LOG_OUT_ALL.is_ok(access_token):
+    def check_access_token(access_token):
+        if REVOKED_ACCESS.is_ok(access_token) and LOG_OUT_ALL.is_ok(access_token) and ROLES_UPDATE.is_ok(access_token):
             return True
         else:
             return False
+
+    @staticmethod
+    def refresh_jwt(refresh_jwt: str) -> AuthRespView:
+        refresh_payload = JWT_SERVICE.get_refresh_payload(refresh_jwt)
+        if (refresh_payload is None) or (not LOG_OUT_ALL.is_ok(refresh_jwt)):
+            raise InvalidToken
+        access_payload, refresh_payload = JWT_SERVICE.refresh_payloads(
+            refresh_payload,
+            soft=ROLES_UPDATE.is_ok(refresh_jwt)
+        )
+        return AuthRespView(
+            access_token=JWT_SERVICE.encode(access_payload),
+            refresh_token=JWT_SERVICE.encode(refresh_payload)
+        )
 
     def token_required(self, check_is_me=False, check_is_superuser=False):
         """
@@ -93,7 +107,7 @@ class AuthService:
                 access_token = request.headers.get("Authorization")
                 if not access_token:
                     raise InvalidToken
-                if not self.check_token(access_token):
+                if not self.check_access_token(access_token):
                     raise InvalidToken
 
                 payload = JWT_SERVICE.get_access_payload(access_token)
