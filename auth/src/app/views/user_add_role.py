@@ -8,6 +8,7 @@ from app.models.db_models import User, Role
 from app.core import db
 from app.core.swagger_config import SWAGGER_DOCS_PATH
 from app.services.auth_services.auth_services import AUTH_SERVICE
+from app.services.auth_services.black_list import ROLES_UPDATE
 from app.utils.exceptions import NotFoundError, AlreadyExistsError
 from app.utils.utils import check_password
 from app.views.utils.decorator import catch_exceptions
@@ -41,6 +42,7 @@ class UserRoleView(MethodView):
         role = Role.query.filter_by(title=role_title).first()
         user.roles.remove(role)
         db.session.commit()
+        ROLES_UPDATE.add(user_id=user.id)
 
     @staticmethod
     @AUTH_SERVICE.token_required(check_is_superuser=True)
@@ -54,6 +56,7 @@ class UserRoleView(MethodView):
             return AlreadyExistsError("Role already exist")
         user.roles.append(role)
         db.session.commit()
+        ROLES_UPDATE.add(user_id=user.id)
 
 
 class ChangeSuperuserRights(MethodView):
@@ -89,6 +92,7 @@ class ChangeSuperuserRights(MethodView):
             # Логика для отправки email с ссылкой для подтверждения действия
             db.session.query(User).get(user.id).is_superuser = True
             db.session.commit()
+            ROLES_UPDATE.add(user_id=user.id)
 
     @staticmethod
     @AUTH_SERVICE.token_required(check_is_superuser=True)
@@ -102,6 +106,7 @@ class ChangeSuperuserRights(MethodView):
         # Логика для отправки email с ссылкой для подтверждения действия
         db.session.query(User).get(user_id).is_superuser = False
         db.session.commit()
+        ROLES_UPDATE.add(user_id=user.id)
 
 
 user_role_blueprint.add_url_rule(

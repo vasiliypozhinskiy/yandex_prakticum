@@ -4,7 +4,7 @@ import uuid
 import redis
 
 from app.utils.utils import get_now_ms
-from app.db.redis import redis_revoked_tokens, redis_log_out_all
+from app.db.redis import redis_revoked_tokens, redis_log_out_all, redis_upd_roles
 from app.core.config import REFRESH_TOKEN_EXP, ACCESS_TOKEN_EXP
 from app.services.auth_services.jwt_service import JWT_SERVICE
 
@@ -62,3 +62,4 @@ class UserIDBlackList(BaseBlackList):
 
 REVOKED_ACCESS = TokenBlackList(storage=redis_revoked_tokens, exp_time=ACCESS_TOKEN_EXP, reason='revoked')
 LOG_OUT_ALL = UserIDBlackList(storage=redis_log_out_all, exp_time=REFRESH_TOKEN_EXP)
+ROLES_UPDATE = UserIDBlackList(storage=redis_upd_roles, exp_time=REFRESH_TOKEN_EXP)

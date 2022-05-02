@@ -7,7 +7,7 @@ import jwt
 from jwt.exceptions import DecodeError, InvalidSignatureError
 
 from app.models.db_models import User
-from app.utils.exceptions import InvalidToken, AccessDenied
+from app.utils.exceptions import InvalidToken
 from app.utils.utils import get_now_ms
 from app.core.config import SECRET_SIGNATURE, REFRESH_TOKEN_EXP, ACCESS_TOKEN_EXP
 
@@ -85,27 +85,27 @@ class ServiceJWT(BaseServiceJWT):
             )
         
     def _get_refresh_jwt(self, user_id: uuid.UUID):
-        user = User.query.filter_by(id=user_id).first()
+        roles, is_su = self._get_roles_and_su(user_id)
         now_ms = get_now_ms()
         payload = {
             "exp": now_ms + self.refresh_timeout * 1000,
             "iat": now_ms,
             "user_id": user_id,
-            "roles": user.roles,
-            "is_superuser": user.is_superuser
+            "roles": roles,
+            "is_superuser": is_su
         }
         payload = AccessPayload(**payload)
         return self.encode(payload=payload)
 
     def _get_access_jwt(self, user_id: uuid.UUID) -> str:
-        user = User.query.filter_by(id=user_id).first()
+        roles, is_su = self._get_roles_and_su(user_id)
         now_ms = get_now_ms()
         payload = {
             "exp": now_ms + self.access_timeout * 1000,
             "iat": now_ms,
             "user_id": user_id,
-            "roles": user.roles,
-            "is_superuser": user.is_superuser
+            "roles": roles,
+            "is_superuser": is_su
         }
         payload = AccessPayload(**payload)
         return self.encode(payload=payload)
@@ -128,15 +128,18 @@ class ServiceJWT(BaseServiceJWT):
 
         # on special key upd roles
         if not soft:
-            access.roles = self._get_roles(user_id=refresh.user_id)
-            refresh.roles = self._get_roles(user_id=refresh.user_id)
+            roles, is_su = self._get_roles_and_su(refresh.user_id)
+            access.roles = roles
+            refresh.roles = roles
+            access.is_superuser = is_su
+            access.is_superuser = is_su
 
         return (access, refresh)
 
     @staticmethod
-    def _get_roles(user_id: uuid.UUID):
+    def _get_roles_and_su(user_id: uuid.UUID) -> Tuple[List[str], bool]:
         user = User.query.filter_by(id=user_id).first()
-        return user.roles
+        return [r.title for r in user.roles], user.is_superuser
 
 
 
