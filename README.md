@@ -2,7 +2,11 @@
 1. Скачать репозиторий
 2. создать файл .env заполнить по примеру .env.example
 3. перейти в дирректорию с проектом (Async-Api_practicum_comand) и запустить docker-compose build, docker-compose up
-4. http://localhost:80/auth/openapi - расположена документация swagger сервира.
+4. послезапуска проекта выполнить docker exec -it async-api_parcticum_comand_auth_1 flask db init
+5. зайти в контейнер async-api_parcticum_comand_auth_1 заййти в папку migrations добавить в файл env.py импорт моделей (from app.models.db_models import *)
+6. выполнить docker exec -it async-api_parcticum_comand_auth_1 flask db migrate, docker exec -it async-api_parcticum_comand_auth_1 flask db upgrade
+7. создать суперюзера docker exec -it async-api_parcticum_comand_auth_1 python create_superuser.py,
+8. http://localhost:80/auth/openapi - расположена документация swagger сервира.
 
 
 Для тестирования сервиса auth:
