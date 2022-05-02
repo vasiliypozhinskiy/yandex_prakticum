@@ -1,7 +1,6 @@
 from functools import wraps
 from typing import List, Optional
 import uuid
-from weakref import ref
 
 from flask import request
 
