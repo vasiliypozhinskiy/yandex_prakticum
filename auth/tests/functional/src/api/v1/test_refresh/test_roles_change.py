@@ -165,12 +165,27 @@ async def test_refresh_after_rm(make_request):
 
     response = await make_request("post")(
         f"refresh/",
-        json={"refresh_token": REFRESH_TOKEN},
+        json={"refresh_token": REFRESH_TOKEN, "User-Agent": "agent_1"},
     )
 
     assert response.status == HTTPStatus.OK
     ACCESS_TOKEN = response.body['access_token']
     REFRESH_TOKEN = response.body['refresh_token']
+
+
+
+async def test_refresh_after_rm_wrong_agent(make_request):
+
+    global REFRESH_TOKEN
+    global ACCESS_TOKEN
+
+    response = await make_request("post")(
+        f"refresh/",
+        json={"refresh_token": REFRESH_TOKEN},
+        headers={"User-Agent": "agent_2"}
+    )
+
+    assert response.status == HTTPStatus.UNAUTHORIZED
 
 
 async def test_check_roles_after_refresh_rm(make_request):

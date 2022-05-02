@@ -31,7 +31,8 @@ class LogOut(MethodView):
     @catch_exceptions
     def post(self):
         access_token = request.headers["Authorization"]
-        AUTH_SERVICE.logout(access_token=access_token)
+        agent = request.headers.get('User-Agent')
+        AUTH_SERVICE.logout(access_token=access_token, agent=agent)
         return 'Success logout', HTTPStatus.OK
 
 
@@ -51,7 +52,8 @@ class Refresh(MethodView):
     @catch_exceptions
     def post(self):
         req = AuthRefreshReqView(**request.json)
-        response = AUTH_SERVICE.refresh_jwt(refresh_jwt=req.refresh_token)
+        agent = request.headers.get('User-Agent')
+        response = AUTH_SERVICE.refresh_jwt(refresh_jwt=req.refresh_token, agent=agent)
         return response.dict()
 
 
