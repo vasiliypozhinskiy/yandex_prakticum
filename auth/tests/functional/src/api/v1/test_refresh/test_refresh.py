@@ -37,6 +37,7 @@ async def test_login(make_request):
     response = await make_request("post")(
         "login/",
         json={"login": "login", "password": "123qweQWE!@#"},
+        headers={"User-Agent": "agent_1"},
     )
 
     assert response.status == HTTPStatus.OK
@@ -62,6 +63,7 @@ async def test_refresh(make_request):
     response = await make_request("post")(
         f"refresh/",
         json={"refresh_token": REFRESH_TOKEN},
+        headers={"User-Agent": "agent_1"},
     )
 
     assert response.status == HTTPStatus.OK
@@ -73,7 +75,7 @@ async def test_check_auth_with_new(make_request):
     global ACCESS_TOKEN
     response = await make_request("post")(
         "authorize/",
-        headers={"Authorization": ACCESS_TOKEN, "User-Agent": "agent_1"},
+        headers={"Authorization": ACCESS_TOKEN},
     )
 
     assert response.status == HTTPStatus.OK

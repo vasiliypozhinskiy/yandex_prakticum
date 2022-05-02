@@ -17,7 +17,7 @@ from app.services.auth_services.black_list import REVOKED_ACCESS, LOG_OUT_ALL, R
 class AuthService:
 
     @staticmethod
-    def login(request_data: AuthReqView, agent="") -> AuthRespView:
+    def login(request_data: AuthReqView, agent: str) -> AuthRespView:
         login_data = AuthReqView.parse_obj(request_data)
 
         creds_from_storage = User.query.filter_by(login=login_data.login).first()
@@ -28,11 +28,14 @@ class AuthService:
             password=login_data.password, hashed_password=creds_from_storage.password
         ): 
 
-            # TODO write login info to relation db
             access_token, refresh_token = JWT_SERVICE.generate_tokens(
                 user_id=creds_from_storage.id,
             )
-            REF_TOK_STORAGE.add_token(refresh_token)
+            REF_TOK_STORAGE.add_token(
+                token=refresh_token,
+                agent=agent,
+                user_id=creds_from_storage.id
+            )
 
             login_event = LoginHistory(
                 user_id=creds_from_storage.id,
@@ -48,10 +51,11 @@ class AuthService:
             raise AccessDenied
 
     @staticmethod
-    def logout(access_token: str):
+    def logout(access_token: str, agent: str):
         payload = JWT_SERVICE.get_access_payload(access_token)
         if payload is not None:
-            REVOKED_ACCESS.add(access_token) 
+            REVOKED_ACCESS.add(access_token)
+            REF_TOK_STORAGE.revoke_token(user_id=payload.user_id, agent=agent)
         else:
             raise InvalidToken
     
@@ -83,17 +87,38 @@ class AuthService:
             return False
 
     @staticmethod
-    def refresh_jwt(refresh_jwt: str) -> AuthRespView:
+    def refresh_jwt(refresh_jwt: str, agent: str) -> AuthRespView:
         refresh_payload = JWT_SERVICE.get_refresh_payload(refresh_jwt)
         if (refresh_payload is None) or (not LOG_OUT_ALL.is_ok(refresh_jwt)):
             raise InvalidToken
+        if refresh_jwt != REF_TOK_STORAGE.get_token(
+            user_id=refresh_payload.user_id,
+            agent=agent
+            ):
+            print("gonna check acces in storage", flush=True)
+            print(REF_TOK_STORAGE.get_token(
+            user_id=refresh_payload.user_id,
+            agent=agent
+            ), flush=True)
+            raise InvalidToken
+        print("check access in storage", flush=True)
+
         access_payload, refresh_payload = JWT_SERVICE.refresh_payloads(
             refresh_payload,
             soft=ROLES_UPDATE.is_ok(refresh_jwt)
         )
+
+        refresh_token = JWT_SERVICE.encode(refresh_payload)
+        access_token=JWT_SERVICE.encode(access_payload)
+
+        REF_TOK_STORAGE.add_token(
+            token=refresh_token,
+            agent=agent,
+            user_id=refresh_payload.user_id
+        )
         return AuthRespView(
-            access_token=JWT_SERVICE.encode(access_payload),
-            refresh_token=JWT_SERVICE.encode(refresh_payload)
+            access_token=access_token,
+            refresh_token=refresh_token,
         )
 
     def token_required(self, check_is_me=False, check_is_superuser=False):
