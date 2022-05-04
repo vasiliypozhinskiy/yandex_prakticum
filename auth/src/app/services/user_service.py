@@ -5,6 +5,7 @@ from pydantic import ValidationError
 from sqlalchemy.exc import IntegrityError, DataError
 
 from app.core import db
+from app.services.storage.storage import user_table
 from app.models.db_models import User as DBUserModel, UserData as DBUserDataModel, LoginHistory as DBUserLoginModel
 from app.models.service_models import User as UserServiceModel, HistoryEntry as HistoryEntryServiceModel
 from app.utils.exceptions import (
@@ -21,14 +22,14 @@ class UserService:
     def create_user(self, user_data: dict) -> uuid:
         self.validate_user(user_data)
         user_data["password"] = hash_password(user_data["password"]).decode()
-        user_id = uuid.uuid4()
 
-        user = DBUserModel(
-            id=user_id,
-            login=user_data["login"],
-            password=user_data["password"],
-            email=user_data["email"]
-        )
+        user_id = user_table.create(data=user_data)
+        # user = DBUserModel(
+        #     id=user_id,
+        #     login=user_data["login"],
+        #     password=user_data["password"],
+        #     email=user_data["email"]
+        # )
 
         db_user_data = DBUserDataModel(
             user_id=user_id,
@@ -37,7 +38,7 @@ class UserService:
             last_name=user_data.get("last_name")
         )
         
-        db.session.add(user)
+        # db.session.add(user)
         db.session.add(db_user_data)
 
         try:
