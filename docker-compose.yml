@@ -32,6 +32,8 @@ services:
       HOST: auth
       DEBUG: ${AUTH_DEBUG}
       WAIT_HOSTS: auth_db:4321, redis:6379
+    volumes:
+    - './auth/src/migrations:/app/migrations'
     depends_on:
       - auth_db
       - redis

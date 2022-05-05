@@ -21,6 +21,7 @@ services:
   auth:
     build: ../../.
     environment:
+      FLASK_APP: main:app
       SECRET_KEY: $FLASK_SECRET_KEY
       DB_HOST: auth_db
       DB_PASSWORD: ${AUTH_DB_PASSWORD}
