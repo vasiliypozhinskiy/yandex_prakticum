@@ -6,7 +6,7 @@ from pydantic import BaseModel
 import jwt
 from jwt.exceptions import DecodeError, InvalidSignatureError
 
-from app.models.db_models import User
+from app.services.storage.storage import user_table
 from app.utils.exceptions import InvalidToken
 from app.utils.utils import get_now_ms
 from app.core.config import SECRET_SIGNATURE, REFRESH_TOKEN_EXP, ACCESS_TOKEN_EXP
@@ -138,8 +138,7 @@ class ServiceJWT(BaseServiceJWT):
 
     @staticmethod
     def _get_roles_and_su(user_id: uuid.UUID) -> Tuple[List[str], bool]:
-        user = User.query.filter_by(id=user_id).first()
-        return [r.title for r in user.roles], user.is_superuser
+        return user_table.get_roles(user_id=user_id)
 
 
 
