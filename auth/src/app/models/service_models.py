@@ -17,16 +17,12 @@ EMAIL_REGEXP = re.compile(
     r"^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$"
 )
 
-
-class User(BaseModel):
+class UserCreds(BaseModel):
     id: Optional[UUID]
     login: str
     password: str
     is_superuser: Optional[bool]
     email: str
-    first_name: Optional[str]
-    last_name: Optional[str]
-    birthdate: Optional[date]
 
     history_entries: Optional[List[UUID]]
     roles: Optional[List[str]]
@@ -43,11 +39,27 @@ class User(BaseModel):
             raise BadEmailError
         return email
 
-    @validator("first_name", "last_name", "login")
+    @validator("login")
     def validate_length(cls, field):
         if len(field) > 100:
             raise BadLengthError(message="Wrong length of field. Max 100 characters")
         return field
+
+class UserData(BaseModel):
+    first_name: Optional[str]
+    last_name: Optional[str]
+    birthdate: Optional[date]
+
+    @validator("first_name", "last_name")
+    def validate_length(cls, field):
+        if len(field) > 100:
+            raise BadLengthError(message="Wrong length of field. Max 100 characters")
+        return field
+
+class User(UserCreds, UserData):
+    pass
+    
+    
 
 
 class HistoryEntry(BaseModel):
