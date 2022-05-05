@@ -3,7 +3,7 @@ import uuid
 from typing import Dict, Any, Optional, List
 
 from app.core import db
-from app.models.db_models import User, UserData, LoginHistory
+from app.models.db_models import User, UserData, LoginHistory, Role
 from app.utils.exceptions import (
     AlreadyExistsError,
     BadIdFormat,
@@ -39,8 +39,9 @@ class SQLAlchemyTable(BaseTable):
         self.id_field = id_field
         self.mode_keys = row2dict(self.model).keys()
 
-    def create(self, data) -> uuid.UUID:
-        new_id = uuid.uuid4()
+    def create(self, data, new_id: Optional[str] = None) -> uuid.UUID:
+        if new_id is None:
+            new_id = uuid.uuid4()
         data.update({self.id_field: new_id})
 
         new_object = self.model(**self._filter_input_to_model(data))
@@ -94,3 +95,4 @@ class SQLAlchemyTable(BaseTable):
 user_table = SQLAlchemyTable(User)
 user_data_table = SQLAlchemyTable(UserData)
 user_login_history_table = SQLAlchemyTable(LoginHistory)
+roles_table = SQLAlchemyTable(Role, id_field="title")
