@@ -19,7 +19,7 @@ services:
     build: './auth'
     environment:
       SECRET_KEY: $FLASK_SECRET_KEY
-      FLASK_APP: $FLASK_APP
+      FLASK_APP: main:app
       DB_HOST: auth_db
       DB_PASSWORD: ${AUTH_DB_PASSWORD}
       DB_USER: auth_app
