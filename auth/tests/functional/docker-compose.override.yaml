@@ -7,7 +7,7 @@ services:
     volumes:
       - ../../src:/app
     ports:
-      - '5000:5000'
+      - "5000:5000"
     command: bash -c "/wait && python3 create_superuser.py && python3 main.py"
 
   tests:
