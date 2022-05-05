@@ -4,9 +4,8 @@ import uuid
 
 from flask import request
 
-from app.core import db
 from app.views.models.auth import AuthReqView, AuthRespView
-from app.models.db_models import User, LoginHistory
+from app.services.storage.storage import user_table, user_login_history_table
 from app.utils.utils import check_password
 from app.utils.exceptions import UnExistingLogin, InvalidToken, AccessDenied
 from app.services.auth_services.jwt_service import JWT_SERVICE
@@ -20,31 +19,31 @@ class AuthService:
     def login(request_data: AuthReqView, agent: str) -> AuthRespView:
         login_data = AuthReqView.parse_obj(request_data)
 
-        creds_from_storage = User.query.filter_by(login=login_data.login).first()
+        creds_from_storage = user_table.read(filter={"login": login_data.login})
+        print(creds_from_storage, flush=True)
         if creds_from_storage is None:
             raise UnExistingLogin
 
         if check_password(
-            password=login_data.password, hashed_password=creds_from_storage.password
+            password=login_data.password, hashed_password=creds_from_storage["password"]
         ): 
 
             access_token, refresh_token = JWT_SERVICE.generate_tokens(
-                user_id=creds_from_storage.id,
+                user_id=creds_from_storage["id"],
             )
             REF_TOK_STORAGE.add_token(
                 token=refresh_token,
                 agent=agent,
-                user_id=creds_from_storage.id
+                user_id=creds_from_storage["id"]
             )
 
-            login_event = LoginHistory(
-                user_id=creds_from_storage.id,
-                user_agent=agent,
-                refresh_token=refresh_token,
+            user_login_history_table.create(
+                data={
+                    "user_id": creds_from_storage["id"],
+                    "user_agent": agent,
+                    "refresh_token": refresh_token,
+                }
             )
-
-            db.session.add(login_event)
-            db.session.commit()
 
             return AuthRespView(access_token=access_token, refresh_token=refresh_token)
         else:
