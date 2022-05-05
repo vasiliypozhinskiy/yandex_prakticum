@@ -1,26 +1,35 @@
 from abc import ABC, abstractmethod
+from os import device_encoding
 import uuid
-from typing import Dict, Any, Optional, List
+from typing import Dict, Any, Optional, List, Tuple
 
 from app.core import db
-from app.models.db_models import User, UserData, LoginHistory, Role, user_role
+from app.models.db_models import User, UserData, LoginHistory, Role
 from app.utils.exceptions import (
     AlreadyExistsError,
     BadIdFormat,
     NotFoundError,
+    ServiceUnavailable
 )
 from app.utils.utils import row2dict
 
-from sqlalchemy.exc import IntegrityError, DataError
+from sqlalchemy.exc import IntegrityError, DataError, OperationalError
 
 
-def pretty(d, indent=0):
-   for key, value in d.items():
-      print('\t' * indent + str(key))
-      if isinstance(value, dict):
-         pretty(value, indent+1)
-      else:
-         print('\t' * (indent+1) + str(value), flush=True)
+def catch_unavailable(do_raise = True, default_value = None):
+    def inner(func):
+        def wrapper(*args, **kwargs):
+            try:
+                value = func(*args, **kwargs)
+            except OperationalError as e:
+                if do_raise:
+                    raise ServiceUnavailable
+                else:
+                    return default_value
+
+            return value
+        return wrapper
+    return inner
 
 
 class BaseTable(ABC):
@@ -52,6 +61,7 @@ class SQLAlchemyModel(BaseTable):
     def _get_columns(self):
         return row2dict(self.model).keys()
 
+    @catch_unavailable(do_raise=True)
     def create(self, data, new_id: Optional[str] = None) -> uuid.UUID:
         if new_id is None:
             new_id = uuid.uuid4()
@@ -68,10 +78,12 @@ class SQLAlchemyModel(BaseTable):
 
         return new_id
 
-    def read(self, filter: Dict[str, Any]) -> List[dict]:
+    @catch_unavailable(do_raise=False, default_value=None)
+    def read(self, filter: Dict[str, Any]) -> Optional[List[dict]]:
         obj_as_dict = self._try_get_from_db(filter=filter)
         return obj_as_dict
 
+    @catch_unavailable(do_raise=True)
     def update(self, data, filter: Dict[str, Any]) -> None:
         _ = self._try_get_from_db(filter=filter)
         try:
@@ -82,12 +94,16 @@ class SQLAlchemyModel(BaseTable):
         except IntegrityError:
             raise AlreadyExistsError
 
+    @catch_unavailable(do_raise=True)
     def delete(self, filter: Optional[Dict[str, Any]] = None) -> None:
         if filter is None:
             filter = {}
         _ = self._try_get_from_db(filter)
         self.model.query.filter_by(**filter).delete()
-        db.session.commit()
+        try:
+            db.session.commit()
+        except OperationalError:
+            raise ServiceUnavailable
 
     def _filter_input_to_model(self, data: dict) -> dict:
         return {
@@ -97,12 +113,11 @@ class SQLAlchemyModel(BaseTable):
     def _try_get_from_db(self, filter: Dict[str, Any]) -> dict:
         try:
             obj = self.model.query.filter_by(**filter).first()
+            if not obj:
+                raise NotFoundError
+            user_dict = row2dict(obj)
         except DataError:
-            raise BadIdFormat
-
-        if not obj:
-            raise NotFoundError
-        user_dict = row2dict(obj)
+            raise BadIdFormat  
         return user_dict
 
 class UserTable(SQLAlchemyModel):
@@ -111,9 +126,11 @@ class UserTable(SQLAlchemyModel):
         super().__init__(model=model, id_field=id_field)
         self.roles_model = roles_model
 
+    @catch_unavailable(do_raise=True)
     def add_role(self, user_id: str = None, role_title: str = None):
         user = self.model.query.filter_by(id=user_id).first()
         role = self.roles_model.query.filter_by(title=role_title).first()
+
         if not user or not role:
             raise NotFoundError("Role or user not found")
         list_roles_in_user = [x.title for x in user.roles]
@@ -122,6 +139,13 @@ class UserTable(SQLAlchemyModel):
         user.roles.append(role)
         db.session.commit()
 
+    @catch_unavailable(do_raise=False, default_value=([], False,))
+    def get_roles(self, user_id: uuid.UUID) -> Tuple[List[str], bool]:
+        user = User.query.filter_by(id=user_id).first()
+        out = [r.title for r in user.roles], user.is_superuser
+        return out
+        
+    @catch_unavailable(do_raise=True)
     def delete_role(self, user_id: str = None, role_title: str = None):
         user = self.model.query.filter_by(id=user_id).first()
         role = self.roles_model.query.filter_by(title=role_title).first()
@@ -130,11 +154,12 @@ class UserTable(SQLAlchemyModel):
 
 
 class RolesTable(SQLAlchemyModel):
+    @catch_unavailable(do_raise=True)
     def read(self, filter: Dict[str, Any]) -> List[dict]:
         try:
             objects = self.model.query.filter_by(**filter).all()
         except DataError:
-            raise BadIdFormat
+            raise BadIdFormat  
 
         if not objects:
             return []

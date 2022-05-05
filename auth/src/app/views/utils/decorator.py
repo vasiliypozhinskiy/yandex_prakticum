@@ -1,8 +1,11 @@
 from functools import wraps
 from http import HTTPStatus
 
-from app.utils.exceptions import NotFoundError, BadLengthError, BadEmailError, BadIdFormat, BadPasswordError, \
-    FieldValidationError, InvalidToken, AccessDenied, AlreadyExistsError, UnExistingLogin
+from app.utils.exceptions import (
+    NotFoundError, BadLengthError, BadEmailError, BadIdFormat, BadPasswordError,
+    FieldValidationError, InvalidToken, AccessDenied, AlreadyExistsError, UnExistingLogin,
+    ServiceUnavailable
+)
 
 
 def class_route(self, rule, endpoint, **options):
@@ -36,5 +39,8 @@ def catch_exceptions(func):
             return e.message, HTTPStatus.CONFLICT
         except UnExistingLogin as e:
             return e.message, HTTPStatus.NOT_FOUND
+        except ServiceUnavailable as e:
+            return e.message, HTTPStatus.SERVICE_UNAVAILABLE
+
         return value
     return wrapper

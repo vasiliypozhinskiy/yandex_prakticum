@@ -70,3 +70,9 @@ class UnExistingLogin(Exception):
 
     def __init__(self, message=default_message):
         self.message = message
+
+class ServiceUnavailable(Exception):
+    default_message = "Service temporary unavailable"
+
+    def __init__(self, message=default_message):
+        self.message = message
