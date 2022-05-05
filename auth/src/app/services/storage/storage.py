@@ -1,8 +1,9 @@
 from abc import ABC, abstractmethod
 import uuid
+from typing import Dict, Any, Optional, List
 
 from app.core import db
-from app.models.db_models import User
+from app.models.db_models import User, UserData, LoginHistory
 from app.utils.exceptions import (
     AlreadyExistsError,
     BadIdFormat,
@@ -40,6 +41,7 @@ class SQLAlchemyTable(BaseTable):
 
     def create(self, data) -> uuid.UUID:
         new_id = uuid.uuid4()
+        data.update({self.id_field: new_id})
 
         new_object = self.model(**self._filter_input_to_model(data))
 
@@ -52,22 +54,25 @@ class SQLAlchemyTable(BaseTable):
 
         return new_id
 
-    def read(self, id) -> dict:
-        obj_as_dict = self._try_get_from_db(id)
+    def read(self, filter: Dict[str, Any]) -> List[dict]:
+        obj_as_dict = self._try_get_from_db(filter=filter)
         return obj_as_dict
 
-    def update(self, id, data):
-        _ = self._try_get_from_db(id)
+    def update(self, data, filter: Dict[str, Any]) -> None:
+        _ = self._try_get_from_db(filter=filter)
         try:
-            self.model.query.filter_by(id=id).update(
+            self.model.query.filter_by(**filter).update(
                 self._filter_input_to_model(data)
             )
             db.session.commit()
         except IntegrityError:
             raise AlreadyExistsError
 
-    def delete(self, id) -> None:
-        self.try_get_from_db(id)
+    def delete(self, filter: Optional[Dict[str, Any]] = None) -> None:
+        if filter is None:
+            filter = {}
+        _ = self._try_get_from_db(filter)
+        self.model.query.filter_by(**filter).delete()
         db.session.commit()
 
     def _filter_input_to_model(self, data: dict) -> dict:
@@ -75,9 +80,9 @@ class SQLAlchemyTable(BaseTable):
             key: data[key] for key in self.mode_keys if data.get(key)
         }
 
-    def _try_get_from_db(self, id_) -> dict:
+    def _try_get_from_db(self, filter: Dict[str, Any]) -> dict:
         try:
-            obj = self.model.query.filter_by(**{"self.id_field": id_}).first()
+            obj = self.model.query.filter_by(**filter).first()
         except DataError:
             raise BadIdFormat
 
@@ -87,3 +92,5 @@ class SQLAlchemyTable(BaseTable):
         return user_dict
 
 user_table = SQLAlchemyTable(User)
+user_data_table = SQLAlchemyTable(UserData)
+user_login_history_table = SQLAlchemyTable(LoginHistory)
