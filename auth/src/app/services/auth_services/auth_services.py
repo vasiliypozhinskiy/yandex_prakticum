@@ -20,7 +20,6 @@ class AuthService:
         login_data = AuthReqView.parse_obj(request_data)
 
         creds_from_storage = user_table.read(filter={"login": login_data.login})
-        print(creds_from_storage, flush=True)
         if creds_from_storage is None:
             raise UnExistingLogin
 
@@ -47,6 +46,7 @@ class AuthService:
 
             return AuthRespView(access_token=access_token, refresh_token=refresh_token)
         else:
+            print('invalid password \n\n')
             raise AccessDenied
 
     @staticmethod

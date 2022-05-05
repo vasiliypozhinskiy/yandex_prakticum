@@ -47,7 +47,7 @@ class UserService:
             raise AccessDenied("Wrong password")
         user_table.update(
             data={"password": hash_password(passwords["new_password"]).decode()},
-            filter={"id": user_data_table},
+            filter={"id": user_id},
         )
 
     def get_history(self, user_id):

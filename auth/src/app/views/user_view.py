@@ -106,8 +106,7 @@ class UserChangePassword(MethodView):
     @AUTH_SERVICE.token_required(check_is_me=True)
     def _change_password(user_id):
         passwords = request.json
-
-        if not passwords.get("old_password") or passwords.get("new_password"):
+        if (not passwords.get("old_password")) or (not passwords.get("new_password")):
             return "Wrong request params", HTTPStatus.BAD_REQUEST
 
         user_service.change_password(user_id, passwords)
