@@ -3,7 +3,7 @@ import uuid
 from typing import Dict, Any, Optional, List
 
 from app.core import db
-from app.models.db_models import User, UserData, LoginHistory, Role
+from app.models.db_models import User, UserData, LoginHistory, Role, user_role
 from app.utils.exceptions import (
     AlreadyExistsError,
     BadIdFormat,
@@ -12,6 +12,16 @@ from app.utils.exceptions import (
 from app.utils.utils import row2dict
 
 from sqlalchemy.exc import IntegrityError, DataError
+
+
+def pretty(d, indent=0):
+   for key, value in d.items():
+      print('\t' * indent + str(key))
+      if isinstance(value, dict):
+         pretty(value, indent+1)
+      else:
+         print('\t' * (indent+1) + str(value), flush=True)
+
 
 class BaseTable(ABC):
     
@@ -32,12 +42,15 @@ class BaseTable(ABC):
         pass
 
 
-class SQLAlchemyTable(BaseTable):
+class SQLAlchemyModel(BaseTable):
 
     def __init__(self, model: db.Model, id_field: str = "id"):
         self.model = model
         self.id_field = id_field
-        self.mode_keys = row2dict(self.model).keys()
+        self.mode_keys = self._get_columns()
+
+    def _get_columns(self):
+        return row2dict(self.model).keys()
 
     def create(self, data, new_id: Optional[str] = None) -> uuid.UUID:
         if new_id is None:
@@ -92,7 +105,32 @@ class SQLAlchemyTable(BaseTable):
         user_dict = row2dict(obj)
         return user_dict
 
-user_table = SQLAlchemyTable(User)
-user_data_table = SQLAlchemyTable(UserData)
-user_login_history_table = SQLAlchemyTable(LoginHistory)
-roles_table = SQLAlchemyTable(Role, id_field="title")
+class UserTable(SQLAlchemyModel):
+
+    def __init__(self, model: db.Model, roles_model: db.Model, id_field: str = "id"):
+        super().__init__(model=model, id_field=id_field)
+        self.roles_model = roles_model
+
+    def add_role(self, user_id: str = None, role_title: str = None):
+        user = self.model.query.filter_by(id=user_id).first()
+        role = self.roles_model.query.filter_by(title=role_title).first()
+        if not user or not role:
+            raise NotFoundError("Role or user not found")
+        list_roles_in_user = [x.title for x in user.roles]
+        if role.title in list_roles_in_user:
+            return AlreadyExistsError("Role already exist")
+        user.roles.append(role)
+        db.session.commit()
+
+    def delete_role(self, user_id: str = None, role_title: str = None):
+        user = self.model.query.filter_by(id=user_id).first()
+        role = self.roles_model.query.filter_by(title=role_title).first()
+        user.roles.remove(role)
+        db.session.commit()
+
+
+
+user_table = UserTable(User, roles_model=Role)
+user_data_table = SQLAlchemyModel(UserData)
+user_login_history_table = SQLAlchemyModel(LoginHistory)
+roles_table = SQLAlchemyModel(Role, id_field="title")
