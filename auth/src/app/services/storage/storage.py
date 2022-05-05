@@ -129,8 +129,19 @@ class UserTable(SQLAlchemyModel):
         db.session.commit()
 
 
+class RolesTable(SQLAlchemyModel):
+    def read(self, filter: Dict[str, Any]) -> List[dict]:
+        try:
+            objects = self.model.query.filter_by(**filter).all()
+        except DataError:
+            raise BadIdFormat
+
+        if not objects:
+            return []
+        roles_list = [row2dict(obj) for obj in objects]
+        return roles_list
 
 user_table = UserTable(User, roles_model=Role)
 user_data_table = SQLAlchemyModel(UserData)
 user_login_history_table = SQLAlchemyModel(LoginHistory)
-roles_table = SQLAlchemyModel(Role, id_field="title")
+roles_table = RolesTable(Role, id_field="title")

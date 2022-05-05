@@ -14,7 +14,7 @@ class RoleService:
     @staticmethod
     def get_list_role():
         roles = roles_table.read(filter={})
-        roles = [r.title for r in roles]
+        roles = [r['title'] for r in roles]
         return {"role_list": roles}
 
     def update_role(self, role_title, new_role):
