@@ -1,9 +1,6 @@
-from app.core import db
 from app.services.storage.storage import roles_table
-from app.models.db_models import Role
 from app.utils.exceptions import AlreadyExistsError
-from app.utils.exceptions import BadIdFormat, NotFoundError
-from sqlalchemy.exc import IntegrityError, DataError
+from app.utils.exceptions import NotFoundError
 
 
 class RoleService:
