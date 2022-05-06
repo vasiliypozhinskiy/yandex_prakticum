@@ -10,8 +10,10 @@ from loguru import logger
 
 class RoleService(role_pb2_grpc.RoleServicer):
     def GetToken(self, request, context):
+        app_grpcs = app_grpc()
         if request.login and request.password:
-            with app_grpc.app_context():
+            print('tis')
+            with app_grpcs.app_context():
                 user_login = AUTH_SERVICE.login(request.login,
                                                 request.password,
                                                 request.headers.get('User-Agent')

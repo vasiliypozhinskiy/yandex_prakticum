@@ -1,24 +1,28 @@
 import grpc
-
+#
 from messages import role_pb2, role_pb2_grpc
 from messages import user_pb2, user_pb2_grpc
 
+def run():
+    with grpc.insecure_channel("127.0.0.1:50051") as channel:
+        client = user_pb2_grpc.UserStub(channel)
+        response = client.GetUser(user_pb2.UserRequest(id=id))
+        print(response.message)
 
-def get_user(id):
-    channel = grpc.insecure_channel("127.0.0.1:50051")
-    client = user_pb2_grpc.UserStub(channel)
-    response = client.GetUser(user_pb2.UserRequest(id=id))
-    if response:
-        return response
-    return None
-# get_user('968b0d89-adb3-4250-a596-de33aee38488')
+if __name__ == "__main__":
+    run()
 
-def get_token(login, password):
-    channel = grpc.insecure_channel("127.0.0.1:50051")
-    client = role_pb2_grpc.RoleStub(channel)
-    response = client.getAccess(role_pb2.LoginRequest(login=login, password=password))
-    if response:
-        print('ok')
-        return response
-    print('no ok')
-get_token('login', '123qweQWE!@#')
+
+
+
+
+# def get_user(id):
+#     channel = grpc.insecure_channel("127.0.0.1:50051")
+#     client = user_pb2_grpc.UserStub(channel)
+#     response = client.GetUser(user_pb2.UserRequest(id=id))
+#     print(response)
+#     if response:
+#         return response
+#     return None
+# get_user('b1442bd3-a0ed-4c4b-9e08-6a5a046083b5')
+
