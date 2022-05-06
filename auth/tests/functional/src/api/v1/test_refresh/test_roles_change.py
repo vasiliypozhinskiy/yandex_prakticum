@@ -84,6 +84,16 @@ async def test_add_role(make_request):
     assert response.status == HTTPStatus.CREATED
 
 
+async def test_list_roles(make_request):
+    global NEW_ROLE
+    response = await make_request("get")(
+        f"role/role_list/",
+    )
+
+    assert response.status == HTTPStatus.OK
+    assert response.body == {"role_list": [NEW_ROLE]}
+
+
 async def test_assign_role(make_request):
     global SU_ACCESS_TOKEN
     global NEW_ROLE
@@ -199,3 +209,31 @@ async def test_check_roles_after_refresh_rm(make_request):
 
     assert response.status == HTTPStatus.OK
     assert response.body == []
+
+
+async def test_rm_role_form_list_un_auth(make_request):
+    global NEW_ROLE
+    response = await make_request("delete")(
+        f"role/{NEW_ROLE}",
+    )
+    assert response.status == HTTPStatus.UNAUTHORIZED
+
+
+async def test_rm_role_form_list(make_request):
+    global NEW_ROLE
+    global SU_ACCESS_TOKEN
+    response = await make_request("delete")(
+        f"role/{NEW_ROLE}",
+        headers={"Authorization": SU_ACCESS_TOKEN, "User-Agent": "agent_1"},
+    )
+    assert response.status == HTTPStatus.OK
+
+
+async def test_list_roles_after_rm(make_request):
+    global NEW_ROLE
+    response = await make_request("get")(
+        f"role/role_list/",
+    )
+
+    assert response.status == HTTPStatus.OK
+    assert response.body == {"role_list": []}

@@ -19,7 +19,7 @@ services:
     build: './auth'
     environment:
       SECRET_KEY: $FLASK_SECRET_KEY
-      FLASK_APP: $FLASK_APP
+      FLASK_APP: main:app
       DB_HOST: auth_db
       DB_PASSWORD: ${AUTH_DB_PASSWORD}
       DB_USER: auth_app
@@ -32,6 +32,8 @@ services:
       HOST: auth
       DEBUG: ${AUTH_DEBUG}
       WAIT_HOSTS: auth_db:4321, redis:6379
+    volumes:
+    - './auth/src/migrations:/app/migrations'
     depends_on:
       - auth_db
       - redis
