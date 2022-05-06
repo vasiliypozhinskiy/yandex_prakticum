@@ -14,12 +14,13 @@ def create_app(flask_app):
     flask_app.register_blueprint(user_blueprint)
     flask_app.register_blueprint(auth_blueprint)
     migrate.init_app(app, db)
-
+    flask_app.run(
+        host=os.getenv('HOST', 'localhost'),
+        debug=bool(os.getenv('DEBUG', 1)),
+    )
     return flask_app
 
-
-app = create_app(app)
-
+app_grpc = create_app(app)
 
 if __name__ == "__main__":
     app.run(

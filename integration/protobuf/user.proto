@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package userpb;
+
+message UserRequest {
+  string id = 1;
+}
+
+message UserResponse {
+  string login = 1;
+  string email = 2;
+  string first_name = 3;
+  string last_name = 4;
+  string birth_data = 5;
+}
+
+service User {
+  rpc GetUser(UserRequest) returns (UserResponse) {};
+}

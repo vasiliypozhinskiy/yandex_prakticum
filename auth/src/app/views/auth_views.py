@@ -15,7 +15,7 @@ auth_blueprint = Blueprint('auth', __name__, url_prefix='/auth/api/v1')
 
 class Login(MethodView):
     
-    @swag_from(f'{SWAGGER_DOCS_PATH}/auth/login.yaml', endpoint='auth.login', methods=['POST'])
+    @swag_from(f'{SWAGGER_DOCS_PATH}/auth/login.yaml', endpoint='auth.login', methods=['GET'])
     @catch_exceptions
     def post(self):
         request_data = request.json
