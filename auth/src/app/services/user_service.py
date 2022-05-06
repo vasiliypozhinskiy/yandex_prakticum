@@ -4,7 +4,6 @@ from pydantic import ValidationError
 
 from app.services.storage.storage import user_table, user_data_table, user_login_history_table
 from app.models.service_models import (
-    UserData,
     UserCreds,
     User as UserServiceModel,
     HistoryEntry as HistoryEntryServiceModel

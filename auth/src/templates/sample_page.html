@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Auth sample page</title>
+</head>
+<body>
+    <button onclick="vk_oauth()">
+        Зайти через VK
+    </button>
+</body>
+<script>
+    let vk_oauth = async () => {
+        let response = await fetch("/auth/api/v1/oauth/vk/auth").then((response) => {
+            return response.json();
+        });
+        document.location=response.url;
+    }
+</script>
+</html>
