@@ -10,12 +10,9 @@ from app.utils.exceptions import (
     NotFoundError,
     ServiceUnavailable
 )
-from app.utils.utils import row2dict
+from app.utils.utils import row2dict, trace_it
 
 from sqlalchemy.exc import IntegrityError, DataError, OperationalError
-from opentelemetry import trace
-
-tracer = trace.get_tracer(__name__)
 
 
 def catch_unavailable(do_raise=True, default_value=None):
@@ -80,7 +77,8 @@ class SQLAlchemyModel(BaseTable):
 
         return new_id
 
-    @catch_unavailable(do_raise=True)
+    @catch_unavailable(do_raise=False, default_value=None)
+    @trace_it
     def read(self, filter: Dict[str, Any]) -> Optional[List[dict]]:
         obj_as_dict = self._try_get_from_db(filter=filter)
         return obj_as_dict
@@ -130,6 +128,7 @@ class UserTable(SQLAlchemyModel):
         self.roles_model = roles_model
 
     @catch_unavailable(do_raise=True)
+    @trace_it
     def add_role(self, user_id: str = None, role_title: str = None):
         user = self.model.query.filter_by(id=user_id).first()
         role = self.roles_model.query.filter_by(title=role_title).first()
@@ -142,11 +141,9 @@ class UserTable(SQLAlchemyModel):
         user.roles.append(role)
         db.session.commit()
 
-
     @catch_unavailable(do_raise=False, default_value=([], False,))
+    @trace_it
     def get_roles(self, user_id: uuid.UUID) -> Tuple[List[str], bool]:
-        
-        with tracer.start_as_current_span('UserTable-get_roles'):
             user = User.query.filter_by(id=user_id).first()
             out = [r.title for r in user.roles], user.is_superuser
             return out
