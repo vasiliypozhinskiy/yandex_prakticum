@@ -166,6 +166,7 @@ class RolesTable(SQLAlchemyModel):
         roles_list = [row2dict(obj) for obj in objects]
         return roles_list
 
+
 user_table = UserTable(User, roles_model=Role)
 user_data_table = SQLAlchemyModel(UserData)
 user_login_history_table = SQLAlchemyModel(LoginHistory)

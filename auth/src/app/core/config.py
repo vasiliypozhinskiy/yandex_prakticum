@@ -12,6 +12,9 @@ REFRESH_TOKEN_EXP = 60 * 60 * 24 * 7
 
 DATE_TIME_FORMAT = "%Y-%m-%d %H:%M:%S.%f"
 
+TEMPLATE_FOLDER = os.getcwd() + "/templates"
+
+
 class Config:
     SECRET_KEY = os.getenv("SECRET_KEY")
     DEBUG = os.environ.get("DEBUG", False) == "True"

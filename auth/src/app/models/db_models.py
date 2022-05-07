@@ -20,8 +20,12 @@ class User(db.Model):
     password = db.Column(db.String, nullable=False)
     is_superuser = db.Column(db.Boolean, default=False)
 
+    oauth_type = db.Column(db.TEXT)
+    oauth_id = db.Column(db.TEXT)
+
     email = db.Column(db.String, unique=True, index=True)
 
+    user_data = db.relationship("UserData", backref="user")
     history_entries = db.relationship("LoginHistory", backref="user")
     roles = db.relationship(
         "Role", secondary="auth.user_role", backref=db.backref("user", lazy="dynamic")
