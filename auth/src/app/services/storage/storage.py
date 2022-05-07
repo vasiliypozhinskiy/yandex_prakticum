@@ -14,6 +14,9 @@ from app.utils.exceptions import (
 from app.utils.utils import row2dict
 
 from sqlalchemy.exc import IntegrityError, DataError, OperationalError
+from opentelemetry import trace
+
+tracer = trace.get_tracer(__name__)
 
 
 def catch_unavailable(do_raise = True, default_value = None):
@@ -139,11 +142,14 @@ class UserTable(SQLAlchemyModel):
         user.roles.append(role)
         db.session.commit()
 
+
     @catch_unavailable(do_raise=False, default_value=([], False,))
     def get_roles(self, user_id: uuid.UUID) -> Tuple[List[str], bool]:
-        user = User.query.filter_by(id=user_id).first()
-        out = [r.title for r in user.roles], user.is_superuser
-        return out
+        
+        with tracer.start_as_current_span('UserTable-get_roles'):
+            user = User.query.filter_by(id=user_id).first()
+            out = [r.title for r in user.roles], user.is_superuser
+            return out
         
     @catch_unavailable(do_raise=True)
     def delete_role(self, user_id: str = None, role_title: str = None):
