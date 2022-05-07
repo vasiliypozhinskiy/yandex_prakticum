@@ -7,7 +7,10 @@ from opentelemetry.sdk.resources import SERVICE_NAME, Resource
 from opentelemetry.instrumentation.flask import FlaskInstrumentor
 from opentelemetry.sdk.trace.export import BatchSpanProcessor, ConsoleSpanExporter
 from opentelemetry.exporter.jaeger.thrift import JaegerExporter
+<<<<<<< HEAD
 from opentelemetry.sdk.trace.sampling import TraceIdRatioBased
+=======
+>>>>>>> base tracer: works on test containers
 
 from app.core import app, db, migrate
 from app.views.oauth_view import oauth_blueprint
