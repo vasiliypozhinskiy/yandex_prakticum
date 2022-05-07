@@ -13,6 +13,10 @@ from app.db.redis import (
 from app.core.config import REFRESH_TOKEN_EXP, ACCESS_TOKEN_EXP
 from app.services.auth_services.jwt_service import JWT_SERVICE
 
+from opentelemetry import trace
+
+tracer = trace.get_tracer(__name__)
+
 
 class BaseBlackList(ABC):
     @abstractmethod
@@ -32,16 +36,18 @@ class TokenBlackList(BaseBlackList):
 
     @trace_it
     def add(self, token: str) -> None:
-        if token != "":
-            self.storage.setex(
-                token,
-                self.exp_time,
-                self.reason
-            )
+        with tracer.start_as_current_span('TokenBlackList-add'):
+            if token != "":
+                self.storage.setex(
+                    token,
+                    self.exp_time,
+                    self.reason
+                )
 
     @trace_it
     def is_ok(self, token: str) -> bool:
-        return not bool(self.storage.exists(token))
+        with tracer.start_as_current_span('TokenBlackList-is_ok'):
+            return not bool(self.storage.exists(token))
 
 
 class UserIDBlackList(BaseBlackList):
