@@ -7,8 +7,10 @@ from opentelemetry.sdk.resources import SERVICE_NAME, Resource
 from opentelemetry.instrumentation.flask import FlaskInstrumentor
 from opentelemetry.sdk.trace.export import BatchSpanProcessor, ConsoleSpanExporter
 from opentelemetry.exporter.jaeger.thrift import JaegerExporter
+from opentelemetry.sdk.trace.sampling import TraceIdRatioBased
 
 from app.core import app, db, migrate
+from app.core.config import Config
 from app.views.user_view import user_blueprint
 from app.views.role_view import role_blueprint
 from app.views.user_add_role import user_role_blueprint
@@ -30,7 +32,8 @@ def create_app(flask_app):
 def configure_tracer() -> None:
     trace.set_tracer_provider(
         TracerProvider(
-            resource=Resource.create({SERVICE_NAME: "auth"})
+            resource=Resource.create({SERVICE_NAME: "auth"}),
+            sampler=TraceIdRatioBased(Config.TRACE_SAMPLING_FREQUENCY)
         )
     )
     trace.get_tracer_provider().add_span_processor(
