@@ -4,12 +4,16 @@ from flask import Blueprint, request
 from opentelemetry import trace
 from opentelemetry.sdk.trace import TracerProvider   
 from opentelemetry.sdk.resources import SERVICE_NAME, Resource     
-from opentelemetry.sdk.trace.export import BatchSpanProcessor, ConsoleSpanExporter
+from opentelemetry.sdk.trace.export import (
+    BatchSpanProcessor,
+    ConsoleSpanExporter,
+)
 from opentelemetry.exporter.jaeger.thrift import JaegerExporter
 from opentelemetry.sdk.trace.sampling import TraceIdRatioBased
 
 tracing_blueprint = Blueprint("tracing", __name__)
 trace_settings = TracingConfig()
+
 
 def configure_tracer() -> None:
     trace.set_tracer_provider(
@@ -27,7 +31,9 @@ def configure_tracer() -> None:
         )
     )
     # Чтобы видеть трейсы в консоли
-    trace.get_tracer_provider().add_span_processor(BatchSpanProcessor(ConsoleSpanExporter()))
+    trace().get_tracer_provider()\
+        .add_span_processor(BatchSpanProcessor(ConsoleSpanExporter()))
+
 
 @tracing_blueprint.before_request
 def before_request():
