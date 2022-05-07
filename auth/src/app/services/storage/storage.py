@@ -144,9 +144,9 @@ class UserTable(SQLAlchemyModel):
     @catch_unavailable(do_raise=False, default_value=([], False,))
     @trace_it
     def get_roles(self, user_id: uuid.UUID) -> Tuple[List[str], bool]:
-        user = User.query.filter_by(id=user_id).first()
-        out = [r.title for r in user.roles], user.is_superuser
-        return out
+            user = User.query.filter_by(id=user_id).first()
+            out = [r.title for r in user.roles], user.is_superuser
+            return out
         
     @catch_unavailable(do_raise=True)
     def delete_role(self, user_id: str = None, role_title: str = None):
