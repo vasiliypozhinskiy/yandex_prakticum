@@ -31,7 +31,7 @@ def configure_tracer() -> None:
         )
     )
     # Чтобы видеть трейсы в консоли
-    trace().get_tracer_provider()\
+    trace.get_tracer_provider()\
         .add_span_processor(BatchSpanProcessor(ConsoleSpanExporter()))
 
 
