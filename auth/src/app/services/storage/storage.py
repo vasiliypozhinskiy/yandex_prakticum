@@ -1,5 +1,4 @@
 from abc import ABC, abstractmethod
-from os import device_encoding
 import uuid
 from typing import Dict, Any, Optional, List, Tuple
 
@@ -16,7 +15,7 @@ from app.utils.utils import row2dict
 from sqlalchemy.exc import IntegrityError, DataError, OperationalError
 
 
-def catch_unavailable(do_raise = True, default_value = None):
+def catch_unavailable(do_raise=True, default_value=None):
     def inner(func):
         def wrapper(*args, **kwargs):
             try:
@@ -78,14 +77,14 @@ class SQLAlchemyModel(BaseTable):
 
         return new_id
 
-    @catch_unavailable(do_raise=False, default_value=None)
+    @catch_unavailable(do_raise=True)
     def read(self, filter: Dict[str, Any]) -> Optional[List[dict]]:
         obj_as_dict = self._try_get_from_db(filter=filter)
         return obj_as_dict
 
     @catch_unavailable(do_raise=True)
     def update(self, data, filter: Dict[str, Any]) -> None:
-        _ = self._try_get_from_db(filter=filter)
+        self._try_get_from_db(filter=filter)
         try:
             self.model.query.filter_by(**filter).update(
                 self._filter_input_to_model(data)
@@ -98,7 +97,7 @@ class SQLAlchemyModel(BaseTable):
     def delete(self, filter: Optional[Dict[str, Any]] = None) -> None:
         if filter is None:
             filter = {}
-        _ = self._try_get_from_db(filter)
+        self._try_get_from_db(filter)
         self.model.query.filter_by(**filter).delete()
         try:
             db.session.commit()
@@ -119,6 +118,7 @@ class SQLAlchemyModel(BaseTable):
         except DataError:
             raise BadIdFormat  
         return user_dict
+
 
 class UserTable(SQLAlchemyModel):
 
