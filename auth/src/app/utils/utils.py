@@ -38,6 +38,8 @@ def get_now_ms() -> int:
 
 def trace_it(func):
     def wrapper(*args, **kwargs):
-        with tracer.start_as_current_span(f"{func.__module__}:{func.__name__}"):
+        with tracer.start_as_current_span(
+            f"{func.__module__}:{func.__name__}"
+        ):
             return func(*args, **kwargs)
     return wrapper
