@@ -13,9 +13,6 @@ from app.utils.exceptions import (
 from app.utils.utils import row2dict, trace_it
 
 from sqlalchemy.exc import IntegrityError, DataError, OperationalError
-from opentelemetry import trace
-
-tracer = trace.get_tracer(__name__)
 
 
 def catch_unavailable(do_raise=True, default_value=None):
@@ -143,7 +140,6 @@ class UserTable(SQLAlchemyModel):
             return AlreadyExistsError("Role already exist")
         user.roles.append(role)
         db.session.commit()
-
 
     @catch_unavailable(do_raise=False, default_value=([], False,))
     @trace_it
