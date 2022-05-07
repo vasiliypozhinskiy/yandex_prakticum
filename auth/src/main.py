@@ -7,19 +7,16 @@ from opentelemetry.sdk.resources import SERVICE_NAME, Resource
 from opentelemetry.instrumentation.flask import FlaskInstrumentor
 from opentelemetry.sdk.trace.export import BatchSpanProcessor, ConsoleSpanExporter
 from opentelemetry.exporter.jaeger.thrift import JaegerExporter
-<<<<<<< HEAD
 from opentelemetry.sdk.trace.sampling import TraceIdRatioBased
-=======
->>>>>>> base tracer: works on test containers
 
 from app.core import app, db, migrate
-from app.views.oauth_view import oauth_blueprint
-from app.views.sample_page import sample_page_blueprint
 from app.core.config import Config
 from app.views.user_view import user_blueprint
+from app.views.oauth_view import oauth_blueprint
 from app.views.role_view import role_blueprint
 from app.views.user_add_role import user_role_blueprint
 from app.views.auth_views import auth_blueprint
+from app.views.sample_page import sample_page_blueprint
 
 
 def create_app(flask_app):
