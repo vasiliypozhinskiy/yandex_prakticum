@@ -22,3 +22,4 @@ class Config:
         f"postgresql://auth_app:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/auth_database"
     )
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    TRACE_SAMPLING_FREQUENCY = float(os.getenv("TRACE_SAMPLING_FREQUENCY", 5)) / 100
