@@ -4,7 +4,7 @@ services:
     environment:
       UVICORN_RELOAD: 1
       DEBUG: 1
-      TRACE_SAMPLING_FREQUENCY: 100
+      TRACE_SAMPLING_FREQUENCY: 1
     volumes:
       - ../../src:/app
     ports:
