@@ -5,6 +5,7 @@ services:
       UVICORN_RELOAD: 1
       DEBUG: 1
       TRACE_SAMPLING_FREQUENCY: 1
+      LOG_TRACING: 0
     volumes:
       - ../../src:/app
     ports:

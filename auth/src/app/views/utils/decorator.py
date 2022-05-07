@@ -2,9 +2,10 @@ from functools import wraps
 from http import HTTPStatus
 
 from app.utils.exceptions import (
-    NotFoundError, BadLengthError, BadEmailError, BadIdFormat, BadPasswordError,
-    FieldValidationError, InvalidToken, AccessDenied, AlreadyExistsError, UnExistingLogin,
-    ServiceUnavailable
+    NotFoundError, BadLengthError, BadEmailError, BadIdFormat,
+    BadPasswordError, FieldValidationError, InvalidToken, AccessDenied,
+    AlreadyExistsError, UnExistingLogin, ServiceUnavailable,
+    RequestLimitReached
 )
 
 
@@ -29,7 +30,13 @@ def catch_exceptions(func):
             value = func(*args, **kwargs)
         except NotFoundError as e:
             return e.message, HTTPStatus.NOT_FOUND
-        except (BadEmailError, BadLengthError, BadIdFormat, BadPasswordError, FieldValidationError) as e:
+        except (
+            BadEmailError,
+            BadLengthError,
+            BadIdFormat,
+            BadPasswordError,
+            FieldValidationError
+        ) as e:
             return e.message, HTTPStatus.BAD_REQUEST
         except InvalidToken as e:
             return e.message, HTTPStatus.UNAUTHORIZED
@@ -41,6 +48,8 @@ def catch_exceptions(func):
             return e.message, HTTPStatus.NOT_FOUND
         except ServiceUnavailable as e:
             return e.message, HTTPStatus.SERVICE_UNAVAILABLE
+        except RequestLimitReached as e:
+            return e.message, HTTPStatus.TOO_MANY_REQUESTS
 
         return value
     return wrapper

@@ -1,15 +1,19 @@
 import uuid
 from abc import ABC, abstractmethod
-from typing import Optional, Tuple, List
+from typing import Tuple, List
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ValidationError
 import jwt
 from jwt.exceptions import DecodeError, InvalidSignatureError
 
 from app.services.storage.storage import user_table
 from app.utils.exceptions import InvalidToken
 from app.utils.utils import get_now_ms
-from app.core.config import SECRET_SIGNATURE, REFRESH_TOKEN_EXP, ACCESS_TOKEN_EXP
+from app.core.config import (
+    SECRET_SIGNATURE,
+    REFRESH_TOKEN_EXP,
+    ACCESS_TOKEN_EXP,
+)
 
 
 class BasePayload(BaseModel, ABC):
@@ -55,16 +59,22 @@ class ServiceJWT(BaseServiceJWT):
             self._get_refresh_jwt(user_id)
         )
 
-    def get_access_payload(self, token) -> Optional[AccessPayload]:
+    def get_access_payload(self, token) -> AccessPayload:
         payload = self.decode_token(token)
-        return AccessPayload(**payload) if payload else None
+        try:
+            return AccessPayload(**payload)
+        except ValidationError:
+            raise InvalidToken
     
-    def get_refresh_payload(self, token) -> Optional[RefreshPayload]:
+    def get_refresh_payload(self, token) -> RefreshPayload:
         payload = self.decode_token(token)
-        return RefreshPayload(**payload) if payload else None
+        try:
+            return RefreshPayload(**payload)
+        except ValidationError:
+            raise InvalidToken
 
     @staticmethod
-    def decode_token(token) -> Optional[dict]:
+    def decode_token(token) -> dict:
         try:
             payload = jwt.decode(token, SECRET_SIGNATURE, algorithms=["HS256"])
         except (
@@ -75,14 +85,14 @@ class ServiceJWT(BaseServiceJWT):
         return payload
 
     @staticmethod
-    def encode(payload: BaseModel):
-        payload = payload.dict()
-        payload['user_id'] = str(payload['user_id'])
+    def encode(payload: BasePayload):
+        payload_dict = payload.dict()
+        payload_dict['user_id'] = str(payload_dict['user_id'])
         return jwt.encode(
-                payload,
-                SECRET_SIGNATURE,
-                algorithm="HS256",
-            )
+            payload_dict,
+            SECRET_SIGNATURE,
+            algorithm="HS256",
+        )
         
     def _get_refresh_jwt(self, user_id: uuid.UUID):
         roles, is_su = self._get_roles_and_su(user_id)
@@ -110,7 +120,11 @@ class ServiceJWT(BaseServiceJWT):
         payload = AccessPayload(**payload)
         return self.encode(payload=payload)
     
-    def refresh_payloads(self, refresh: RefreshPayload, soft: bool = True) -> Tuple[AccessPayload, RefreshPayload]:
+    def refresh_payloads(
+        self,
+        refresh: RefreshPayload,
+        soft: bool = True
+    ) -> Tuple[AccessPayload, RefreshPayload]:
         now = get_now_ms()
         # refresh refresh
         if refresh.exp > now:
@@ -141,6 +155,7 @@ class ServiceJWT(BaseServiceJWT):
         return user_table.get_roles(user_id=user_id)
 
 
-
-
-JWT_SERVICE = ServiceJWT(refresh_timeout=REFRESH_TOKEN_EXP, access_timeout=ACCESS_TOKEN_EXP)
+JWT_SERVICE = ServiceJWT(
+    refresh_timeout=REFRESH_TOKEN_EXP,
+    access_timeout=ACCESS_TOKEN_EXP,
+)
