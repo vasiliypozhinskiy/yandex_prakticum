@@ -9,9 +9,11 @@ from flasgger.utils import swag_from
 from app.core.swagger_config import SWAGGER_DOCS_PATH
 from app.views.models.auth import AuthRefreshReqView, AuthReqView
 from app.services.auth_services.auth_services import AUTH_SERVICE
+from app.services.rate_limit import limit_rate
 from app.views.utils.decorator import catch_exceptions
 
 auth_blueprint = Blueprint('auth', __name__, url_prefix='/auth/api/v1')
+
 
 class Login(MethodView):
     
@@ -29,9 +31,10 @@ class LogOut(MethodView):
     
     @swag_from(f'{SWAGGER_DOCS_PATH}/auth/logout.yaml', endpoint='auth.logout', methods=['POST'])
     @catch_exceptions
+    @limit_rate
     def post(self):
         access_token = request.headers["Authorization"]
-        agent = request.headers.get('User-Agent')
+        agent = request.headers.get('User-Agent', "")
         AUTH_SERVICE.logout(access_token=access_token, agent=agent)
         return 'Success logout', HTTPStatus.OK
 
@@ -40,6 +43,7 @@ class Authorize(MethodView):
     
     @swag_from(f'{SWAGGER_DOCS_PATH}/auth/authorize.yaml', endpoint='auth.authorize', methods=['POST'])
     @catch_exceptions
+    @limit_rate
     def post(self):
         access_token = request.headers["Authorization"]
         roles = AUTH_SERVICE.authorize(access_token=access_token)
@@ -50,6 +54,7 @@ class Refresh(MethodView):
     
     @swag_from(f'{SWAGGER_DOCS_PATH}/auth/refresh.yaml', endpoint='auth.refresh', methods=['POST'])
     @catch_exceptions
+    @limit_rate
     def post(self):
         req = AuthRefreshReqView(**request.json)
         agent = request.headers.get('User-Agent')
@@ -72,16 +77,17 @@ class LogOutAllById(BaseLogoutAll):
 
     @swag_from(f'{SWAGGER_DOCS_PATH}/auth/logout_all_id.yaml', endpoint='auth.logout-all-id', methods=['POST'])
     @catch_exceptions
+    @limit_rate
     @AUTH_SERVICE.token_required(check_is_superuser=True)
     def post(self, user_id: Optional[str] = None):
         return super().post(user_id=user_id)
-
 
 
 class LogOutAllByAccess(BaseLogoutAll):
     
     @swag_from(f'{SWAGGER_DOCS_PATH}/auth/logout_all.yaml', endpoint='auth.logout-all-access', methods=['POST'])
     @catch_exceptions
+    @limit_rate
     @AUTH_SERVICE.token_required()
     def post(self, user_id: Optional[str] = None):
         return super().post(user_id=user_id)

@@ -8,6 +8,7 @@ from app.services.storage.storage import user_table
 from app.core.swagger_config import SWAGGER_DOCS_PATH
 from app.services.auth_services.auth_services import AUTH_SERVICE
 from app.services.auth_services.black_list import ROLES_UPDATE
+from app.services.rate_limit import limit_rate
 from app.utils.exceptions import NotFoundError, AlreadyExistsError
 from app.utils.utils import check_password
 from app.views.utils.decorator import catch_exceptions
@@ -21,6 +22,7 @@ class UserRoleView(MethodView):
         endpoint="user_role.add_role",
     )
     @catch_exceptions
+    @limit_rate
     def post(self, user_id, role_title):
         self._add_role(user_id, role_title)
         return "Роль успешно добавленна", HTTPStatus.OK
@@ -30,6 +32,7 @@ class UserRoleView(MethodView):
         endpoint="user_role.delete_role",
     )
     @catch_exceptions
+    @limit_rate
     def delete(self, user_id, role_title):
         self._delete_role(user_id, role_title)
         return "Роль успешно удалена", HTTPStatus.OK
@@ -53,6 +56,7 @@ class ChangeSuperuserRights(MethodView):
         endpoint="user_role.create_admin",
     )
     @catch_exceptions
+    @limit_rate
     def post(self):
         self._create_admin()
         return "Admin created", HTTPStatus.OK
@@ -62,6 +66,7 @@ class ChangeSuperuserRights(MethodView):
         endpoint="user_role.delete_admin",
     )
     @catch_exceptions
+    @limit_rate
     def delete(self, user_id):
         self._delete_admin(user_id)
         return "Admin deleted", HTTPStatus.OK
