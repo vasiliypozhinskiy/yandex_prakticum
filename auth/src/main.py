@@ -25,6 +25,7 @@ def create_app(flask_app):
 
     return flask_app
 
+
 configure_tracer()
 app = create_app(app)
 FlaskInstrumentor().instrument_app(app) 

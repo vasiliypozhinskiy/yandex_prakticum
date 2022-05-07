@@ -14,6 +14,7 @@ from opentelemetry.sdk.trace.sampling import TraceIdRatioBased
 tracing_blueprint = Blueprint("tracing", __name__)
 trace_settings = TracingConfig()
 
+
 def configure_tracer() -> None:
     trace.set_tracer_provider(
         TracerProvider(
