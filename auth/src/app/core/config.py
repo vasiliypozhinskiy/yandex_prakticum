@@ -25,6 +25,7 @@ class Config:
     )
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     RATE_LIMIT = int(os.getenv("RPM_LIMIT", 10))
+    RATE_LIMIT_SESSION_LEN = int(os.getenv("RATE_LIMIT_SESSION_LEN", 60*60))
 
 
 class TracingConfig(BaseSettings):
