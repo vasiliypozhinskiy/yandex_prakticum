@@ -10,12 +10,9 @@ from opentelemetry.exporter.jaeger.thrift import JaegerExporter
 from opentelemetry.sdk.trace.sampling import TraceIdRatioBased
 
 from app.core import app, db, migrate
-<<<<<<< HEAD
 from app.views.oauth_view import oauth_blueprint
 from app.views.sample_page import sample_page_blueprint
-=======
 from app.core.config import Config
->>>>>>> add adaptive rate. default 5% on test 100%
 from app.views.user_view import user_blueprint
 from app.views.role_view import role_blueprint
 from app.views.user_add_role import user_role_blueprint
