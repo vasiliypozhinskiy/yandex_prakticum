@@ -1,5 +1,13 @@
 import os
 
+from flask import request             
+from opentelemetry import trace
+from opentelemetry.sdk.trace import TracerProvider   
+from opentelemetry.sdk.resources import SERVICE_NAME, Resource     
+from opentelemetry.instrumentation.flask import FlaskInstrumentor
+from opentelemetry.sdk.trace.export import BatchSpanProcessor, ConsoleSpanExporter
+from opentelemetry.exporter.jaeger.thrift import JaegerExporter
+
 from app.core import app, db, migrate
 from app.views.oauth_view import oauth_blueprint
 from app.views.sample_page import sample_page_blueprint
@@ -22,8 +30,34 @@ def create_app(flask_app):
     return flask_app
 
 
-app = create_app(app)
 
+def configure_tracer() -> None:
+    trace.set_tracer_provider(
+        TracerProvider(
+            resource=Resource.create({SERVICE_NAME: "auth"})
+        )
+    )
+    trace.get_tracer_provider().add_span_processor(
+        BatchSpanProcessor(
+            JaegerExporter(
+                agent_host_name='tracing',
+                agent_port=6831,
+            )
+        )
+    )
+    # Чтобы видеть трейсы в консоли
+    trace.get_tracer_provider().add_span_processor(BatchSpanProcessor(ConsoleSpanExporter()))
+
+
+configure_tracer()
+app = create_app(app)
+FlaskInstrumentor().instrument_app(app) 
+
+@app.before_request
+def before_request():
+    request_id = request.headers.get('X-Request-Id')
+    if not request_id:
+        raise RuntimeError('request id is required') 
 
 if __name__ == "__main__":
     app.run(
