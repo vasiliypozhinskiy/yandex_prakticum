@@ -5,7 +5,6 @@ from flask import request
 from app.core.config import Config
 from app.db.redis import redis_rate_limits
 from app.utils.exceptions import RequestLimitReached
-from app.services.auth_services.auth_services import AUTH_SERVICE
 from app.services.auth_services.jwt_service import JWT_SERVICE
 from app.utils.exceptions import InvalidToken
 

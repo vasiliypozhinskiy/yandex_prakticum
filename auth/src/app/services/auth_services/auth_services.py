@@ -4,10 +4,12 @@ import uuid
 
 from flask import request
 
+from app.core.config import Config
 from app.views.models.auth import AuthReqView, AuthRespView
 from app.services.storage.storage import user_table, user_login_history_table
 from app.utils.utils import check_password
 from app.utils.exceptions import UnExistingLogin, InvalidToken, AccessDenied
+from app.services.rate_limit import check_rate_limit
 from app.services.auth_services.jwt_service import JWT_SERVICE
 from app.services.auth_services.storages import REF_TOK_STORAGE
 from app.services.auth_services.black_list import (
