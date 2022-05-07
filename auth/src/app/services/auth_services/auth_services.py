@@ -46,7 +46,6 @@ class AuthService:
 
             return AuthRespView(access_token=access_token, refresh_token=refresh_token)
         else:
-            print('invalid password \n\n')
             raise AccessDenied
 
     @staticmethod

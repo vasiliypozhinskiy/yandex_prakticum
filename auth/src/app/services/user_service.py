@@ -13,6 +13,7 @@ from app.models.service_models import (
 from app.utils.exceptions import (
     FieldValidationError,
     AccessDenied,
+    NotFoundError
 )
 from app.utils.utils import hash_password, row2dict, check_password
 
@@ -32,15 +33,11 @@ class UserService:
 
         user_creds = user_table.read(filter={"id": user_id})
         user_data = user_data_table.read(filter={"user_id": user_id})
-        if user_creds is None:
-            user_creds = UserCreds(id=user_id, login='login', password='Password1!', email='email@email.com')
-            user_creds = user_creds.dict()
-        if user_data is None:
-            user_data = {}
+        if (not user_creds) or (not user_data):
+            raise NotFoundError
         
         user_data.update(user_creds)
         out = self.validate_user(user_data=user_data)
-        print('process degraded db\n\n', flush=True)
         return out
 
     def update_user(self, user_id, user_data) -> None:
