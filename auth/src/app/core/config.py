@@ -1,5 +1,7 @@
 import os
 
+from pydantic import BaseSettings, Field
+
 DB_PORT = os.getenv("DB_PORT", 4321)
 DB_HOST = os.getenv("DB_HOST", "localhost")
 DB_PASSWORD = os.getenv("DB_PASSWORD", "")
@@ -22,3 +24,9 @@ class Config:
         f"postgresql://auth_app:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/auth_database"
     )
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+
+
+class TracingConfig(BaseSettings):
+    sampling_rate: float = Field(0.05, env='TRACE_SAMPLING_FREQUENCY')
+    agent_port: int = Field(6831, env='TRACING_AGENT_PORT')
+    host: str = Field("tracing", env='TRACING_HOST')
