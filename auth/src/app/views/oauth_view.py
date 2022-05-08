@@ -1,16 +1,18 @@
 from urllib.parse import urlencode
 from http import HTTPStatus
 
-import requests
 from flasgger import swag_from
 from flask import Blueprint, request
 from flask.views import MethodView
 
 from app.core.swagger_config import SWAGGER_DOCS_PATH
 from app.core.config import YandexOathConfig, VKOathConfig
-from app.services.oauth_service import vk_oauth_service, yandex_oauth_service
+from app.services.oauth_service import (
+    vk_oauth_service,
+    yandex_oauth_service,
+    BaseOauthService,
+)
 from app.views.utils.decorator import catch_exceptions
-from app.utils.exceptions import AccessDenied
 
 oauth_blueprint = Blueprint('oauth', __name__, url_prefix='/auth/api/v1/oauth')
 
@@ -58,11 +60,12 @@ class YandexOauthView(MethodView):
         return {"url": url}, 200
 
 
-class YandexLoginView(MethodView):
+class OauthLoginView(MethodView):
+    service: BaseOauthService
 
     @catch_exceptions
     def get(self):
-        tokens = yandex_oauth_service.login(
+        tokens = self.service.login(
             code=request.args["code"],
             agent=request.headers.get("USER_AGENT", "empty-agent")
         )
@@ -72,18 +75,20 @@ class YandexLoginView(MethodView):
         }, HTTPStatus.OK
 
 
-class VKLoginView(MethodView):
-
+class YandexLoginView(OauthLoginView):
+    service = yandex_oauth_service
+    
     @catch_exceptions
     def get(self):
-        tokens = vk_oauth_service.login(
-            code=request.args["code"],
-            agent=request.headers.get("USER_AGENT", "empty-agent")
-        )
-        return {
-            "access_token": tokens.access_token,
-            "refresh_token": tokens.refresh_token
-        }, HTTPStatus.OK
+        return super().get()
+
+
+class VKLoginView(OauthLoginView):
+    service = vk_oauth_service
+    
+    @catch_exceptions
+    def get(self):
+        return super().get()
         
 
 oauth_blueprint.add_url_rule(
