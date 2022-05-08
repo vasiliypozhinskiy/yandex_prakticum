@@ -17,6 +17,7 @@ DATE_TIME_FORMAT = "%Y-%m-%d %H:%M:%S.%f"
 TEMPLATE_FOLDER = os.getcwd() + "/templates"
 
 VK_BASE_URL = "https://oauth.vk.com"
+YANDEX_BASE_URL = "https://oauth.yandex.ru"
 
 
 class Config:
@@ -46,3 +47,14 @@ class VKOathConfig(BaseSettings):
     api_url: str = "https://api.vk.com/method/"
     api_version: str = "5.131"
     client_id: int = 8158992
+
+
+class YandexOathConfig(BaseSettings):
+    client_secret: str = Field(env="YANDEX_CLIENT_SECRET")
+    base_url: str = YANDEX_BASE_URL
+    auth_url: str = YANDEX_BASE_URL + "/authorize"
+    get_token_url: str = YANDEX_BASE_URL + "/token"
+    redirect_url: str = "http://localhost/auth/api/v1/oauth/yandex/login"
+    api_url: str = "https://api.vk.com/method/"
+    # api_version: str = "5.131"
+    client_id: str = "1663a587e0a44f68a19f1578934144ad"
