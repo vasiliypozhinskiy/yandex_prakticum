@@ -49,6 +49,8 @@ class UserData(BaseModel):
     first_name: Optional[str]
     last_name: Optional[str]
     birthdate: Optional[date]
+    roles: Optional[List[str]]
+
 
     @validator("first_name", "last_name")
     def validate_length(cls, field):

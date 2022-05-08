@@ -2,6 +2,7 @@ import uuid
 
 from pydantic import ValidationError
 
+from app.models.db_models import User
 from app.services.storage.storage import user_table, user_data_table, user_login_history_table
 from app.models.service_models import (
     UserData,
@@ -28,10 +29,15 @@ class UserService:
 
         return user_id
 
-    def get_user(self, user_id) -> UserServiceModel:
+    def get_user_grpc(self, user_id):
+        user = User.query.filter_by(id=user_id).first()
+        role_list = [role.title for role in user.roles]
+        return role_list
 
+    def get_user(self, user_id) -> UserServiceModel:
         user_creds = user_table.read(filter={"id": user_id})
         user_data = user_data_table.read(filter={"user_id": user_id})
+        role = user_data_table.get_role(user_id)
         if user_creds is None:
             user_creds = UserCreds(id=user_id, login='login', password='Password1!', email='email@email.com')
             user_creds = user_creds.dict()
@@ -39,6 +45,7 @@ class UserService:
             user_data = {}
         
         user_data.update(user_creds)
+        user_data['roles'] = role
         out = self.validate_user(user_data=user_data)
         print('process degraded db\n\n', flush=True)
         return out

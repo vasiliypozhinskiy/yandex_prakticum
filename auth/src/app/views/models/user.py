@@ -11,6 +11,7 @@ class UserResponse(BaseModel):
     first_name: Optional[str]
     last_name: Optional[str]
     birthdate: Optional[str]
+    roles: Optional[List[str]]
 
 
 class HistoryEntry(BaseModel):

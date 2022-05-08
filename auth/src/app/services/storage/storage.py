@@ -79,9 +79,15 @@ class SQLAlchemyModel(BaseTable):
         return new_id
 
     @catch_unavailable(do_raise=False, default_value=None)
-    def read(self, filter: Dict[str, Any]) -> Optional[List[dict]]:
+    def read(self, filter: Dict[str, Any]) -> dict:
         obj_as_dict = self._try_get_from_db(filter=filter)
         return obj_as_dict
+
+    @catch_unavailable(do_raise=False, default_value=None)
+    def get_role(self, user_id: str):
+        user = User.query.filter_by(id=user_id).first()
+        roles = [i.title for i in user.roles]
+        return roles
 
     @catch_unavailable(do_raise=True)
     def update(self, data, filter: Dict[str, Any]) -> None:
