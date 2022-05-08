@@ -61,8 +61,6 @@ class UserData(BaseModel):
 class User(UserCreds, UserData):
     pass
     
-    
-
 
 class HistoryEntry(BaseModel):
     id: UUID

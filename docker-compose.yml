@@ -25,6 +25,7 @@ services:
       DB_USER: auth_app
       DB_NAME: auth_database
       SUPERUSER_PASSWORD: ${SUPERUSER_PASSWORD}
+      VK_CLIENT_SECRET: ${VK_CLIENT_SECRET}
       DB_PORT: 4321
       REDIS_HOST: redis
       REDIS_PORT: 6379
@@ -32,11 +33,17 @@ services:
       HOST: auth
       DEBUG: ${AUTH_DEBUG}
       WAIT_HOSTS: auth_db:4321, redis:6379
+      TRACE_SAMPLING_FREQUENCY: 1
     volumes:
     - './auth/src/migrations:/app/migrations'
     depends_on:
       - auth_db
       - redis
+
+  tracing:
+    image: jaegertracing/all-in-one:latest
+    ports:
+      - "16686:16686"
 
   nginx:
     image: nginx:1.21-alpine

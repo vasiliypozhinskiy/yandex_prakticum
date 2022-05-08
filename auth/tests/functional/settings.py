@@ -11,6 +11,9 @@ class Settings(BaseSettings):
     auth_host: str = Field("auth", env="API_HOST")
     auth_port: int = Field(5000, env="API_PORT")
 
+    nginx_port: int = Field(80, env="API_PORT")
+    nginx_host: str = Field("nginx", env="NGINX_PORT")
+
     service_wait_timeout: int = Field(30, env="SERVICE_WAIT_TIMEOUT")  # seconds
     service_wait_interval: int = Field(1, env="SERVICE_WAIT_INTERVAL")  # seconds
 

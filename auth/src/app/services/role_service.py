@@ -6,7 +6,7 @@ from app.utils.exceptions import NotFoundError
 class RoleService:
     @staticmethod
     def create_role(role: str) -> None:
-        _ = roles_table.create(data={}, new_id=role)
+        roles_table.create(data={}, new_id=role)
 
     def delete_role(self, role_title) -> None:
         roles_table.delete(filter={'title': role_title})

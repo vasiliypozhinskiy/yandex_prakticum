@@ -6,6 +6,7 @@ from flask.views import MethodView
 
 from app.core.swagger_config import SWAGGER_DOCS_PATH
 from app.services.auth_services.auth_services import AUTH_SERVICE
+from app.services.rate_limit import limit_rate
 from app.services.role_service import role_service
 from app.views.utils.decorator import catch_exceptions
 
@@ -19,6 +20,7 @@ class RoleView(MethodView):
         methods=["POST"]
     )
     @catch_exceptions
+    @limit_rate
     def post(self, new_role):
         return self._create_role(new_role)
 
@@ -28,6 +30,7 @@ class RoleView(MethodView):
         methods=["GET"],
     )
     @catch_exceptions
+    @limit_rate
     def get(self):
         return self._get_list_role()
 
@@ -37,6 +40,7 @@ class RoleView(MethodView):
         methods=["PATCH"],
     )
     @catch_exceptions
+    @limit_rate
     def patch(self, role_title, new_role):
         return self._update_role(role_title, new_role)
 
@@ -46,6 +50,7 @@ class RoleView(MethodView):
         methods=["DELETE"],
     )
     @catch_exceptions
+    @limit_rate
     def delete(self, role_title):
         return self._delete_role(role_title)
 

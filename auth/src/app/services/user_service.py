@@ -5,7 +5,6 @@ from pydantic import ValidationError
 from app.models.db_models import User
 from app.services.storage.storage import user_table, user_data_table, user_login_history_table
 from app.models.service_models import (
-    UserData,
     UserCreds,
     User as UserServiceModel,
     HistoryEntry as HistoryEntryServiceModel
@@ -14,6 +13,7 @@ from app.models.service_models import (
 from app.utils.exceptions import (
     FieldValidationError,
     AccessDenied,
+    NotFoundError
 )
 from app.utils.utils import hash_password, row2dict, check_password
 
@@ -43,11 +43,12 @@ class UserService:
             user_creds = user_creds.dict()
         if user_data is None:
             user_data = {}
-        
+        if (not user_creds) or (not user_data):
+            raise NotFoundError
+
         user_data.update(user_creds)
         user_data['roles'] = role
         out = self.validate_user(user_data=user_data)
-        print('process degraded db\n\n', flush=True)
         return out
 
     def update_user(self, user_id, user_data) -> None:

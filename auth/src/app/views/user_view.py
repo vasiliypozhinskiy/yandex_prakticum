@@ -7,6 +7,7 @@ from flask import Blueprint, jsonify, request
 from app.core.swagger_config import SWAGGER_DOCS_PATH
 from app.services.user_service import user_service
 from app.services.auth_services.auth_services import AUTH_SERVICE
+from app.services.rate_limit import limit_rate
 from app.utils.exceptions import NotFoundError
 from app.views.models.user import UserResponse, UserHistoryResponse, HistoryEntry
 from app.views.utils.decorator import catch_exceptions
@@ -29,6 +30,7 @@ class UserView(MethodView):
         methods=["GET"],
     )
     @catch_exceptions
+    @limit_rate
     def get(self, user_id):
         return self._get_user(user_id)
 
@@ -38,6 +40,7 @@ class UserView(MethodView):
         methods=["PATCH"],
     )
     @catch_exceptions
+    @limit_rate
     def patch(self, user_id):
         return self._update_user(user_id=user_id)
 
@@ -47,6 +50,7 @@ class UserView(MethodView):
         methods=["DELETE"],
     )
     @catch_exceptions
+    @limit_rate
     def delete(self, user_id):
         return self._delete_user(user_id=user_id)
 
@@ -98,11 +102,13 @@ class UserChangePassword(MethodView):
         endpoint="user.change_password"
     )
     @catch_exceptions
+    @limit_rate
     def put(self, user_id):
         return self._change_password(user_id=user_id)
 
     @staticmethod
     @AUTH_SERVICE.token_required(check_is_me=True)
+    @limit_rate
     def _change_password(user_id):
         passwords = request.json
         if (not passwords.get("old_password")) or (not passwords.get("new_password")):
@@ -120,6 +126,7 @@ class UserHistory(MethodView):
         endpoint="user.get_history"
     )
     @catch_exceptions
+    @limit_rate
     def get(self, user_id):
         return jsonify(self._get_history(user_id=user_id))
 

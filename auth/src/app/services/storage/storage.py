@@ -1,5 +1,4 @@
 from abc import ABC, abstractmethod
-from os import device_encoding
 import uuid
 from typing import Dict, Any, Optional, List, Tuple
 
@@ -11,12 +10,12 @@ from app.utils.exceptions import (
     NotFoundError,
     ServiceUnavailable
 )
-from app.utils.utils import row2dict
+from app.utils.utils import row2dict, trace_it
 
 from sqlalchemy.exc import IntegrityError, DataError, OperationalError
 
 
-def catch_unavailable(do_raise = True, default_value = None):
+def catch_unavailable(do_raise=True, default_value=None):
     def inner(func):
         def wrapper(*args, **kwargs):
             try:
@@ -79,7 +78,8 @@ class SQLAlchemyModel(BaseTable):
         return new_id
 
     @catch_unavailable(do_raise=False, default_value=None)
-    def read(self, filter: Dict[str, Any]) -> dict:
+    @trace_it
+    def read(self, filter: Dict[str, Any]) -> Optional[List[dict]]:
         obj_as_dict = self._try_get_from_db(filter=filter)
         return obj_as_dict
 
@@ -91,7 +91,7 @@ class SQLAlchemyModel(BaseTable):
 
     @catch_unavailable(do_raise=True)
     def update(self, data, filter: Dict[str, Any]) -> None:
-        _ = self._try_get_from_db(filter=filter)
+        self._try_get_from_db(filter=filter)
         try:
             self.model.query.filter_by(**filter).update(
                 self._filter_input_to_model(data)
@@ -104,7 +104,7 @@ class SQLAlchemyModel(BaseTable):
     def delete(self, filter: Optional[Dict[str, Any]] = None) -> None:
         if filter is None:
             filter = {}
-        _ = self._try_get_from_db(filter)
+        self._try_get_from_db(filter)
         self.model.query.filter_by(**filter).delete()
         try:
             db.session.commit()
@@ -126,6 +126,7 @@ class SQLAlchemyModel(BaseTable):
             raise BadIdFormat  
         return user_dict
 
+
 class UserTable(SQLAlchemyModel):
 
     def __init__(self, model: db.Model, roles_model: db.Model, id_field: str = "id"):
@@ -133,6 +134,7 @@ class UserTable(SQLAlchemyModel):
         self.roles_model = roles_model
 
     @catch_unavailable(do_raise=True)
+    @trace_it
     def add_role(self, user_id: str = None, role_title: str = None):
         user = self.model.query.filter_by(id=user_id).first()
         role = self.roles_model.query.filter_by(title=role_title).first()
@@ -146,10 +148,11 @@ class UserTable(SQLAlchemyModel):
         db.session.commit()
 
     @catch_unavailable(do_raise=False, default_value=([], False,))
+    @trace_it
     def get_roles(self, user_id: uuid.UUID) -> Tuple[List[str], bool]:
-        user = User.query.filter_by(id=user_id).first()
-        out = [r.title for r in user.roles], user.is_superuser
-        return out
+            user = User.query.filter_by(id=user_id).first()
+            out = [r.title for r in user.roles], user.is_superuser
+            return out
         
     @catch_unavailable(do_raise=True)
     def delete_role(self, user_id: str = None, role_title: str = None):
@@ -171,6 +174,7 @@ class RolesTable(SQLAlchemyModel):
             return []
         roles_list = [row2dict(obj) for obj in objects]
         return roles_list
+
 
 user_table = UserTable(User, roles_model=Role)
 user_data_table = SQLAlchemyModel(UserData)
