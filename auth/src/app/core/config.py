@@ -1,4 +1,5 @@
 import os
+from typing import Union
 
 from pydantic import BaseSettings, Field
 
@@ -38,7 +39,12 @@ class TracingConfig(BaseSettings):
     log: bool = Field(False, env='LOG_TRACING')
 
 
-class VKOathConfig(BaseSettings):
+class BaseOauthConfig(BaseSettings):
+    client_secret: str
+    client_id: Union[int, str]
+
+
+class VKOathConfig(BaseOauthConfig):
     client_secret: str = Field(env="VK_CLIENT_SECRET")
     base_url: str = VK_BASE_URL
     auth_url: str = VK_BASE_URL + "/authorize"
@@ -49,7 +55,7 @@ class VKOathConfig(BaseSettings):
     client_id: int = 8158992
 
 
-class YandexOathConfig(BaseSettings):
+class YandexOathConfig(BaseOauthConfig):
     client_secret: str = Field(env="YANDEX_CLIENT_SECRET")
     base_url: str = YANDEX_BASE_URL
     auth_url: str = YANDEX_BASE_URL + "/authorize"
