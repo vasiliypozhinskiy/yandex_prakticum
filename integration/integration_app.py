@@ -4,7 +4,7 @@ from concurrent import futures
 import grpc
 from loguru import logger
 
-from integration.messages import user_pb2_grpc
+from messages import user_pb2_grpc
 from services.user import UserServices
 
 _ONE_DAY_IN_SECONDS = 60 * 60 * 24

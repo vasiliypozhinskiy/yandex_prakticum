@@ -14,12 +14,13 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\nuser.proto\x12\x06userpb\"\x19\n\x0bUserRequest\x12\n\n\x02id\x18\x01 \x01(\t\"g\n\x0cUserResponse\x12\r\n\x05login\x18\x01 \x01(\t\x12\r\n\x05\x65mail\x18\x02 \x01(\t\x12\x12\n\nfirst_name\x18\x03 \x01(\t\x12\x11\n\tlast_name\x18\x04 \x01(\t\x12\x12\n\nbirth_data\x18\x05 \x01(\t2>\n\x04User\x12\x36\n\x07GetUser\x12\x13.userpb.UserRequest\x1a\x14.userpb.UserResponse\"\x00\x62\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\nuser.proto\x12\x06userpb\"\x19\n\x0bUserRequest\x12\n\n\x02id\x18\x01 \x01(\t\"\x18\n\x08RoleList\x12\x0c\n\x04role\x18\x01 \x03(\t\"2\n\x10RoleListResponse\x12\x1e\n\x04role\x18\x01 \x03(\x0b\x32\x10.userpb.RoleList2:\n\x04User\x12\x32\n\x07GetUser\x12\x13.userpb.UserRequest\x1a\x10.userpb.RoleList\"\x00\x62\x06proto3')
 
 
 
 _USERREQUEST = DESCRIPTOR.message_types_by_name['UserRequest']
-_USERRESPONSE = DESCRIPTOR.message_types_by_name['UserResponse']
+_ROLELIST = DESCRIPTOR.message_types_by_name['RoleList']
+_ROLELISTRESPONSE = DESCRIPTOR.message_types_by_name['RoleListResponse']
 UserRequest = _reflection.GeneratedProtocolMessageType('UserRequest', (_message.Message,), {
   'DESCRIPTOR' : _USERREQUEST,
   '__module__' : 'user_pb2'
@@ -27,12 +28,19 @@ UserRequest = _reflection.GeneratedProtocolMessageType('UserRequest', (_message.
   })
 _sym_db.RegisterMessage(UserRequest)
 
-UserResponse = _reflection.GeneratedProtocolMessageType('UserResponse', (_message.Message,), {
-  'DESCRIPTOR' : _USERRESPONSE,
+RoleList = _reflection.GeneratedProtocolMessageType('RoleList', (_message.Message,), {
+  'DESCRIPTOR' : _ROLELIST,
   '__module__' : 'user_pb2'
-  # @@protoc_insertion_point(class_scope:userpb.UserResponse)
+  # @@protoc_insertion_point(class_scope:userpb.RoleList)
   })
-_sym_db.RegisterMessage(UserResponse)
+_sym_db.RegisterMessage(RoleList)
+
+RoleListResponse = _reflection.GeneratedProtocolMessageType('RoleListResponse', (_message.Message,), {
+  'DESCRIPTOR' : _ROLELISTRESPONSE,
+  '__module__' : 'user_pb2'
+  # @@protoc_insertion_point(class_scope:userpb.RoleListResponse)
+  })
+_sym_db.RegisterMessage(RoleListResponse)
 
 _USER = DESCRIPTOR.services_by_name['User']
 if _descriptor._USE_C_DESCRIPTORS == False:
@@ -40,8 +48,10 @@ if _descriptor._USE_C_DESCRIPTORS == False:
   DESCRIPTOR._options = None
   _USERREQUEST._serialized_start=22
   _USERREQUEST._serialized_end=47
-  _USERRESPONSE._serialized_start=49
-  _USERRESPONSE._serialized_end=152
-  _USER._serialized_start=154
-  _USER._serialized_end=216
+  _ROLELIST._serialized_start=49
+  _ROLELIST._serialized_end=73
+  _ROLELISTRESPONSE._serialized_start=75
+  _ROLELISTRESPONSE._serialized_end=125
+  _USER._serialized_start=127
+  _USER._serialized_end=185
 # @@protoc_insertion_point(module_scope)

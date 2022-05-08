@@ -17,7 +17,7 @@ class UserStub(object):
         self.GetUser = channel.unary_unary(
                 '/userpb.User/GetUser',
                 request_serializer=user__pb2.UserRequest.SerializeToString,
-                response_deserializer=user__pb2.UserResponse.FromString,
+                response_deserializer=user__pb2.RoleList.FromString,
                 )
 
 
@@ -36,7 +36,7 @@ def add_UserServicer_to_server(servicer, server):
             'GetUser': grpc.unary_unary_rpc_method_handler(
                     servicer.GetUser,
                     request_deserializer=user__pb2.UserRequest.FromString,
-                    response_serializer=user__pb2.UserResponse.SerializeToString,
+                    response_serializer=user__pb2.RoleList.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -61,6 +61,6 @@ class User(object):
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/userpb.User/GetUser',
             user__pb2.UserRequest.SerializeToString,
-            user__pb2.UserResponse.FromString,
+            user__pb2.RoleList.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
