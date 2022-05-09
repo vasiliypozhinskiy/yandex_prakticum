@@ -11,7 +11,6 @@ ENV PYTHONUNBUFFERED 1
 RUN apk add -U --no-cache build-base
 
 COPY ./requirements.txt /app
-RUN pip install -r /app/requirements.txt && \
-    apk del build-base 
+RUN pip install -r /app/requirements.txt
 
 WORKDIR /app

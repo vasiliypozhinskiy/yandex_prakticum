@@ -8,6 +8,16 @@ message GreetingResponse {
     string greetings = 1;
 }
 
-service Greetings {
+message AuthorizeRequest {
+    int32 user_id = 1;
+}
+
+message AuthorizeResponse {
+    repeated string roles = 1;
+    bool is_superuser = 2;
+}
+
+service Auth {
     rpc Greet(GreetingRequest) returns (GreetingResponse);
+    rpc Authorize(AuthorizeRequest) returns (AuthorizeResponse);
 }

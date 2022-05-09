@@ -5,7 +5,7 @@ import grpc
 import hello_world_pb2 as hello__world__pb2
 
 
-class GreetingsStub(object):
+class AuthStub(object):
     """Missing associated documentation comment in .proto file."""
 
     def __init__(self, channel):
@@ -15,13 +15,18 @@ class GreetingsStub(object):
             channel: A grpc.Channel.
         """
         self.Greet = channel.unary_unary(
-                '/Greetings/Greet',
+                '/Auth/Greet',
                 request_serializer=hello__world__pb2.GreetingRequest.SerializeToString,
                 response_deserializer=hello__world__pb2.GreetingResponse.FromString,
                 )
+        self.Authorize = channel.unary_unary(
+                '/Auth/Authorize',
+                request_serializer=hello__world__pb2.AuthorizeRequest.SerializeToString,
+                response_deserializer=hello__world__pb2.AuthorizeResponse.FromString,
+                )
 
 
-class GreetingsServicer(object):
+class AuthServicer(object):
     """Missing associated documentation comment in .proto file."""
 
     def Greet(self, request, context):
@@ -30,22 +35,33 @@ class GreetingsServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def Authorize(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
 
-def add_GreetingsServicer_to_server(servicer, server):
+
+def add_AuthServicer_to_server(servicer, server):
     rpc_method_handlers = {
             'Greet': grpc.unary_unary_rpc_method_handler(
                     servicer.Greet,
                     request_deserializer=hello__world__pb2.GreetingRequest.FromString,
                     response_serializer=hello__world__pb2.GreetingResponse.SerializeToString,
             ),
+            'Authorize': grpc.unary_unary_rpc_method_handler(
+                    servicer.Authorize,
+                    request_deserializer=hello__world__pb2.AuthorizeRequest.FromString,
+                    response_serializer=hello__world__pb2.AuthorizeResponse.SerializeToString,
+            ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
-            'Greetings', rpc_method_handlers)
+            'Auth', rpc_method_handlers)
     server.add_generic_rpc_handlers((generic_handler,))
 
 
  # This class is part of an EXPERIMENTAL API.
-class Greetings(object):
+class Auth(object):
     """Missing associated documentation comment in .proto file."""
 
     @staticmethod
@@ -59,8 +75,25 @@ class Greetings(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/Greetings/Greet',
+        return grpc.experimental.unary_unary(request, target, '/Auth/Greet',
             hello__world__pb2.GreetingRequest.SerializeToString,
             hello__world__pb2.GreetingResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def Authorize(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/Auth/Authorize',
+            hello__world__pb2.AuthorizeRequest.SerializeToString,
+            hello__world__pb2.AuthorizeResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
