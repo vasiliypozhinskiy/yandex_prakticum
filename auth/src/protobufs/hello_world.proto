@@ -9,7 +9,7 @@ message GreetingResponse {
 }
 
 message AuthorizeRequest {
-    int32 user_id = 1;
+    string access_token = 1;
 }
 
 message AuthorizeResponse {

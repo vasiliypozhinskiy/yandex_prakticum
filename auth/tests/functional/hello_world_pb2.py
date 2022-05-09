@@ -14,7 +14,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x11hello_world.proto\"\"\n\x0fGreetingRequest\x12\x0f\n\x07user_id\x18\x01 \x01(\x05\"%\n\x10GreetingResponse\x12\x11\n\tgreetings\x18\x01 \x01(\t\"#\n\x10\x41uthorizeRequest\x12\x0f\n\x07user_id\x18\x01 \x01(\x05\"8\n\x11\x41uthorizeResponse\x12\r\n\x05roles\x18\x01 \x03(\t\x12\x14\n\x0cis_superuser\x18\x02 \x01(\x08\x32h\n\x04\x41uth\x12,\n\x05Greet\x12\x10.GreetingRequest\x1a\x11.GreetingResponse\x12\x32\n\tAuthorize\x12\x11.AuthorizeRequest\x1a\x12.AuthorizeResponseb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x11hello_world.proto\"\"\n\x0fGreetingRequest\x12\x0f\n\x07user_id\x18\x01 \x01(\x05\"%\n\x10GreetingResponse\x12\x11\n\tgreetings\x18\x01 \x01(\t\"(\n\x10\x41uthorizeRequest\x12\x14\n\x0c\x61\x63\x63\x65ss_token\x18\x01 \x01(\t\"8\n\x11\x41uthorizeResponse\x12\r\n\x05roles\x18\x01 \x03(\t\x12\x14\n\x0cis_superuser\x18\x02 \x01(\x08\x32h\n\x04\x41uth\x12,\n\x05Greet\x12\x10.GreetingRequest\x1a\x11.GreetingResponse\x12\x32\n\tAuthorize\x12\x11.AuthorizeRequest\x1a\x12.AuthorizeResponseb\x06proto3')
 
 
 
@@ -59,9 +59,9 @@ if _descriptor._USE_C_DESCRIPTORS == False:
   _GREETINGRESPONSE._serialized_start=57
   _GREETINGRESPONSE._serialized_end=94
   _AUTHORIZEREQUEST._serialized_start=96
-  _AUTHORIZEREQUEST._serialized_end=131
-  _AUTHORIZERESPONSE._serialized_start=133
-  _AUTHORIZERESPONSE._serialized_end=189
-  _AUTH._serialized_start=191
-  _AUTH._serialized_end=295
+  _AUTHORIZEREQUEST._serialized_end=136
+  _AUTHORIZERESPONSE._serialized_start=138
+  _AUTHORIZERESPONSE._serialized_end=194
+  _AUTH._serialized_start=196
+  _AUTH._serialized_end=300
 # @@protoc_insertion_point(module_scope)

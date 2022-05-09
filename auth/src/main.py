@@ -21,14 +21,15 @@ def create_app(flask_app):
     flask_app.register_blueprint(oauth_blueprint)
     flask_app.register_blueprint(sample_page_blueprint)
     flask_app.register_blueprint(tracing_blueprint)
-    migrate.init_app(app, db)
+    migrate.init_app(flask_app, db)
 
+    configure_tracer()
+
+    FlaskInstrumentor().instrument_app(flask_app)
     return flask_app
 
 
-configure_tracer()
 app = create_app(app)
-FlaskInstrumentor().instrument_app(app) 
 
 
 if __name__ == "__main__":

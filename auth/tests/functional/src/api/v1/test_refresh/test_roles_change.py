@@ -1,7 +1,10 @@
 from http import HTTPStatus
 
+import grpc
 import pytest
 
+import hello_world_pb2
+import hello_world_pb2_grpc
 from settings import Settings
 
 SETTINGS = Settings()
@@ -145,6 +148,18 @@ async def test_check_roles_after_refresh_add(make_request):
     assert response.body == [NEW_ROLE]
 
 
+async def grpc_roles(make_request):
+    global ACCESS_TOKEN
+    with grpc.insecure_channel('auth:50051') as channel:
+        stub = hello_world_pb2_grpc.AuthStub(channel)
+        response = stub.Authorize(
+            hello_world_pb2.AuthorizeRequest(
+                access_token=ACCESS_TOKEN,
+            )
+        )
+    assert response.roles == [NEW_ROLE]
+
+
 async def test_rm_role(make_request):
     global SU_ACCESS_TOKEN
     global NEW_ROLE
@@ -181,7 +196,6 @@ async def test_refresh_after_rm(make_request):
     assert response.status == HTTPStatus.OK
     ACCESS_TOKEN = response.body['access_token']
     REFRESH_TOKEN = response.body['refresh_token']
-
 
 
 async def test_refresh_after_rm_wrong_agent(make_request):
