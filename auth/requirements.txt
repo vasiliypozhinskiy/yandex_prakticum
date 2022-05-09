@@ -41,3 +41,4 @@ opentelemetry-sdk==1.10.0
 opentelemetry-instrumentation-flask==0.29b1
 opentelemetry-exporter-jaeger==1.10.0
 grpcio==1.46.0
+grpcio-tools==1.46.0

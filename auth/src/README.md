@@ -1,0 +1,1 @@
+` python3 -m grpc_tools.protoc -I ./protobufs --python_out messages --grpc_python_out messages protobufs/hello_world.proto`
