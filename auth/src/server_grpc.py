@@ -24,8 +24,10 @@ class Auth(hello_world_pb2_grpc.AuthServicer):
 
     @with_flask_ctx
     def Authorize(self, request, context):
-
-        roles = AUTH_SERVICE.authorize(access_token=request.access_token)
+        # access_token = request.access_token
+        metadata = {k: v for k, v in context.invocation_metadata()}
+        access_token = metadata['access_token']
+        roles = AUTH_SERVICE.authorize(access_token=access_token)
         return hello_world_pb2.AuthorizeResponse(
             roles=roles,
             is_superuser=False,

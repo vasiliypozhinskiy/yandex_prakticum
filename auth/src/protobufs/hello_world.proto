@@ -9,7 +9,6 @@ message GreetingResponse {
 }
 
 message AuthorizeRequest {
-    string access_token = 1;
 }
 
 message AuthorizeResponse {
