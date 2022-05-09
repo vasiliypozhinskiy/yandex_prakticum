@@ -8,20 +8,15 @@ RUN apt-get update && apt-get install nano
 WORKDIR /app
 
 COPY requirements.txt /app/
-COPY /src /app/
-COPY entrypoint_debug.sh /app/
-COPY flask_debug.sh /app/
-COPY grpc_debug.sh /app/
+RUN pip install -r requirements.txt
 
-COPY entrypoint_prod.sh /app/
+COPY /src /app/
+COPY prod_ep.sh/ /app/
+COPY debug_ep.sh/ /app/
 
 EXPOSE 5000 50051
 
-RUN pip install -r requirements.txt
-RUN ["chmod", "+x", "./entrypoint_debug.sh"]
-RUN ["chmod", "+x", "./flask_debug.sh"]
-RUN ["chmod", "+x", "./grpc_debug.sh"]
+RUN ["chmod", "+x", "prod_ep.sh"]
+RUN ["chmod", "+x", "debug_ep.sh"]
 
-RUN ["chmod", "+x", "./entrypoint_prod.sh"]
-
-CMD  ./entrypoint_prod.sh
+CMD  ./prod_ep.sh

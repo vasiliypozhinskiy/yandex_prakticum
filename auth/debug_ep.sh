@@ -1,9 +1,9 @@
 #!/bin/bash
 
 # Start the first process
-./flask_debug.sh &
+/wait && flask db upgrade && python3 create_superuser.py && python3 main.py & 
 
-./grpc_debug.sh
+python3 server_grpc.py
 
 # Wait for any process to exit
 wait -n

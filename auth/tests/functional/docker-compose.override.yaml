@@ -8,7 +8,7 @@ services:
       LOG_TRACING: 0
     ports:
       - "5000:5000"
-    command: bash -c "./entrypoint_debug.sh"
+    command: bash -c "./debug_ep.sh"
   tests:
     volumes:
       - ./:/app
