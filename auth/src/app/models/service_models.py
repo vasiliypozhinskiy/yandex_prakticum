@@ -17,6 +17,7 @@ EMAIL_REGEXP = re.compile(
     r"^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$"
 )
 
+
 class UserCreds(BaseModel):
     id: Optional[UUID]
     login: str
@@ -45,6 +46,7 @@ class UserCreds(BaseModel):
             raise BadLengthError(message="Wrong length of field. Max 100 characters")
         return field
 
+
 class UserData(BaseModel):
     first_name: Optional[str]
     last_name: Optional[str]
@@ -56,6 +58,7 @@ class UserData(BaseModel):
             raise BadLengthError(message="Wrong length of field. Max 100 characters")
         return field
 
+
 class User(UserCreds, UserData):
     pass
     
@@ -64,3 +67,18 @@ class HistoryEntry(BaseModel):
     id: UUID
     user_agent: str
     created_at: datetime
+
+
+class LoginTokens(BaseModel):
+    access_token: str
+    refresh_token: str
+
+
+class OauthAccess(BaseModel):
+    access_token: str
+    user_id: Optional[str] = None
+    refresh_token: Optional[str] = None
+
+
+class OauthUserData(BaseModel):
+    user_id: str
