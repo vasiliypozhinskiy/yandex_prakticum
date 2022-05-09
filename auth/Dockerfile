@@ -6,13 +6,16 @@ RUN chmod +x /wait
 RUN apt-get update && apt-get install nano
 
 WORKDIR /app
+
 COPY requirements.txt /app/
-RUN pip install -r requirements.txt
 COPY /src /app/
+COPY entrypoint_debug.sh /app/
+COPY entrypoint_prod.sh /app/
 
 EXPOSE 5000
 
-CMD /wait \
-    && flask db upgrade \
-    && python create_superuser.py \
-    && gunicorn --worker-class gevent --workers 4 --bind 0.0.0.0:5000 main:app
+RUN pip install -r requirements.txt
+RUN ["chmod", "+x", "./entrypoint_debug.sh"]
+RUN ["chmod", "+x", "./entrypoint_prod.sh"]
+
+CMD  ./entrypoint_prod.sh

@@ -6,12 +6,9 @@ services:
       DEBUG: 1
       TRACE_SAMPLING_FREQUENCY: 1
       LOG_TRACING: 0
-    volumes:
-      - ../../src:/app
     ports:
       - "5000:5000"
-    command: bash -c "/wait && flask db upgrade && python3 create_superuser.py && python3 main.py"
-
+    command: bash -c "./entrypoint_debug.sh"
   tests:
     volumes:
       - ./:/app
