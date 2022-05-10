@@ -23,6 +23,6 @@ def is_superuser(access_token: Optional[str] = None):
     except grpc.RpcError as err:
         if err.code() == grpc.StatusCode.UNAUTHENTICATED:
             raise InvalidToken
-        raise err
+        return False
 
     return response.is_superuser
