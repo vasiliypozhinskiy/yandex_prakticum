@@ -1,7 +1,10 @@
 from http import HTTPStatus
 
+import grpc
 import pytest
 
+import auth_pb2
+import auth_pb2_grpc
 from settings import Settings
 
 SETTINGS = Settings()
@@ -70,7 +73,7 @@ async def test_check_auth(make_request):
     )
 
     assert response.status == HTTPStatus.OK
-    assert response.body == []
+    assert response.body['roles'] == []
 
 
 async def test_add_role(make_request):
@@ -142,7 +145,21 @@ async def test_check_roles_after_refresh_add(make_request):
     )
 
     assert response.status == HTTPStatus.OK
-    assert response.body == [NEW_ROLE]
+    assert response.body['roles'] == [NEW_ROLE]
+
+
+async def test_check_authorized(make_request):
+    global ACCESS_TOKEN
+    global NEW_ROLE
+    with grpc.insecure_channel('auth:50051') as channel:
+        stub = auth_pb2_grpc.AuthStub(channel)
+        response = stub.Authorize(
+            auth_pb2.AuthorizeRequest(),
+            metadata=(
+                ('access_token', ACCESS_TOKEN),
+            )
+        )
+    assert response.roles == [NEW_ROLE]
 
 
 async def test_rm_role(make_request):
@@ -158,7 +175,7 @@ async def test_rm_role(make_request):
     assert response.status == HTTPStatus.OK
 
 
-async def test_check_token(make_request):
+async def test_check_token_after_rm(make_request):
     global ACCESS_TOKEN
     response = await make_request("post")(
         "authorize/",
@@ -181,7 +198,6 @@ async def test_refresh_after_rm(make_request):
     assert response.status == HTTPStatus.OK
     ACCESS_TOKEN = response.body['access_token']
     REFRESH_TOKEN = response.body['refresh_token']
-
 
 
 async def test_refresh_after_rm_wrong_agent(make_request):
@@ -208,7 +224,7 @@ async def test_check_roles_after_refresh_rm(make_request):
     )
 
     assert response.status == HTTPStatus.OK
-    assert response.body == []
+    assert response.body['roles'] == []
 
 
 async def test_rm_role_form_list_un_auth(make_request):

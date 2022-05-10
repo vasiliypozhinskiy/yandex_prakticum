@@ -8,11 +8,10 @@ RUN addgroup -S app && adduser -S app app
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
-COPY ./requirements.txt /app
-
 RUN apk add -U --no-cache build-base
 
-RUN pip install -r /app/requirements.txt && \
-    apk del build-base 
-
 WORKDIR /app
+COPY ./requirements.txt /app
+RUN pip install -r /app/requirements.txt
+
+CMD  python3 -m grpc_tools.protoc -I ./protobufs --python_out . --grpc_python_out . ./protobufs/auth.proto && tail -f /dev/null 

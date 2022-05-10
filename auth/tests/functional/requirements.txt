@@ -9,3 +9,5 @@ requests==2.27.1
 redis==4.2.2
 pydantic==1.9.0
 Flask-Migrate==3.1.0
+grpcio==1.46.0
+grpcio-tools==1.46.0
