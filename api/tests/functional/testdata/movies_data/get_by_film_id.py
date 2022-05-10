@@ -87,6 +87,27 @@ films_data: List[dict] = [
             {"id": "3217bc91-bcfc-44eb-a609-82d228115c50", "name": "Lawrence Kasdan"},
         ],
     },
+    {
+        "id": "57beb3fd-b1c9-4f8a-9c06-2da13f95251d",
+        "imdb_rating": float(10),
+        "genre": ['Adults'],
+        "title": "Adults",
+        "description": "Adults",
+        "director": {
+            "id": "33eb3b88-69f2-4f38-a26d-ff32f1feb1a1",
+            "name": "Ron Howard",
+        },
+        "actors_names": [
+            "Alden Ehrenreich",
+        ],
+        "writers_names": ["Lawrence Kasdan"],
+        "actors": [
+            {"id": "ce06e6d7-600b-4829-badf-5d02c61f1a92", "name": "Alden Ehrenreich"},
+        ],
+        "writers": [
+            {"id": "3217bc91-bcfc-44eb-a609-82d228115c50", "name": "Lawrence Kasdan"},
+        ],
+    },
 ]
 
 expected_film_data = {
@@ -142,4 +163,5 @@ expect_not_found_film_data: dict = {
         {"id": "13f1f970-08d3-442a-9b2c-dc3e54f47dde", "name": "David Wasson"},
         {"id": "91315ca2-e928-4bc3-aa20-4a9024fed936", "name": "Daron Nefcy"},
     ],
+    
 }

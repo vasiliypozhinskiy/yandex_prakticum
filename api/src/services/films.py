@@ -13,7 +13,7 @@ class FilmService(BaseService):
     index = 'movies'
 
     async def get_by_id(self, id_: str) -> Optional[Film]:
-        out = await super().get_by_id(id_=id_)
+        return await super().get_by_id(id_=id_)
 
     async def get_many(self, **kwargs) -> Optional[List[Film]]:
         return await super().get_many(search_type='films', **kwargs)
