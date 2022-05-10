@@ -4,6 +4,7 @@ from opentelemetry.instrumentation.flask import FlaskInstrumentor
 
 from app.core import app, db, migrate
 from app.core.tracing import configure_tracer, tracing_blueprint
+from app.views.totp_view import totp_blueprint
 from app.views.user_view import user_blueprint
 from app.views.oauth_view import oauth_blueprint
 from app.views.role_view import role_blueprint
@@ -21,6 +22,7 @@ def create_app(flask_app):
     flask_app.register_blueprint(oauth_blueprint)
     flask_app.register_blueprint(sample_page_blueprint)
     flask_app.register_blueprint(tracing_blueprint)
+    flask_app.register_blueprint(totp_blueprint)
     migrate.init_app(flask_app, db)
 
     configure_tracer()

@@ -1,4 +1,4 @@
-from typing import  List
+from typing import List, Optional
 
 from pydantic.main import BaseModel
 
@@ -6,6 +6,7 @@ from pydantic.main import BaseModel
 class AuthReqView(BaseModel):
     login: str
     password: str
+    code: Optional[str]
 
 
 class AuthRespView(BaseModel):
