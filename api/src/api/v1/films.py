@@ -1,4 +1,3 @@
-from operator import ge
 from typing import Optional
 
 from fastapi import APIRouter, Depends, Header
