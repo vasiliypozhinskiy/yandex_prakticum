@@ -26,10 +26,10 @@ class Auth(auth_pb2_grpc.AuthServicer):
         # access_token = request.access_token
         metadata = {k: v for k, v in context.invocation_metadata()}
         access_token = metadata['access_token']
-        roles = AUTH_SERVICE.authorize(access_token=access_token)
+        roles, is_su = AUTH_SERVICE.authorize(access_token=access_token)
         return auth_pb2.AuthorizeResponse(
             roles=roles,
-            is_superuser=False,
+            is_superuser=is_su,
         )
 
 

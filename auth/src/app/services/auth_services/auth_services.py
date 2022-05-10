@@ -1,5 +1,5 @@
 from functools import wraps
-from typing import List, Optional
+from typing import List, Optional, Tuple
 import uuid
 
 from flask import request
@@ -73,14 +73,12 @@ class AuthService:
 
         LOG_OUT_ALL.add(user_id=user_id)
         
-        
-
-    def authorize(self, access_token: str) -> List[str]:
+    def authorize(self, access_token: str) -> Tuple[List[str], bool]:
         if not self.check_access_token(access_token):
             raise InvalidToken
 
         payload = JWT_SERVICE.get_access_payload(access_token)
-        return payload.roles
+        return payload.roles, payload.is_superuser
 
     @staticmethod
     def check_access_token(access_token):

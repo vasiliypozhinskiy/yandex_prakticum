@@ -73,7 +73,7 @@ async def test_check_auth(make_request):
     )
 
     assert response.status == HTTPStatus.OK
-    assert response.body == []
+    assert response.body['roles'] == []
 
 
 async def test_add_role(make_request):
@@ -145,7 +145,7 @@ async def test_check_roles_after_refresh_add(make_request):
     )
 
     assert response.status == HTTPStatus.OK
-    assert response.body == [NEW_ROLE]
+    assert response.body['roles'] == [NEW_ROLE]
 
 
 async def test_check_authorized(make_request):
@@ -224,7 +224,7 @@ async def test_check_roles_after_refresh_rm(make_request):
     )
 
     assert response.status == HTTPStatus.OK
-    assert response.body == []
+    assert response.body['roles'] == []
 
 
 async def test_rm_role_form_list_un_auth(make_request):
