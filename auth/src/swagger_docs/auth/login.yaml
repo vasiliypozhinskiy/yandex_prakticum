@@ -17,6 +17,10 @@ parameters:
         password:
           type: string
           example: 123qweQWE!@#
+        code:
+          type: string
+          example: 123456
+          nullable: true
 responses:
   200:
     description: Пользователь авторизирован
