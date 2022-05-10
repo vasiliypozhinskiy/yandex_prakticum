@@ -11,8 +11,8 @@ services:
       REDIS_PORT: 6379
       REDIS_PASSWORD: $REDIS_PASSWORD
       WAIT_HOSTS: elastic:9200, redis:6379
-    ports:
-      - "8000:8000"
+    expose:
+      - 8000
     depends_on:
       - elastic
       - redis
@@ -50,53 +50,8 @@ services:
     volumes:
       - 'redis_test_data:/var/lib/redis'
 
-  auth:
-    build: ../../../auth
-    environment:
-      FLASK_APP: main:app
-      SECRET_KEY: $FLASK_SECRET_KEY
-      DB_HOST: auth_db
-      DB_PASSWORD: ${AUTH_DB_PASSWORD}
-      DB_USER: auth_app
-      DB_PORT: 4321
-      DB_NAME: auth_database
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
-      REDIS_PASSWORD: $REDIS_PASSWORD
-      HOST: auth
-      DEBUG: ${AUTH_DEBUG}
-      SUPERUSER_PASSWORD: ${SUPERUSER_PASSWORD}
-      WAIT_HOSTS: auth_db:4321, redis:6379, tracing:16686
-      VK_CLIENT_SECRET: ${VK_CLIENT_SECRET}
-      YANDEX_CLIENT_SECRET: ${YANDEX_CLIENT_SECRET}
-    
-    ports:
-      - "5000:5000"
-    depends_on:
-      - auth_db
-      - redis
-      - tracing
-    volumes:
-      - ./../../../protobufs:/app/protobufs
-
-  auth_db:
-    build: '../../../auth_db_test'
-    environment:
-      POSTGRES_USER: auth_app
-      POSTGRES_PASSWORD: ${AUTH_DB_PASSWORD}
-      POSTGRES_DB: auth_database
-    volumes:
-      - 'auth_db_test_data:/var/lib/postgres/data'
-    command: -p 4321
-  
-  tracing:
-    image: jaegertracing/all-in-one:latest
-    ports:
-      - "16686:16686"
-
 
 volumes:
   elastic_test_data:
   redis_test_data:
-  auth_db_test_data:
 

@@ -73,7 +73,7 @@ async def create_movies_schema(es_client):
     loader = ElasticLoader(es_client, "movies")
     await loader.load(films_data)
     yield
-    # await es_client.indices.delete("movies")
+    await es_client.indices.delete("movies")
 
 
 @pytest.fixture(scope="class")
@@ -85,7 +85,7 @@ async def create_persons_schema(es_client):
     loader = ElasticLoader(es_client, "persons")
     await loader.load(person_data)
     yield
-    # await es_client.indices.delete("persons")
+    await es_client.indices.delete("persons")
 
 
 @pytest.fixture(scope="class")
@@ -97,7 +97,7 @@ async def create_genres_schema(es_client):
     loader = ElasticLoader(es_client, "genres")
     await loader.load(genre_data)
     yield
-    # await es_client.indices.delete("genres")
+    await es_client.indices.delete("genres")
 
 
 @pytest.fixture

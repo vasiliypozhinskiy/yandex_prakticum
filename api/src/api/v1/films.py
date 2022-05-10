@@ -21,7 +21,7 @@ async def film_details(
     is_su = is_superuser(authorize)
     if not film:
         raise NotFoundException
-    if (film.genre is not None) and ('Adults' in film.genre):
+    if (film.genre is not None) and ('Comedy' in film.genre):
         if not is_su:
             raise ComedySubscription
             
