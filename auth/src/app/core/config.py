@@ -61,6 +61,4 @@ class YandexOathConfig(BaseOauthConfig):
     auth_url: str = YANDEX_BASE_URL + "/authorize"
     get_token_url: str = YANDEX_BASE_URL + "/token"
     redirect_url: str = "http://localhost/auth/api/v1/oauth/yandex/login"
-    api_url: str = "https://api.vk.com/method/"
-    # api_version: str = "5.131"
     client_id: str = "1663a587e0a44f68a19f1578934144ad"

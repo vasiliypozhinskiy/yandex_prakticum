@@ -8,10 +8,20 @@
     <button onclick="vk_oauth()">
         Зайти через VK
     </button>
+    <button onclick="yandex_oauth()">
+        Зайти через Yandex
+    </button>
 </body>
 <script>
     let vk_oauth = async () => {
         let response = await fetch("/auth/api/v1/oauth/vk/auth").then((response) => {
+            return response.json();
+        });
+        document.location=response.url;
+    }
+
+    let yandex_oauth = async () => {
+        let response = await fetch("/auth/api/v1/oauth/yandex/auth").then((response) => {
             return response.json();
         });
         document.location=response.url;
