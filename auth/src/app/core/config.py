@@ -1,4 +1,5 @@
 import os
+from typing import Union
 
 from pydantic import BaseSettings, Field
 
@@ -16,6 +17,9 @@ DATE_TIME_FORMAT = "%Y-%m-%d %H:%M:%S.%f"
 
 TEMPLATE_FOLDER = os.getcwd() + "/templates"
 
+VK_BASE_URL = "https://oauth.vk.com"
+YANDEX_BASE_URL = "https://oauth.yandex.ru"
+
 
 class Config:
     SECRET_KEY = os.getenv("SECRET_KEY")
@@ -32,4 +36,31 @@ class TracingConfig(BaseSettings):
     sampling_rate: float = Field(0.05, env='TRACE_SAMPLING_FREQUENCY')
     agent_port: int = Field(6831, env='TRACING_AGENT_PORT')
     host: str = Field("tracing", env='TRACING_HOST')
-    log: bool = Field(True, env='LOG_TRACING')
+    log: bool = Field(False, env='LOG_TRACING')
+
+
+class BaseOauthConfig(BaseSettings):
+    client_secret: str
+    client_id: Union[int, str]
+
+
+class VKOathConfig(BaseOauthConfig):
+    client_secret: str = Field(env="VK_CLIENT_SECRET")
+    base_url: str = VK_BASE_URL
+    auth_url: str = VK_BASE_URL + "/authorize"
+    get_token_url: str = VK_BASE_URL + "/access_token"
+    redirect_url: str = "http://localhost/auth/api/v1/oauth/vk/login"
+    api_url: str = "https://api.vk.com/method/"
+    api_version: str = "5.131"
+    client_id: int = 8158992
+
+
+class YandexOathConfig(BaseOauthConfig):
+    client_secret: str = Field(env="YANDEX_CLIENT_SECRET")
+    base_url: str = YANDEX_BASE_URL
+    auth_url: str = YANDEX_BASE_URL + "/authorize"
+    get_token_url: str = YANDEX_BASE_URL + "/token"
+    redirect_url: str = "http://localhost/auth/api/v1/oauth/yandex/login"
+    api_url: str = "https://api.vk.com/method/"
+    # api_version: str = "5.131"
+    client_id: str = "1663a587e0a44f68a19f1578934144ad"
