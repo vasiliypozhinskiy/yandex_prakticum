@@ -45,6 +45,8 @@ services:
       - auth_db
       - redis
       - tracing
+    volumes:
+      - ./../../../protobufs:/app/protobufs
 
   tests:
     build: .
@@ -73,4 +75,4 @@ services:
 
 volumes:
   auth_db_test_data:
-  redis_data: 
+  redis_data:

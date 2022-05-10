@@ -2,8 +2,8 @@ import grpc
 import pytest
 from http import HTTPStatus
 
-import hello_world_pb2
-import hello_world_pb2_grpc
+import auth_pb2_grpc
+import auth_pb2
 
 # All test coroutines will be treated as marked with this decorator.
 pytestmark = pytest.mark.asyncio
@@ -23,8 +23,8 @@ USER = {
 
 async def test_grpc_hello(make_request):
     with grpc.insecure_channel('auth:50051') as channel:
-        stub = hello_world_pb2_grpc.AuthStub(channel)
-        response = stub.Greet(hello_world_pb2.GreetingRequest(user_id=1))
+        stub = auth_pb2_grpc.AuthStub(channel)
+        response = stub.Greet(auth_pb2.GreetingRequest(user_id=1))
         assert response.greetings == 'hello'
 
 
@@ -54,9 +54,9 @@ async def test_login(make_request):
 async def test_check_authorized(make_request):
     global ACCESS_TOKEN
     with grpc.insecure_channel('auth:50051') as channel:
-        stub = hello_world_pb2_grpc.AuthStub(channel)
+        stub = auth_pb2_grpc.AuthStub(channel)
         response = stub.Authorize(
-            hello_world_pb2.AuthorizeRequest(),
+            auth_pb2.AuthorizeRequest(),
             metadata=(
                 ('access_token', ACCESS_TOKEN),
             )

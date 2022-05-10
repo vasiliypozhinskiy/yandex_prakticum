@@ -3,8 +3,8 @@ from http import HTTPStatus
 import grpc
 import pytest
 
-import hello_world_pb2
-import hello_world_pb2_grpc
+import auth_pb2
+import auth_pb2_grpc
 from settings import Settings
 
 SETTINGS = Settings()
@@ -152,9 +152,9 @@ async def test_check_authorized(make_request):
     global ACCESS_TOKEN
     global NEW_ROLE
     with grpc.insecure_channel('auth:50051') as channel:
-        stub = hello_world_pb2_grpc.AuthStub(channel)
+        stub = auth_pb2_grpc.AuthStub(channel)
         response = stub.Authorize(
-            hello_world_pb2.AuthorizeRequest(),
+            auth_pb2.AuthorizeRequest(),
             metadata=(
                 ('access_token', ACCESS_TOKEN),
             )
@@ -175,7 +175,7 @@ async def test_rm_role(make_request):
     assert response.status == HTTPStatus.OK
 
 
-async def test_check_token(make_request):
+async def test_check_token_after_rm(make_request):
     global ACCESS_TOKEN
     response = await make_request("post")(
         "authorize/",

@@ -13,6 +13,7 @@ RUN pip install -r requirements.txt
 COPY /src /app/
 COPY prod_ep.sh/ /app/
 COPY debug_ep.sh/ /app/
+COPY debug_ep.sh/ /app/
 
 EXPOSE 5000 50051
 

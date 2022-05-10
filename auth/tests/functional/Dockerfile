@@ -10,7 +10,8 @@ ENV PYTHONUNBUFFERED 1
 
 RUN apk add -U --no-cache build-base
 
+WORKDIR /app
 COPY ./requirements.txt /app
 RUN pip install -r /app/requirements.txt
 
-WORKDIR /app
+CMD  python3 -m grpc_tools.protoc -I ./protobufs --python_out . --grpc_python_out . ./protobufs/auth.proto && tail -f /dev/null 
