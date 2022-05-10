@@ -9,7 +9,7 @@ from app.services.auth_services.jwt_service import JWT_SERVICE
 from app.services.auth_services.storages import REF_TOK_STORAGE
 from app.services.storage.storage import user_table, user_login_history_table
 from app.utils.exceptions import NotFoundError, AccessDenied
-from app.core.config import VKOathConfig, YandexOathConfig, BaseOauthConfig
+from app.core.config import VKOathConfig, YandexOathConfig, BaseOauthConfig, MailOauthConfig
 from app.models.service_models import OauthAccess, LoginTokens, OauthUserData
 
 
@@ -126,6 +126,30 @@ class VKOauthService(BaseOauthService):
     def _get_user_data(self, access: OauthAccess):
         return OauthUserData(user_id=access.user_id)
 
+class MailOauthService(BaseOauthService):
+
+    type_ = 'Mail'
+    config = MailOauthConfig()
+
+    def _get_oauth_tokens(self, code):
+        get_token_params = {
+            "client_id": self.config.client_id,
+            "client_secret": self.config.client_secret,
+            "redirect_uri": self.config.redirect_url,
+            "code": code,
+        }
+        get_token_response = requests.get(
+            self.config.get_token_url,
+            params=get_token_params,
+        )
+        resp_json = get_token_response.json()
+
+        return OauthAccess(**resp_json)
+
+    def _get_user_data(self, access: OauthAccess):
+        return OauthUserData(user_id=access.user_id)
+
+
 
 class OauthService:
 
@@ -171,3 +195,4 @@ oauth_service = OauthService()
 
 vk_oauth_service = VKOauthService()
 yandex_oauth_service = YandexOauthService()
+mail_oauth_service = MailOauthService()

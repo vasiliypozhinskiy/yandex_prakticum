@@ -19,6 +19,7 @@ TEMPLATE_FOLDER = os.getcwd() + "/templates"
 
 VK_BASE_URL = "https://oauth.vk.com"
 YANDEX_BASE_URL = "https://oauth.yandex.ru"
+MAIL_BASE_URL = "https://oauth.mail.ru"
 
 
 class Config:
@@ -64,3 +65,13 @@ class YandexOathConfig(BaseOauthConfig):
     api_url: str = "https://api.vk.com/method/"
     # api_version: str = "5.131"
     client_id: str = "1663a587e0a44f68a19f1578934144ad"
+
+
+class MailOauthConfig(BaseOauthConfig):
+    client_secret: str = Field(env="MAIL_CLIENT_SECRET")
+    base_url: str = MAIL_BASE_URL
+    auth_url: str = MAIL_BASE_URL + "authorize"
+    get_token_url: str = MAIL_BASE_URL + "/token"
+    redirect_url: str = "http://localhost/auth/api/v1/oauth/mail/login"
+    api_url: str = "https://api.mail.com/method/"
+    client_id: str = "b93a8fb33d244461a0b066821159420c"
