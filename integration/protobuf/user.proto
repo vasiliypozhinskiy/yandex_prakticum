@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package userpb;
+
+message UserRequest {
+    string id = 1;
+}
+
+message RoleList {
+    repeated string role = 1;
+}
+
+message RoleListResponse {
+    repeated RoleList role = 1;
+}
+
+service User {
+    rpc GetUser(UserRequest) returns (RoleList) {};
+}

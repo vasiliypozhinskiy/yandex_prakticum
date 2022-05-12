@@ -41,14 +41,15 @@ class LogOut(MethodView):
 
 class Authorize(MethodView):
     
-    @swag_from(f'{SWAGGER_DOCS_PATH}/auth/authorize.yaml', endpoint='auth.authorize', methods=['POST'])
+    @swag_from(f'{SWAGGER_DOCS_PATH}/auth/authorize.yaml', endpoint='auth.authorize', methods=['GET'])
     @catch_exceptions
-    @limit_rate
-    def post(self):
+    def get(self):
+
         access_token = request.headers["Authorization"]
         roles, is_su = AUTH_SERVICE.authorize(access_token=access_token)
         out = AuthorizeResponse(roles=roles, is_superuser=is_su)
         return jsonify(out.dict()), HTTPStatus.OK
+
 
 
 class Refresh(MethodView):
@@ -96,7 +97,7 @@ class LogOutAllByAccess(BaseLogoutAll):
 
 auth_blueprint.add_url_rule('/login/', endpoint='login', view_func=Login.as_view('auth'), methods=["POST"])
 auth_blueprint.add_url_rule('/logout', endpoint='logout', view_func=LogOut.as_view('auth'), methods=["POST"])
-auth_blueprint.add_url_rule('/authorize/', endpoint='authorize', view_func=Authorize.as_view('auth'), methods=["POST"])
+auth_blueprint.add_url_rule('/authorize/', endpoint='authorize', view_func=Authorize.as_view('auth'), methods=["GET"])
 auth_blueprint.add_url_rule('/refresh/', endpoint='refresh', view_func=Refresh.as_view('auth'), methods=["POST"])
 auth_blueprint.add_url_rule('/logout_all/<string:user_id>', endpoint='logout-all-id', view_func=LogOutAllById.as_view('auth'), methods=["POST"])
 auth_blueprint.add_url_rule('/logout_all/', endpoint='logout-all-access', view_func=LogOutAllByAccess.as_view('auth'), methods=["POST"])

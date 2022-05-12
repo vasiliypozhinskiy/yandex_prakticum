@@ -155,6 +155,7 @@ class ServiceJWT(BaseServiceJWT):
         return user_table.get_roles(user_id=user_id)
 
 
+
 JWT_SERVICE = ServiceJWT(
     refresh_timeout=REFRESH_TOKEN_EXP,
     access_timeout=ACCESS_TOKEN_EXP,
