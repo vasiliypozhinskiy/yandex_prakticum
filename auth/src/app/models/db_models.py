@@ -3,6 +3,9 @@ from datetime import datetime
 
 from app.core import db
 from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy import UniqueConstraint
+
+
 
 
 class User(db.Model):
@@ -57,21 +60,49 @@ class UserData(db.Model):
         return f"<UserData: {self.user_id}>"
 
 
+def create_partition(target, connection, **kwargs) -> None:
+    connection.execute(
+        """CREATE TABLE IF NOT EXISTS "auth.user_login_winter_2022"
+        PARTITION OF "auth.login_history"
+        FOR VALUES FROM ('2021-12-01') TO ('2022-02-28'); """
+    )
+    connection.execute(
+        """CREATE TABLE IF NOT EXISTS "auth.user_login_spring_2022"
+        PARTITION OF "auth.login_history"
+        FOR VALUES FROM ('2022-03-01') TO ('2022-05-31'); """
+    )
+    connection.execute(
+        """CREATE TABLE IF NOT EXISTS "auth.user_login_summer_2022"
+        PARTITION OF "auth.login_history"
+        FOR VALUES FROM ('2022-06-01') TO ('2022-08-31'); """
+    )
+    connection.execute(
+        """CREATE TABLE IF NOT EXISTS "auth.user_login_autumn_2022"
+        PARTITION OF "auth.login_history"
+        FOR VALUES FROM ('2022-09-01') TO ('2022-11-30'); """
+    )
+
+
 class LoginHistory(db.Model):
     __tablename__ = "login_history"
-    __table_args__ = {"schema": "auth"}
-
+    # __table_args__ = {"schema": "auth"}
+    __table_args__ = (
+        UniqueConstraint('id', 'created_at'),
+        {
+            "schema": "auth",
+            'postgresql_partition_by': 'RANGE (created_at)',
+            'listeners': [('after_create', create_partition)],
+        }
+    )
     id = db.Column(
         UUID(as_uuid=True),
         primary_key=True,
         default=uuid.uuid4,
-        unique=True,
         nullable=False,
     )
     user_agent = db.Column(db.String)
     refresh_token = db.Column(db.String, nullable=False)
-    created_at = db.Column(db.DateTime(), default=datetime.utcnow)
-
+    created_at = db.Column(db.DateTime(), default=datetime.utcnow, primary_key=True)
     user_id = db.Column(UUID(as_uuid=True), db.ForeignKey(User.id))
 
     def __repr__(self):
