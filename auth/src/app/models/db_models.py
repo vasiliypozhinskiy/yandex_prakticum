@@ -85,7 +85,6 @@ def create_partition(target, connection, **kwargs) -> None:
 
 class LoginHistory(db.Model):
     __tablename__ = "login_history"
-    # __table_args__ = {"schema": "auth"}
     __table_args__ = (
         UniqueConstraint('id', 'created_at'),
         {

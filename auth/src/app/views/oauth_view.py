@@ -133,7 +133,7 @@ oauth_blueprint.add_url_rule(
 oauth_blueprint.add_url_rule(
     '/mail/login/',
     endpoint='mail_login',
-    view_func=YandexLoginView.as_view('auth'),
+    view_func=MailLoginView.as_view('auth'),
     methods=["GET"]
 )
 
@@ -152,6 +152,6 @@ oauth_blueprint.add_url_rule(
 oauth_blueprint.add_url_rule(
     '/mail/auth/',
     endpoint='mail_auth',
-    view_func=YandexOauthView.as_view('auth'),
+    view_func=MailOauthView.as_view('auth'),
     methods=["GET"]
 )

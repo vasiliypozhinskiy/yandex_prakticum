@@ -6,7 +6,7 @@ from pydantic import BaseSettings, Field
 DB_PORT = os.getenv("DB_PORT", 4321)
 DB_HOST = os.getenv("DB_HOST", "localhost")
 DB_PASSWORD = os.getenv("DB_PASSWORD", "")
-
+TIME_OUT_REQUEST = 10
 SECRET_SIGNATURE = os.getenv("SECRET_SIGNATURE", "secret")
 
 
@@ -19,7 +19,7 @@ TEMPLATE_FOLDER = os.getcwd() + "/templates"
 
 VK_BASE_URL = "https://oauth.vk.com"
 YANDEX_BASE_URL = "https://oauth.yandex.ru"
-MAIL_BASE_URL = "https://oauth.mail.ru"
+MAIL_BASE_URL = "https://oauth.mail.ru/"
 
 
 class Config:
