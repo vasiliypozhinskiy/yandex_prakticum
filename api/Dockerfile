@@ -7,7 +7,9 @@ WORKDIR /app
 COPY requirements.txt /app/
 RUN pip install -r requirements.txt
 COPY /src /app/
+COPY prod_ep.sh/ /app/
+RUN ["chmod", "+x", "prod_ep.sh"]
 
 EXPOSE 8000
 
-CMD /wait && gunicorn main:app -w 4 -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:8000
+CMD ./prod_ep.sh

@@ -14,6 +14,8 @@ services:
     depends_on:
       - elastic
       - redis
+    volumes:
+      - './protobufs:/app/protobufs'
 
   auth:
     build: './auth'
@@ -37,6 +39,8 @@ services:
       TRACE_SAMPLING_FREQUENCY: 1
     volumes:
     - './auth/src/migrations:/app/migrations'
+    - './protobufs:/app/protobufs'
+    
     depends_on:
       - auth_db
       - redis

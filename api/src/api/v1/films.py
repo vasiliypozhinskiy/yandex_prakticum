@@ -1,9 +1,12 @@
-from fastapi import APIRouter, Depends
+from typing import Optional
 
-from api.v1.exceptions import NotFoundException
+from fastapi import APIRouter, Depends, Header
+
+from api.v1.exceptions import NotFoundException, ComedySubscription
 from api.v1.models.response_model import FilmDetailResponse, FilmPageResponse, ListResponseFilm
 from api.v1.utils import FilmQueryParams
 from services.films import FilmService, get_film_service
+from services.auth import is_superuser
 
 router = APIRouter()
 
@@ -11,11 +14,18 @@ router = APIRouter()
 @router.get('/{film_id}', response_model=FilmDetailResponse, summary="Детали фильма")
 async def film_details(
         film_id: str,
-        film_service: FilmService = Depends(get_film_service)
+        film_service: FilmService = Depends(get_film_service),
+        authorize: Optional[str] = Header(None),
 ) -> FilmDetailResponse:
     film = await film_service.get_by_id(film_id)
+    is_su = is_superuser(authorize)
     if not film:
         raise NotFoundException
+    if (film.genre is not None) and ('Comedy' in film.genre):
+        if not is_su:
+            raise ComedySubscription
+            
+
     return FilmDetailResponse(**dict(film))
 
 
@@ -24,7 +34,7 @@ async def search_film_list(
         params: FilmQueryParams = Depends(),
         film_service: FilmService = Depends(get_film_service),
         page_size: int = 10,
-        ) -> FilmPageResponse:
+    ) -> FilmPageResponse:
     films = await film_service.get_many(
         sorting=params.sort,
         page_size=page_size,
