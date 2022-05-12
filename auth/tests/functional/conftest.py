@@ -94,36 +94,3 @@ def make_request(session):
         return inner
 
     return wrapper
-
-
-@pytest_asyncio.fixture(scope="module")
-async def access_token(make_request):
-    # response = await make_request("post")(
-    #     "auth/login",
-    #     json={"login": "test1", "password": "test1"},
-    #     headers={"User-Agent": "agent_1"},
-    # )
-
-    yield None # response.body["access_token"]
-
-
-@pytest_asyncio.fixture(scope="module")
-async def second_access_token(make_request):
-    # response = await make_request("post")(
-    #     "auth/login",
-    #     json={"login": "test1", "password": "test1"},
-    #     headers={"User-Agent": "agent_2"},
-    # )
-
-    yield None # response.body["access_token"]
-
-
-@pytest_asyncio.fixture(scope="module")
-async def third_access_token(make_request):
-    # response = await make_request("post")(
-    #     "auth/login",
-    #     json={"login": "test1", "password": "test1"},
-    #     headers={"User-Agent": "agent_2"},
-    # )
-
-    yield None # response.body["access_token"]

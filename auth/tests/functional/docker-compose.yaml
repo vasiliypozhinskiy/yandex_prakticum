@@ -36,14 +36,21 @@ services:
       REDIS_PORT: 6379
       REDIS_PASSWORD: $REDIS_PASSWORD
       HOST: auth
-      DEBUG: ${AUTH_DEBUG}
       SUPERUSER_PASSWORD: ${SUPERUSER_PASSWORD}
-      WAIT_HOSTS: auth_db:4321, redis:6379
+      WAIT_HOSTS: auth_db:4321, redis:6379, tracing:16686
       VK_CLIENT_SECRET: ${VK_CLIENT_SECRET}
       YANDEX_CLIENT_SECRET: ${YANDEX_CLIENT_SECRET}
+      UVICORN_RELOAD: 1
+      DEBUG: 1
+      TRACE_SAMPLING_FREQUENCY: 1
+      LOG_TRACING: 0
     depends_on:
       - auth_db
       - redis
+      - tracing
+    volumes:
+      - ./../../../protobufs:/app/protobufs
+    command: bash -c "./debug_ep.sh"
 
   tests:
     build: .
@@ -72,4 +79,4 @@ services:
 
 volumes:
   auth_db_test_data:
-  redis_data: 
+  redis_data:

@@ -7,7 +7,7 @@ from flask import Blueprint, jsonify, request
 from flasgger.utils import swag_from
 
 from app.core.swagger_config import SWAGGER_DOCS_PATH
-from app.views.models.auth import AuthRefreshReqView, AuthReqView
+from app.views.models.auth import AuthRefreshReqView, AuthReqView, AuthorizeResponse
 from app.services.auth_services.auth_services import AUTH_SERVICE
 from app.services.rate_limit import limit_rate
 from app.views.utils.decorator import catch_exceptions
@@ -46,8 +46,9 @@ class Authorize(MethodView):
     def get(self):
 
         access_token = request.headers["Authorization"]
-        roles = AUTH_SERVICE.authorize(access_token=access_token)
-        return jsonify(roles), HTTPStatus.OK
+        roles, is_su = AUTH_SERVICE.authorize(access_token=access_token)
+        out = AuthorizeResponse(roles=roles, is_superuser=is_su)
+        return jsonify(out.dict()), HTTPStatus.OK
 
 
 

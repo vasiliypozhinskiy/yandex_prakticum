@@ -26,6 +26,8 @@ class User(db.Model):
     oauth_type = db.Column(db.TEXT)
     oauth_id = db.Column(db.TEXT)
 
+    totp_secret = db.Column(db.TEXT)
+
     email = db.Column(db.String, unique=True, index=True)
 
     user_data = db.relationship("UserData", backref="user")

@@ -16,6 +16,8 @@ services:
     depends_on:
       - elastic
       - redis
+    volumes:
+      - ./../../../protobufs:/app/protobufs
 
   tests:
     build: .

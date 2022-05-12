@@ -6,13 +6,18 @@ RUN chmod +x /wait
 RUN apt-get update && apt-get install nano
 
 WORKDIR /app
+
 COPY requirements.txt /app/
 RUN pip install -r requirements.txt
+
 COPY /src /app/
+COPY prod_ep.sh/ /app/
+COPY debug_ep.sh/ /app/
+COPY debug_ep.sh/ /app/
 
-EXPOSE 5000
+EXPOSE 5000 50051
 
-CMD /wait \
-    && flask db upgrade \
-    && python create_superuser.py \
-    && gunicorn --worker-class gevent --workers 4 --bind 0.0.0.0:5000 main:app
+RUN ["chmod", "+x", "prod_ep.sh"]
+RUN ["chmod", "+x", "debug_ep.sh"]
+
+CMD  ./prod_ep.sh

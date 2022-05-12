@@ -1,15 +1,14 @@
 from functools import wraps
-from typing import List, Optional
+from typing import List, Optional, Tuple
 import uuid
 
 from flask import request
 
-from app.core.config import Config
+from app.services.totp_service import totp_service
 from app.views.models.auth import AuthReqView, AuthRespView
 from app.services.storage.storage import user_table, user_login_history_table
 from app.utils.utils import check_password
 from app.utils.exceptions import UnExistingLogin, InvalidToken, AccessDenied
-from app.services.rate_limit import check_rate_limit
 from app.services.auth_services.jwt_service import JWT_SERVICE
 from app.services.auth_services.storages import REF_TOK_STORAGE
 from app.services.auth_services.black_list import (
@@ -25,26 +24,31 @@ class AuthService:
     def login(request_data: AuthReqView, agent: str) -> AuthRespView:
         login_data = AuthReqView.parse_obj(request_data)
 
-        creds_from_storage = user_table.read(filter={"login": login_data.login})
-        if creds_from_storage is None:
+        user = user_table.read(filter={"login": login_data.login})
+        if not user:
             raise UnExistingLogin
 
+        if user["totp_secret"]:
+            if not login_data.code:
+                raise AccessDenied("Need code from authorization app")
+            totp_service.verify_code(user["id"], login_data.code)
+
         if check_password(
-            password=login_data.password,hashed_password=creds_from_storage["password"]
+            password=login_data.password,hashed_password=user["password"]
         ): 
 
             access_token, refresh_token = JWT_SERVICE.generate_tokens(
-                user_id=creds_from_storage["id"],
+                user_id=user["id"],
             )
             REF_TOK_STORAGE.add_token(
                 token=refresh_token,
                 agent=agent,
-                user_id=creds_from_storage["id"]
+                user_id=user["id"]
             )
 
             user_login_history_table.create(
                 data={
-                    "user_id": creds_from_storage["id"],
+                    "user_id": user["id"],
                     "user_agent": agent,
                     "refresh_token": refresh_token,
                 }
@@ -73,14 +77,12 @@ class AuthService:
 
         LOG_OUT_ALL.add(user_id=user_id)
         
-        
-
-    def authorize(self, access_token: str) -> List[str]:
+    def authorize(self, access_token: str) -> Tuple[List[str], bool]:
         if not self.check_access_token(access_token):
             raise InvalidToken
 
         payload = JWT_SERVICE.get_access_payload(access_token)
-        return payload.roles
+        return payload.roles, payload.is_superuser
 
     @staticmethod
     def check_access_token(access_token):
